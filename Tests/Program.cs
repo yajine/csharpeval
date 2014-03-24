@@ -132,15 +132,32 @@ namespace Tests
         public bool result { get; set; }
     }
 
+
+    public class ValueHolder
+    {
+        public string Value { get; set; }
+    }
+
     class Program
     {
 
         static void Main(string[] args)
         {
+            var field = new ValueHolder() { Value = "405" };
+            var query = new ValueHolder() { Value = "405" };
+            var ra11 = Convert.ToInt32(field.Value) >= Convert.ToInt32(query.Value);
+            var c11 = new CompiledExpression() { StringToParse = "Convert.ToInt32(field.Value) >= Convert.ToInt32(query.Value)" };
+            c11.RegisterType("field", field);
+            c11.RegisterType("query", query);
+            c11.RegisterDefaultTypes();
+            var x11 = c11.Compile();
+            var r11 = x11();
+
             var cc = new CompiledExpression() { StringToParse = "Convert.ToBoolean(obj.result)==true" };
             object obj = new objHolder() { result = true };
             cc.RegisterType("obj", obj);
             cc.RegisterDefaultTypes();
+            //var ra22 = Convert.ToBoolean(obj.result) == true;
             var result = cc.Eval();
 
             var x = new List<String>() { "Hello", "There", "World" };

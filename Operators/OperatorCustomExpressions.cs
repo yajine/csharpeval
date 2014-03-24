@@ -79,17 +79,6 @@ namespace ExpressionEvaluator.Operators
                     var mis = MethodResolution.GetApplicableMembers(type, membername, args);
                     var methodInfo = (MethodInfo)mis[0];
 
-                    var typeArgs = methodInfo.GetGenericArguments();
-
-                    Type[] genericArgTypes = null;
-
-                    if (methodInfo.IsGenericMethod)
-                    {
-                        genericArgTypes = new Type[typeArgs.Count()];
-                    }
-
-                    // if the method is generic, try to get type args from method, if none, try to get type args from parameters
-
                     if (methodInfo != null)
                     {
                         var parameterInfos = methodInfo.GetParameters();
@@ -98,60 +87,15 @@ namespace ExpressionEvaluator.Operators
                         {
                             var index = parameterInfo.Position;
 
-                            if (parameterInfo.ParameterType.IsGenericType)
-                            {
-                                if (methodInfo.IsGenericMethod && parameterInfo.ParameterType.IsGenericParameter && genericArgTypes != null)
-                                {
-                                    genericArgTypes[parameterInfo.ParameterType.GenericParameterPosition] = args[index].Type;
-                                    args[index] = Expression.Convert(args[index], parameterInfos[index].ParameterType.GetGenericTypeDefinition().MakeGenericType(args[index].Type));
-                                }
-                                if (methodInfo.IsGenericMethod && parameterInfo.ParameterType.IsGenericType && genericArgTypes != null)
-                                {
-                                    foreach (var pInfoGenericArgType in parameterInfo.ParameterType.GetGenericArguments())
-                                    {
-                                        genericArgTypes[pInfoGenericArgType.GenericParameterPosition] = args[index].Type.GetElementType() ?? typeof(string);
-                                    }
-                                    args[index] = Expression.Convert(args[index], parameterInfos[index].ParameterType.GetGenericTypeDefinition().MakeGenericType(typeof(string)));
-                                }
-                            }
-                            else
-                            {
-                                if (methodInfo.IsGenericMethod && parameterInfo.ParameterType.IsGenericParameter && genericArgTypes != null)
-                                {
-                                    genericArgTypes[parameterInfo.ParameterType.GenericParameterPosition] = args[index].Type;
-                                }
-                                args[index] = TypeConversion.Convert(args[index], parameterInfo.ParameterType);
-                            }
+                            args[index] = TypeConversion.Convert(args[index], parameterInfo.ParameterType);
                         }
 
-                        if (isRuntimeType)
-                        {
-                            if (methodInfo.IsGenericMethod)
-                            {
-                                return Expression.Call(type, membername, genericArgTypes, args.ToArray());
-                            }
-                            else
-                            {
-                                return Expression.Call(type, membername, null, args.ToArray());
-                            }
-                        }
-                        else
-                        {
-                            if (methodInfo.IsGenericMethod)
-                            {
-                                return Expression.Call(instance, membername, genericArgTypes, args.ToArray());
-                            }
-                            else
-                            {
-                                return Expression.Call(instance, methodInfo, args.ToArray());
-                            }
-                        }
-
+                        return Expression.Call(instance, methodInfo, args.ToArray());
                     }
-
 
                     var match = MethodResolution.GetExactMatch(type, instance, membername, args) ??
                                 MethodResolution.GetParamsMatch(type, instance, membername, args);
+
                     if (match != null)
                     {
                         return match;
