@@ -39,6 +39,13 @@ namespace ExpressionEvaluator
             return Expression = Parser.Parse(scopeParam, isCall);
         }
 
+        protected Expression BuildTree<TOut>(Expression scopeParam = null, bool isCall = false)
+        {
+            Parser.TypeRegistry = TypeRegistry;
+            Parser.ExpressionType = ExpressionType;
+            return Expression = Parser.Parse<TOut>(scopeParam, isCall);
+        }
+
         protected abstract void ClearCompiledMethod();
 
         protected void Parse()

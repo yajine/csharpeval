@@ -26,7 +26,7 @@ namespace ExpressionEvaluator
 
         public Func<TResult> Compile(bool isCall = false)
         {
-            if (Expression == null) Expression = WrapExpression(BuildTree(), false);
+            if (Expression == null) Expression = WrapExpression(BuildTree<TResult>(), false);
             return Expression.Lambda<Func<TResult>>(Expression).Compile();
         }
 
@@ -56,14 +56,14 @@ namespace ExpressionEvaluator
         public Func<object, TResult> ScopeCompile()
         {
             var scopeParam = Expression.Parameter(typeof(object), "scope");
-            if (Expression == null) Expression = WrapExpression(BuildTree(scopeParam), false);
+            if (Expression == null) Expression = WrapExpression(BuildTree<TResult>(scopeParam), false);
             return Expression.Lambda<Func<dynamic, TResult>>(Expression, new ParameterExpression[] { scopeParam }).Compile();
         }
 
         public Func<TParam, TResult> ScopeCompile<TParam>()
         {
             var scopeParam = Expression.Parameter(typeof(TParam), "scope");
-            if (Expression == null) Expression = WrapExpression(BuildTree(scopeParam), false);
+            if (Expression == null) Expression = WrapExpression(BuildTree<TResult>(scopeParam), false);
             return Expression.Lambda<Func<TParam, TResult>>(Expression, new ParameterExpression[] { scopeParam }).Compile();
         }
 
