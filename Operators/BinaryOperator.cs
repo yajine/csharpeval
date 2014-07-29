@@ -1,7 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
+#if !NET35
 using Microsoft.CSharp.RuntimeBinder;
+#endif //!NET35
 
 namespace ExpressionEvaluator.Operators
 {

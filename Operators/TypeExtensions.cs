@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NET35
+using System;
 using System.Dynamic;
 using System.Linq;
 
@@ -13,3 +14,4 @@ namespace ExpressionEvaluator.Operators
         }
     }
 }
+#endif //NET35

@@ -72,7 +72,9 @@ namespace ExpressionEvaluator
                     {"&&", new BinaryOperator("&&", 2, true, Expression.AndAlso, ExpressionType.AndAlso)},
                     {"||", new BinaryOperator("||", 1, true, Expression.OrElse, ExpressionType.OrElse)},
                     {":", new TernarySeparatorOperator(":", 2, false, OperatorCustomExpressions.TernarySeparator)},
+#if !NET35
                     {"=", new BinaryOperator("=", 1, false, Expression.Assign, ExpressionType.Assign)},
+#endif //!NET35
                     {"?", new TernaryOperator("?", 1, false, Expression.Condition)}
                 };
 
@@ -413,7 +415,7 @@ namespace ExpressionEvaluator
                                 }
                                 else
                                 {
-                                    _tokenQueue.Enqueue(new Token() { Value = TypeRegistry[token], IsType = true });
+                                    _tokenQueue.Enqueue(new Token() { Value = TypeRegistry[token], IsType = true, Type = TypeRegistry[token].GetType() });
                                 }
                             }
                             else
@@ -488,6 +490,10 @@ namespace ExpressionEvaluator
                                             if (_pstr.Substring(sc.Ptr, _ptr - sc.Ptr).Trim().Length > 0) lastmember.ArgCount++;
                                         }
                                     }
+                                    else
+                                    {
+                                        // most likely array accessor
+                                    }
                                     _opStack.Push(temp);
                                     pe = true;
                                     break;
@@ -522,13 +528,13 @@ namespace ExpressionEvaluator
                             {
                                 if (_pstr[_ptr] == '(') depth++;
                                 if (_pstr[_ptr] == ')') depth--;
-                                if (_pstr[_ptr] == ',') containsComma = true; 
+                                if (_pstr[_ptr] == ',') containsComma = true;
                                 _ptr++;
                                 if (depth == 0) break;
                             }
 
                             _ptr--;
-                            
+
                             if (depth != 0)
                                 throw new Exception("Parenthesis mismatch");
 
@@ -557,7 +563,7 @@ namespace ExpressionEvaluator
                             if (!isCast)
                             {
                                 _opStack.Push(new OpToken() { Value = "(", Ptr = curptr + 1 });
-                                
+
                                 _ptr = curptr + 1;
                             }
 

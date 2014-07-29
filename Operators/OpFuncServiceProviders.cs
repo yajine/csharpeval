@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq.Expressions;
 using ExpressionEvaluator.Tokens;
-using Microsoft.CSharp.RuntimeBinder;
 using System.Linq;
+#if !NET35
+using System.Dynamic;
+using Microsoft.CSharp.RuntimeBinder;
+#endif //!NET35
+
 
 namespace ExpressionEvaluator.Operators
 {
@@ -37,14 +40,18 @@ namespace ExpressionEvaluator.Operators
             Expression le = args.ExprStack.Pop();
             // perform implicit conversion on known types
 
+#if !NET35
             if (le.Type.IsDynamic())
             {
                 return DynamicUnaryOperatorFunc(le, args.Op.ExpressionType);
             }
             else
             {
+#endif //!NET35
                 return ((UnaryOperator) args.Op).Func(le);
+#if !NET35
             }
+#endif //!NET35
         }
 
         public static Expression BinaryOperatorFunc(
@@ -54,6 +61,7 @@ namespace ExpressionEvaluator.Operators
             Expression re = args.ExprStack.Pop();
             Expression le = args.ExprStack.Pop();
             // perform implicit conversion on known types
+#if !NET35
             var isDynamic = le.Type.GetInterfaces().Contains(typeof(IDynamicMetaObjectProvider)) ||
                 le.Type == typeof(Object);
 
@@ -64,12 +72,16 @@ namespace ExpressionEvaluator.Operators
             }
             else
             {
+#endif //!NET35
                 TypeConversion.Convert(ref le, ref re);
 
                 return ((BinaryOperator)args.Op).Func(le, re);
+#if !NET35
             }
+#endif //!NET35
         }
 
+#if !NET35
         private static Expression DynamicUnaryOperatorFunc(Expression le, ExpressionType expressionType)
         {
             var expArgs = new List<Expression>() { le };
@@ -95,6 +107,7 @@ namespace ExpressionEvaluator.Operators
 
             return Expression.Dynamic(binderM, typeof(object), expArgs);
         }
+#endif //!NET35
 
 
         public static Expression TernaryOperatorFunc(OpFuncArgs args)

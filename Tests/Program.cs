@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ExpressionEvaluator;
 
 namespace Tests
@@ -114,16 +108,20 @@ namespace Tests
 
         static void Main(string[] args)
         {
-            var x = new List<String>() { "Hello", "There", "World" };
-            dynamic scope = new ExpandoObject();
-            scope.x = x;
-            var p = scope.x[0];
+            //var x = new List<String>() { "Hello", "There", "World" };
+            //string[] x = new string[] { "Hello", "There", "World" };
+            //dynamic scope = new ExpandoObject();
+            //scope.x = x;
+            //var p = scope.x[0];
+            int x = 1;
+            int y = 2;
 
+            CompiledExpression c = new CompiledExpression() { StringToParse = "x + y == 3" };
+            c.RegisterType("x", x); 
+            c.RegisterType("y", y);
+            var f = c.Compile();
 
-            var c = new CompiledExpression() { StringToParse = "x[0] + ', ' + x[2]" };
-            var f = c.ScopeCompile();
-
-            Console.WriteLine(f(scope));
+            Console.WriteLine(f());
 
 
 

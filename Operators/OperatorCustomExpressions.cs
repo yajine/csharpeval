@@ -1,14 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+#if !NET35
+using System.Dynamic;
 using Microsoft.CSharp.RuntimeBinder;
 using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
+#endif
 
 namespace ExpressionEvaluator.Operators
 {
+    public class Tuple<T1, T2>
+    {
+        public T1 Item1 { get; set; }
+        public T2 Item2 { get; set; }
+
+        public Tuple(T1 item1, T2 item2)
+        {
+            Item1 = item1;
+            Item2 = item2;
+        }
+    }
+
     internal class OperatorCustomExpressions
     {
         /// <summary>
@@ -26,7 +40,9 @@ namespace ExpressionEvaluator.Operators
             Expression instance = null;
             Type type = null;
 
+#if !NET35
             var isDynamic = false;
+#endif //!NET35
 
             if (le.Type.Name == "RuntimeType")
             {
@@ -36,11 +52,14 @@ namespace ExpressionEvaluator.Operators
             {
                 type = le.Type;
                 instance = le;
+#if !NET35
                 isDynamic = type.IsDynamic();
+#endif //!NET35
             }
 
             if (isFunction)
             {
+#if !NET35
                 if (isDynamic)
                 {
                     var expArgs = new List<Expression> { instance };
@@ -59,81 +78,83 @@ namespace ExpressionEvaluator.Operators
                 }
                 else
                 {
-                    // TODO: Test overloaded methods with different types
+#endif //!NET35
+                // TODO: Test overloaded methods with different types
 
-                    // Look for an exact match
-                    var methodInfo = type.GetMethod(membername, argTypes.ToArray());
+                // Look for an exact match
+                var methodInfo = type.GetMethod(membername, argTypes.ToArray());
 
-                    if (methodInfo != null)
+                if (methodInfo != null)
+                {
+                    var parameterInfos = methodInfo.GetParameters();
+
+                    for (int i = 0; i < parameterInfos.Length; i++)
                     {
-                        var parameterInfos = methodInfo.GetParameters();
-
-                        for (int i = 0; i < parameterInfos.Length; i++)
-                        {
-                            args[i] = TypeConversion.Convert(args[i], parameterInfos[i].ParameterType);
-                        }
-
-                        return Expression.Call(instance, methodInfo, args);
+                        args[i] = TypeConversion.Convert(args[i], parameterInfos[i].ParameterType);
                     }
 
-                    // assume params
-
-                    var methodInfos = type.GetMethods().Where(x => x.Name == membername);
-                    var matchScore = new List<Tuple<MethodInfo, int>>();
-
-                    foreach (var info in methodInfos.OrderByDescending(m => m.GetParameters().Count()))
-                    {
-                        var parameterInfos = info.GetParameters();
-                        var lastParam = parameterInfos.Last();
-                        var newArgs = args.Take(parameterInfos.Length - 1).ToList();
-                        var paramArgs = args.Skip(parameterInfos.Length - 1).ToList();
-
-                        int i = 0;
-                        int k = 0;
-
-                        foreach (var expression in newArgs)
-                        {
-                            k += TypeConversion.CanConvert(expression.Type, parameterInfos[i].ParameterType);
-                            i++;
-                        }
-
-                        if (k > 0)
-                        {
-                            if (Attribute.IsDefined(lastParam, typeof(ParamArrayAttribute)))
-                            {
-                                k += paramArgs.Sum(arg => TypeConversion.CanConvert(arg.Type, lastParam.ParameterType.GetElementType()));
-                            }
-                        }
-
-                        matchScore.Add(new Tuple<MethodInfo, int>(info, k));
-                    }
-
-                    var info2 = matchScore.OrderBy(x => x.Item2).FirstOrDefault(x => x.Item2 >= 0);
-                    if (info2 != null)
-                    {
-                        var parameterInfos2 = info2.Item1.GetParameters();
-                        var lastParam2 = parameterInfos2.Last();
-                        var newArgs2 = args.Take(parameterInfos2.Length - 1).ToList();
-                        var paramArgs2 = args.Skip(parameterInfos2.Length - 1).ToList();
-
-
-                        for (int i = 0; i < parameterInfos2.Length - 1; i++)
-                        {
-                            newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos2[i].ParameterType);
-                        }
-
-                        var targetType = lastParam2.ParameterType.GetElementType();
-
-                        newArgs2.Add(Expression.NewArrayInit(targetType, paramArgs2.Select(x => TypeConversion.Convert(x, targetType))));
-                        return Expression.Call(instance, info2.Item1, newArgs2);
-                    }
-
+                    return Expression.Call(instance, methodInfo, args);
                 }
 
+                // assume params
+
+                var methodInfos = type.GetMethods().Where(x => x.Name == membername);
+                var matchScore = new List<Tuple<MethodInfo, int>>();
+
+                foreach (var info in methodInfos.OrderByDescending(m => m.GetParameters().Count()))
+                {
+                    var parameterInfos = info.GetParameters();
+                    var lastParam = parameterInfos.Last();
+                    var newArgs = args.Take(parameterInfos.Length - 1).ToList();
+                    var paramArgs = args.Skip(parameterInfos.Length - 1).ToList();
+
+                    int i = 0;
+                    int k = 0;
+
+                    foreach (var expression in newArgs)
+                    {
+                        k += TypeConversion.CanConvert(expression.Type, parameterInfos[i].ParameterType);
+                        i++;
+                    }
+
+                    if (k > 0)
+                    {
+                        if (Attribute.IsDefined(lastParam, typeof(ParamArrayAttribute)))
+                        {
+                            k += paramArgs.Sum(arg => TypeConversion.CanConvert(arg.Type, lastParam.ParameterType.GetElementType()));
+                        }
+                    }
+
+                    matchScore.Add(new Tuple<MethodInfo, int>(info, k));
+                }
+
+                var info2 = matchScore.OrderBy(x => x.Item2).FirstOrDefault(x => x.Item2 >= 0);
+                if (info2 != null)
+                {
+                    var parameterInfos2 = info2.Item1.GetParameters();
+                    var lastParam2 = parameterInfos2.Last();
+                    var newArgs2 = args.Take(parameterInfos2.Length - 1).ToList();
+                    var paramArgs2 = args.Skip(parameterInfos2.Length - 1).ToList();
+
+
+                    for (int i = 0; i < parameterInfos2.Length - 1; i++)
+                    {
+                        newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos2[i].ParameterType);
+                    }
+
+                    var targetType = lastParam2.ParameterType.GetElementType();
+
+                    newArgs2.Add(Expression.NewArrayInit(targetType, paramArgs2.Select(x => TypeConversion.Convert(x, targetType))));
+                    return Expression.Call(instance, info2.Item1, newArgs2);
+                }
+#if !NET35
+                }
+#endif //!NET35
             }
             else
             {
-                if (isDynamic)
+#if !NET35
+        if (isDynamic)
                 {
                     var binder = Binder.GetMember(
                         CSharpBinderFlags.None,
@@ -166,42 +187,46 @@ namespace ExpressionEvaluator.Operators
                 }
                 else
                 {
-                    Expression exp = null;
+#endif //!NET35
+                Expression exp = null;
 
-                    var propertyInfo = type.GetProperty(membername);
-                    if (propertyInfo != null)
+                var propertyInfo = type.GetProperty(membername);
+                if (propertyInfo != null)
+                {
+                    exp = Expression.Property(instance, propertyInfo);
+                }
+                else
+                {
+                    var fieldInfo = type.GetField(membername);
+                    if (fieldInfo != null)
                     {
-                        exp = Expression.Property(instance, propertyInfo);
-                    }
-                    else
-                    {
-                        var fieldInfo = type.GetField(membername);
-                        if (fieldInfo != null)
-                        {
-                            exp = Expression.Field(instance, fieldInfo);
-                        }
-                    }
-
-                    if (exp != null)
-                    {
-                        if (args.Count > 0)
-                        {
-                            return Expression.ArrayAccess(exp, args);
-                        }
-                        else
-                        {
-                            return exp;
-                        }
+                        exp = Expression.Field(instance, fieldInfo);
                     }
                 }
 
-
+                if (exp != null)
+                {
+                    if (args.Count > 0)
+                    {
+#if !NET35
+                        return Expression.ArrayAccess(exp, args);
+#else
+                        throw new NotSupportedException();
+#endif //!NET35
+                    }
+                    else
+                    {
+                        return exp;
+                    }
+                }
             }
 
+
+#if !NET35
+            }
+#endif //!NET35
             throw new Exception(string.Format("Member not found: {0}.{1}", le.Type.Name, membername));
         }
-
-
 
         /// <summary>
         /// Extends the Add Expression handler to handle string concatenation
@@ -237,7 +262,11 @@ namespace ExpressionEvaluator.Operators
                 le = Expression.Call(le, mi);
             }
 
+#if !NET35
             return Expression.ArrayAccess(le, re);
+#else
+            throw new NotSupportedException();
+#endif //!NET35
         }
 
         /// <summary>
