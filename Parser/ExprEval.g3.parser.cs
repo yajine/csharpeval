@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using Antlr.Runtime;
 using ExpressionEvaluator;
+using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
@@ -12,6 +13,7 @@ namespace ExpressionEvaluator.Parser
         private CompilerState compilerState = new CompilerState();
 
         public Expression Scope { get; set; }
+        public Expression SubScope { get; set; }
         public bool IsCall { get; set; }
         public LabelTarget ReturnTarget { get; set; }
         public bool HasReturn { get; private set; }
@@ -27,6 +29,54 @@ namespace ExpressionEvaluator.Parser
         //{
         //    Debug.WriteLine("Out: {0} {1}", ruleName, ruleIndex);
         //}
+
+        protected Expression GetPrimaryExpressionPart(PrimaryExpressionPart primary_expression_part2, ITokenStream input, Expression value, TypeOrGeneric method, bool throwsException = true)
+        {
+            if (primary_expression_part2.GetType() == typeof(AccessIdentifier))
+            {
+                if (input.LT(1).Text == "(")
+                {
+                    method = ((AccessIdentifier)primary_expression_part2).Value;
+                }
+                else
+                {
+                    value = ExpressionHelper.GetProperty(value, ((AccessIdentifier)primary_expression_part2).Value.Identifier);
+                    if (value == null && throwsException)
+                    {
+                        throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+                    }
+                }
+            }
+            else if (primary_expression_part2.GetType() == typeof(Brackets))
+            {
+                value = ExpressionHelper.GetPropertyIndex(value, ((Brackets)primary_expression_part2).Values);
+            }
+            else if (primary_expression_part2.GetType() == typeof(Arguments))
+            {
+                if (method != null)
+                {
+                    value = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, IsCall);
+                    if (value == null && throwsException)
+                    {
+                        throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+                    }
+                }
+                else
+                {
+                    // value = GetMethod(value, membername, ((Arguments)primary_expression_part2).Values);
+                }
+            }
+            else if (primary_expression_part2.GetType() == typeof(PostIncrement))
+            {
+                value = Expression.Assign(value, Expression.Increment(value));
+            }
+            else if (primary_expression_part2.GetType() == typeof(PostDecrement))
+            {
+                value = Expression.Assign(value, Expression.Decrement(value));
+            }
+
+            return value;
+        }
 
         public override void ReportError(RecognitionException e)
         {
@@ -64,6 +114,11 @@ namespace ExpressionEvaluator.Parser
                 {
                     var typeValue = (ValueType)result;
                     return Expression.Constant(typeValue.Value, typeValue.Type);
+                }
+                if (result.GetType() == typeof(DelegateType))
+                {
+                    var typeValue = (DelegateType)result;
+                    return Expression.Constant(typeValue.Value(), typeValue.Type);
                 }
                 return Expression.Constant(result);
             }

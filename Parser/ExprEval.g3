@@ -146,8 +146,28 @@ public primary_expression returns [Expression value]
 					$value = Scope;
 
 					// if initial identifier not found, assume Scope variable
-					 input.Rewind(savepoint);
-					 fakedot = true;
+					input.Rewind(savepoint);
+					fakedot = true;
+
+					$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, method, false);
+
+					if($value == null) 
+					{
+						if(SubScope != null)
+						{
+							$value = SubScope;
+
+							// if initial identifier not found, assume Scope variable
+							input.Rewind(savepoint);
+							fakedot = true;
+
+							$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, method);
+						}
+						else
+						{
+							throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+						}
+					}
 				}
 				else
 				{

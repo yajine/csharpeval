@@ -6,6 +6,8 @@ namespace ExpressionEvaluator
 {
     public class TypeRegistry : Dictionary<string, object>
     {
+        //Dictionary<string, DelegateType> parameterRegistry = new Dictionary<string, DelegateType>();
+
         public TypeRegistry()
         {
             //Add default types
@@ -70,6 +72,13 @@ namespace ExpressionEvaluator
             Add(identifier, new ValueType() { Type = type, Value = value });
         }
 
+        public void RegisterParameter(string identifier, Func<object> valueGetter)
+        {
+            var value = valueGetter();
+            var type = value != null ? value.GetType() : typeof(object);
+            Add(identifier, new DelegateType() { Type = type, Value = valueGetter });
+        }
+
         public void RegisterSymbol(string identifier, object value, Type type)
         {
             Add(identifier, new ValueType() { Type = type, Value = value });
@@ -77,6 +86,11 @@ namespace ExpressionEvaluator
 
     }
 
+    public class DelegateType
+    {
+        public Type Type { get; set; }
+        public Func<object> Value { get; set; }
+    }
 
     public class ValueType
     {

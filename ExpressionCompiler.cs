@@ -11,6 +11,8 @@ namespace ExpressionEvaluator
         public Expression Expression { get; set; }
         public CompiledExpressionType ExpressionType { get; set; }
         public LambdaExpression LambdaExpression { get; set; }
+        public string SubScope { get; set; }
+        public Type SubScopeType { get; set; }
 
         protected AntlrParser Parser = null;
         public TypeRegistry TypeRegistry { get; set; }
@@ -32,6 +34,8 @@ namespace ExpressionEvaluator
         {
             Parser.TypeRegistry = TypeRegistry;
             Parser.ExpressionType = ExpressionType;
+            Parser.SubScope = SubScope;
+            Parser.SubScopeType = SubScopeType;
             return Expression = Parser.Parse(scopeParam, isCall);
         }
 

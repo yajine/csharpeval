@@ -31,7 +31,21 @@ namespace ExpressionEvaluator.Parser
             var lexer = new ExprEvalLexer(input);
             var tokens = new TokenRewriteStream(lexer);
             if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
-            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall };
+
+            Expression subScope = null;
+            if (!string.IsNullOrEmpty(SubScope))
+            {
+                if (SubScopeType != null)
+                {
+                    subScope = Expression.Convert(Expression.Property(scope, SubScope), SubScopeType);
+                }
+                else
+                {
+                    subScope = Expression.Property(scope, SubScope);
+                }
+            }
+
+            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, SubScope = subScope };
             if (ExternalParameters != null)
             {
                 parser.ParameterList.Add(ExternalParameters);
@@ -62,5 +76,9 @@ namespace ExpressionEvaluator.Parser
 
         public List<ParameterExpression> ExternalParameters { get; set; }
         public Type ReturnType { get; set; }
+
+        public string SubScope { get; set; }
+
+        public Type SubScopeType { get; set; }
     }
 }

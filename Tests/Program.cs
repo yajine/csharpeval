@@ -120,6 +120,36 @@ namespace Tests
     {
         public dynamic Value;
     }
+
+    public interface IImportedValue
+    {
+        
+    }
+
+    public class ImportedValue : IImportedValue
+    {
+        
+    }
+
+    public class Test
+    {
+        public int Trend(IList<IImportedValue> test)
+        {
+            return 0;
+        }
+    }
+
+    public class Super
+    {
+        public int x { get; set; }
+        public object DataContext { get; set; }
+    }
+
+    public class Sub
+    {
+        public int y { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -131,6 +161,40 @@ namespace Tests
                 Console.WriteLine("Mono.Runtime detected");
             else
                 Console.WriteLine("Not Mono");
+
+            var sobj = new Sub() {y = 3};
+
+            var tt = new Super() { DataContext = sobj, x = 2 };
+
+
+            var ee = new CompiledExpression<int>() { StringToParse = "x + y" };
+            ee.SubScope = "DataContext";
+            ee.SubScopeType = sobj.GetType();
+
+            var ff = ee.ScopeCompile<Super>()(tt);
+
+
+
+            var exp1 = "var x = new List<IImportedValue>(); ";
+            exp1 += "for(int i = 0; i < 27; i++){";
+            exp1 += "x.Add(new ImportedValue());";
+            exp1 += "}";
+            exp1 += "Console.WriteLine(x.Count);";
+            exp1 += "int z = Trend(x);";
+            exp1 += "x.Count;";
+
+            var reg1 = new TypeRegistry();
+            reg1.RegisterType("ImportedValue", typeof(ImportedValue));
+            reg1.RegisterType("IImportedValue", typeof(IImportedValue));
+            reg1.RegisterType("List<IImportedValue>", typeof(List<IImportedValue>));
+            reg1.RegisterType("List<ImportedValue>", typeof(List<ImportedValue>));
+            reg1.RegisterType("Console", typeof(Console));
+            var test1 = new Test();
+            var x1 = new List<ImportedValue>();
+            var ce1 = new CompiledExpression<int>() { StringToParse = exp1, TypeRegistry = reg1, ExpressionType = CompiledExpressionType.StatementList };
+            var res1 = ce1.ScopeCompile<Test>()(test1);
+
+
 
             var exp = "@ATADJ( @MAX( @SUBTR(@PR( 987043 ) , @AMT( 913000 ) ) , @MULT( @PR( 987043 ) , 0.20f ) ) , 60f ) ";
             var util = new Utility();

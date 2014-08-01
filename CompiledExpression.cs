@@ -97,6 +97,10 @@ namespace ExpressionEvaluator
         {
             var scopeParam = Expression.Parameter(typeof(TParam), "scope");
             Expression = BuildTree(scopeParam, asCall);
+            if (typeof(TResult) == typeof(object) && Expression.Type != typeof(object) && Expression.Type != typeof(void))
+            {
+                Expression = Expression.Convert(Expression, typeof(object));
+            }
             return Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }).Compile();
         }
 
@@ -125,6 +129,8 @@ namespace ExpressionEvaluator
                 Parser.Global = value;
             }
         }
+
+
 
     }
 
