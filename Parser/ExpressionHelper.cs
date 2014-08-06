@@ -80,6 +80,18 @@ namespace ExpressionEvaluator.Parser
             var type = le.Type;
             var isDynamic = type.IsDynamicOrObject();
 
+            if (le.NodeType == ExpressionType.Call)
+            {
+                var mc = (MethodCallExpression) le;
+                if (mc.Method.Name == "getVar")
+                {
+                    var ce = (ConstantExpression) mc.Arguments[0];
+                    var method1 = new TypeOrGeneric() { Identifier = "setVar" };
+                    var args1 = new List<Expression>() { Expression.Constant(ce.Value, typeof(string)), Expression.Convert(re, typeof(object)) };
+                    return GetMethod(mc.Object, method1, args1, true);
+                }
+            }
+
             if (type.IsDynamic() || le.NodeType == ExpressionType.Dynamic)
             {
                 var dle = (DynamicExpression)le;

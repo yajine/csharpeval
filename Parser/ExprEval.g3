@@ -161,7 +161,28 @@ public primary_expression returns [Expression value]
 							input.Rewind(savepoint);
 							fakedot = true;
 
-							$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, method);
+							$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, method, false);
+
+							if($value == null) 
+							{
+								$value = Scope;
+								
+								var text = $primary_expression_start.text;
+
+								var method1 = new TypeOrGeneric() { Identifier = "getVar" };
+								var args1 = new List<Expression>() { Expression.Constant(text, typeof(string)) };
+								
+								var pe = (ParameterExpression)$value;
+
+								var type1 = GetPropertyType(Scope.Type, text);
+
+								$value = Expression.Convert(ExpressionHelper.GetMethod($value, method1, args1, false), type1);
+
+								if($value == null)
+								{
+									throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+								}
+							}
 						}
 						else
 						{

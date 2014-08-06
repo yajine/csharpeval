@@ -143,6 +143,16 @@ namespace Tests
     {
         public int x { get; set; }
         public object DataContext { get; set; }
+
+        public object getVar(string name)
+        {
+            return 1;
+        }
+
+        public void setVar(string name, object value)
+        {
+            var x = value;
+        }
     }
 
     public class Sub
@@ -167,11 +177,11 @@ namespace Tests
             var tt = new Super() { DataContext = sobj, x = 2 };
 
 
-            var ee = new CompiledExpression<int>() { StringToParse = "x + y" };
+            var ee = new CompiledExpression<int>() { StringToParse = "z = (int)z + 1" };
             ee.SubScope = "DataContext";
             ee.SubScopeType = sobj.GetType();
 
-            var ff = ee.ScopeCompile<Super>()(tt);
+           ee.ScopeCompileCall<Super>()(tt);
 
 
 

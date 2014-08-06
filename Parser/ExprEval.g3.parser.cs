@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
 using Antlr.Runtime;
 using ExpressionEvaluator;
 using ExpressionEvaluator.Parser.Expressions;
@@ -29,6 +30,13 @@ namespace ExpressionEvaluator.Parser
         //{
         //    Debug.WriteLine("Out: {0} {1}", ruleName, ruleIndex);
         //}
+
+        protected Type GetPropertyType(object instance, string propertyName)
+        {
+            var methodInfo = instance.GetType().GetMethod("getType", BindingFlags.Instance);
+            return (Type)methodInfo.Invoke(instance, new object[] { propertyName });
+        }
+
 
         protected Expression GetPrimaryExpressionPart(PrimaryExpressionPart primary_expression_part2, ITokenStream input, Expression value, TypeOrGeneric method, bool throwsException = true)
         {
