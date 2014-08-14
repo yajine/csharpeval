@@ -7,7 +7,7 @@ namespace ExpressionEvaluator.Parser
     internal class TypeConversion
     {
         private static Dictionary<Type, List<Type>> ImplicitNumericConversions = new Dictionary<Type, List<Type>>();
-        private static List<Type> NumericTypes = new List<Type>();
+
 
         //public static void ConvertType(ExpressionType expressionType, ref Expression a, ref Expression b, Type type, Type[] otherTypes, Type[] invalidTypes, Type targetType)
         //{
@@ -83,6 +83,14 @@ namespace ExpressionEvaluator.Parser
             {
                 if (Instance._typePrecedence[le.Type] < Instance._typePrecedence[type]) return Expression.Convert(le, type);
             }
+            if (le.Type.IsNullable())
+            {
+                le = Expression.Property(le, "Value");
+            }
+            if (type == typeof (object))
+            {
+                return Expression.Convert(le, type);
+            }
             return le;
         }
 
@@ -150,18 +158,26 @@ namespace ExpressionEvaluator.Parser
         {
             if (dest.Type != src.Type)
             {
-                if (IsNumericType(dest.Type) && IsNumericType(src.Type))
+                if (dest.Type.IsNumericType() && src.Type.IsNumericType())
                 {
                     src = ImplicitNumericConversion(src, dest.Type);
                 }
                 src = NullLiteralConverion(dest, src);
                 src = ReferenceConversion(dest, src);
                 src = BoxingConversion(dest, src);
+                src = DynamicConversion(dest, src);
             }
             return src;
         }
 
-
+        public static Expression DynamicConversion(Expression dest, Expression src)
+        {
+            if (src.Type.IsObject())
+            {
+                return Expression.Convert(src, dest.Type);
+            }
+            return src;
+        }
 
         // 6.1.2 Implicit numeric conversions
 
@@ -178,11 +194,6 @@ namespace ExpressionEvaluator.Parser
             return src;
         }
 
-        public static bool IsNumericType(Type t)
-        {
-            return NumericTypes.Contains(t);
-        }
-
         TypeConversion()
         {
             _typePrecedence = new Dictionary<Type, int>
@@ -195,21 +206,6 @@ namespace ExpressionEvaluator.Parser
                     {typeof (long), 5},
                     {typeof (float), 6},
                     {typeof (double), 7}
-                };
-
-            NumericTypes = new List<Type>()
-                {
-                    typeof (sbyte),
-                    typeof (byte),
-                    typeof (short),
-                    typeof (ushort),
-                    typeof (int),
-                    typeof (uint),
-                    typeof (long),
-                    typeof (ulong),
-                    typeof (char),
-                    typeof (float),
-                    typeof (double)
                 };
 
             ImplicitNumericConversions.Add(typeof(sbyte), new List<Type>() { typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal) });

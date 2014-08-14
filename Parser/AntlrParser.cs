@@ -14,6 +14,8 @@ namespace ExpressionEvaluator.Parser
         public Expression Expression { get; set; }
 
         public TypeRegistry TypeRegistry { get; set; }
+        
+        public Dictionary<string, Type> DynamicTypeLookup { get; set; }
 
         public AntlrParser()
         {
@@ -32,20 +34,8 @@ namespace ExpressionEvaluator.Parser
             var tokens = new TokenRewriteStream(lexer);
             if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
 
-            Expression subScope = null;
-            if (!string.IsNullOrEmpty(SubScope))
-            {
-                if (SubScopeType != null)
-                {
-                    subScope = Expression.Convert(Expression.Property(scope, SubScope), SubScopeType);
-                }
-                else
-                {
-                    subScope = Expression.Property(scope, SubScope);
-                }
-            }
 
-            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, SubScope = subScope };
+            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, DynamicTypeLookup = DynamicTypeLookup };
             if (ExternalParameters != null)
             {
                 parser.ParameterList.Add(ExternalParameters);
@@ -77,8 +67,5 @@ namespace ExpressionEvaluator.Parser
         public List<ParameterExpression> ExternalParameters { get; set; }
         public Type ReturnType { get; set; }
 
-        public string SubScope { get; set; }
-
-        public Type SubScopeType { get; set; }
     }
 }

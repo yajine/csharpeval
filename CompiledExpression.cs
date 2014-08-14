@@ -5,6 +5,21 @@ using ExpressionEvaluator.Parser;
 
 namespace ExpressionEvaluator
 {
+    public class ParseException : Exception
+    {
+        public string Expression { get; private set; }
+        
+        public ParseException(string expression, string message) : base(message)
+        {
+            Expression = expression;
+        }
+
+        public ParseException(string expression, string message, Exception innerException)
+            : base(message, innerException)
+        {
+            Expression = expression;
+        }
+    }
 
     /// <summary>
     /// Creates compiled expressions with return values that are of type T
@@ -13,7 +28,7 @@ namespace ExpressionEvaluator
     {
         private Func<TResult> _compiledMethod = null;
         private Action _compiledAction = null;
-
+       
         public CompiledExpression()
         {
             Parser = new AntlrParser();
@@ -28,8 +43,15 @@ namespace ExpressionEvaluator
 
         public Func<TResult> Compile(bool isCall = false)
         {
-            Expression = WrapExpression(BuildTree(), false);
-            return Expression.Lambda<Func<TResult>>(Expression).Compile();
+            try
+            {
+                Expression = WrapExpression(BuildTree(), false);
+                return Expression.Lambda<Func<TResult>>(Expression).Compile();
+            }
+            catch (Exception ex)
+            {
+                throw new ParseException(Parser.ExpressionString, "An error occured while parsing the expression. See the InnerException property for details", ex);
+            }
         }
 
         public Expression<T> GenerateLambda<T, TParam>(bool withScope, bool asCall)
@@ -95,13 +117,20 @@ namespace ExpressionEvaluator
 
         private T CompileWithScope<T, TParam>(bool asCall)
         {
-            var scopeParam = Expression.Parameter(typeof(TParam), "scope");
-            Expression = BuildTree(scopeParam, asCall);
-            if (typeof(TResult) == typeof(object) && Expression.Type != typeof(object) && Expression.Type != typeof(void))
+            try
             {
-                Expression = Expression.Convert(Expression, typeof(object));
+                var scopeParam = Expression.Parameter(typeof(TParam), "scope");
+                Expression = BuildTree(scopeParam, asCall);
+                if (typeof(TResult) == typeof(object) && Expression.Type != typeof(object) && Expression.Type != typeof(void))
+                {
+                    Expression = Expression.Convert(Expression, typeof(object));
+                }
+                return Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }).Compile();
             }
-            return Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }).Compile();
+            catch (Exception ex)
+            {
+                throw new ParseException(Parser.ExpressionString, "An error occured while parsing the expression. See the InnerException property for details", ex);
+            }
         }
 
         protected override void ClearCompiledMethod()

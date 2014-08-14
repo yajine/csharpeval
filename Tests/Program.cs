@@ -123,12 +123,12 @@ namespace Tests
 
     public interface IImportedValue
     {
-        
+
     }
 
     public class ImportedValue : IImportedValue
     {
-        
+
     }
 
     public class Test
@@ -144,14 +144,36 @@ namespace Tests
         public int x { get; set; }
         public object DataContext { get; set; }
 
+        public Dictionary<string, object> vars = new Dictionary<string, object>();
+
+        public Type getType(string name)
+        {
+            return typeof(int);
+        }
+
         public object getVar(string name)
         {
-            return 1;
+            if (vars.ContainsKey(name))
+            {
+                return vars[name];
+            }
+            else
+            {
+                vars.Add(name, null);
+                return null;
+            }
         }
 
         public void setVar(string name, object value)
         {
-            var x = value;
+            if (vars.ContainsKey(name))
+            {
+                vars[name] = value;
+            }
+            else
+            {
+                vars.Add(name, value);
+            }
         }
     }
 
@@ -172,16 +194,16 @@ namespace Tests
             else
                 Console.WriteLine("Not Mono");
 
-            var sobj = new Sub() {y = 3};
+            var sobj = new Sub() { y = 3 };
 
             var tt = new Super() { DataContext = sobj, x = 2 };
 
+            tt.setVar("z", 1);
 
-            var ee = new CompiledExpression<int>() { StringToParse = "z = (int)z + 1" };
-            ee.SubScope = "DataContext";
-            ee.SubScopeType = sobj.GetType();
 
-           ee.ScopeCompileCall<Super>()(tt);
+            var ee = new CompiledExpression<int>() { StringToParse = "z + 1", DynamicTypeLookup = new Dictionary<string, Type>() };
+            ee.DynamicTypeLookup.Add("z", typeof(float));
+            ee.ScopeCompileCall<Super>()(tt);
 
 
 

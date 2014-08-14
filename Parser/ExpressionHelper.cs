@@ -88,7 +88,7 @@ namespace ExpressionEvaluator.Parser
                     var ce = (ConstantExpression) mc.Arguments[0];
                     var method1 = new TypeOrGeneric() { Identifier = "setVar" };
                     var args1 = new List<Expression>() { Expression.Constant(ce.Value, typeof(string)), Expression.Convert(re, typeof(object)) };
-                    return GetMethod(mc.Object, method1, args1, true);
+                    return GetMethod(mc.Object, method1, args1, false);
                 }
             }
 
@@ -780,7 +780,7 @@ namespace ExpressionEvaluator.Parser
             else
             {
                 re = TypeConversion.ImplicitConversion(le, re);
-
+                le = TypeConversion.DynamicConversion(re, le);
                 return GetBinaryOperator(le, re, expressionType);
             }
         }
@@ -988,6 +988,7 @@ namespace ExpressionEvaluator.Parser
             }
 
             // perform implicit conversion on known types ???
+            condition = TypeConversion.Convert(condition, typeof(bool));
             TypeConversion.Convert(ref ifFalse, ref ifTrue);
             return Expression.Condition(condition, ifTrue, ifFalse);
         }

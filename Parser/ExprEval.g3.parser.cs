@@ -14,11 +14,13 @@ namespace ExpressionEvaluator.Parser
         private CompilerState compilerState = new CompilerState();
 
         public Expression Scope { get; set; }
-        public Expression SubScope { get; set; }
+
         public bool IsCall { get; set; }
         public LabelTarget ReturnTarget { get; set; }
         public bool HasReturn { get; private set; }
         public TypeRegistry TypeRegistry { get; set; }
+
+        public Dictionary<string, Type> DynamicTypeLookup { get; set; }
 
         //partial void EnterRule(string ruleName, int ruleIndex)
         //{
@@ -31,11 +33,16 @@ namespace ExpressionEvaluator.Parser
         //    Debug.WriteLine("Out: {0} {1}", ruleName, ruleIndex);
         //}
 
-        protected Type GetPropertyType(object instance, string propertyName)
-        {
-            var methodInfo = instance.GetType().GetMethod("getType", BindingFlags.Instance);
-            return (Type)methodInfo.Invoke(instance, new object[] { propertyName });
-        }
+        //protected Type GetPropertyType(Expression expression, string propertyName)
+        //{
+        //    var pe = (ParameterExpression) expression;   
+        //    var methodInfo = pe.Type.GetMethod("getType", BindingFlags.Instance);
+        //    if (methodInfo != null)
+        //    {
+        //        return (Type)methodInfo.Invoke(pe., new object[] { propertyName });
+        //    }
+        //    return null;
+        //}
 
 
         protected Expression GetPrimaryExpressionPart(PrimaryExpressionPart primary_expression_part2, ITokenStream input, Expression value, TypeOrGeneric method, bool throwsException = true)
@@ -63,7 +70,7 @@ namespace ExpressionEvaluator.Parser
             {
                 if (method != null)
                 {
-                    value = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, IsCall);
+                    value = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, false);
                     if (value == null && throwsException)
                     {
                         throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
