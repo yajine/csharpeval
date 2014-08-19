@@ -141,10 +141,17 @@ namespace Tests
 
     public class Super
     {
-        public int x { get; set; }
+        public int x { get; set; }        
+        public bool? y { get; set; }
+        public bool z { get; set; }
         public object DataContext { get; set; }
 
         public Dictionary<string, object> vars = new Dictionary<string, object>();
+
+        public int nullable(int? value)
+        {
+            return value.Value;
+        }
 
         public Type getType(string name)
         {
@@ -196,14 +203,17 @@ namespace Tests
 
             var sobj = new Sub() { y = 3 };
 
-            var tt = new Super() { DataContext = sobj, x = 2 };
+            var tt = new Super() { DataContext = sobj, x = 2, y = true , z = true };
 
             tt.setVar("z", 1);
 
+            //var a = tt.y && tt.z;
 
-            var ee = new CompiledExpression<int>() { StringToParse = "z + 1", DynamicTypeLookup = new Dictionary<string, Type>() };
+
+            var ee = new CompiledExpression<bool>() { StringToParse = "y && z", DynamicTypeLookup = new Dictionary<string, Type>() };
             ee.DynamicTypeLookup.Add("z", typeof(float));
-            ee.ScopeCompileCall<Super>()(tt);
+            var xx = ee.ScopeCompile<Super>();
+            var yx = xx(tt);
 
 
 

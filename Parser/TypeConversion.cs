@@ -83,9 +83,13 @@ namespace ExpressionEvaluator.Parser
             {
                 if (Instance._typePrecedence[le.Type] < Instance._typePrecedence[type]) return Expression.Convert(le, type);
             }
-            if (le.Type.IsNullable())
+            if (le.Type.IsNullable() && Nullable.GetUnderlyingType(le.Type) == type)
             {
                 le = Expression.Property(le, "Value");
+            }
+            if (type.IsNullable() && Nullable.GetUnderlyingType(type) == le.Type)
+            {
+                le = Expression.Convert(le, type);
             }
             if (type == typeof (object))
             {
@@ -142,6 +146,22 @@ namespace ExpressionEvaluator.Parser
             return src;
         }
 
+
+        //6.1.4 Nullable Type conversions
+        public static Expression NullableConverion(Expression dest, Expression src)
+        {
+            if (src.Type.IsNullable() && Nullable.GetUnderlyingType(src.Type) == dest.Type)
+            {
+                src = Expression.Property(src, "Value");
+            }
+            if (dest.Type.IsNullable() && Nullable.GetUnderlyingType(dest.Type) == src.Type)
+            {
+                src = Expression.Convert(src, dest.Type);
+            }
+            return src;
+        }
+
+
         //        6.1.5 Null literal conversions
         //An implicit conversion exists from the null literal to any nullable type. This conversion produces the null value (§4.1.10) of the given nullable type.
         public static Expression NullLiteralConverion(Expression dest, Expression src)
@@ -162,6 +182,7 @@ namespace ExpressionEvaluator.Parser
                 {
                     src = ImplicitNumericConversion(src, dest.Type);
                 }
+                src = NullableConverion(dest, src);
                 src = NullLiteralConverion(dest, src);
                 src = ReferenceConversion(dest, src);
                 src = BoxingConversion(dest, src);

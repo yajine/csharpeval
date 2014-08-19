@@ -22,6 +22,8 @@ namespace ExpressionEvaluator.Parser
 
         public Dictionary<string, Type> DynamicTypeLookup { get; set; }
 
+        private Stack<TypeOrGeneric> methodStack = new Stack<TypeOrGeneric>();
+
         //partial void EnterRule(string ruleName, int ruleIndex)
         //{
         //    base.TraceIn(ruleName, ruleIndex);
@@ -45,13 +47,13 @@ namespace ExpressionEvaluator.Parser
         //}
 
 
-        protected Expression GetPrimaryExpressionPart(PrimaryExpressionPart primary_expression_part2, ITokenStream input, Expression value, TypeOrGeneric method, bool throwsException = true)
+        protected Expression GetPrimaryExpressionPart(PrimaryExpressionPart primary_expression_part2, ITokenStream input, Expression value, bool throwsException = true)
         {
             if (primary_expression_part2.GetType() == typeof(AccessIdentifier))
             {
                 if (input.LT(1).Text == "(")
                 {
-                    method = ((AccessIdentifier)primary_expression_part2).Value;
+                    methodStack.Push(((AccessIdentifier)primary_expression_part2).Value);
                 }
                 else
                 {
@@ -68,8 +70,9 @@ namespace ExpressionEvaluator.Parser
             }
             else if (primary_expression_part2.GetType() == typeof(Arguments))
             {
-                if (method != null)
+                if (methodStack.Count > 0)
                 {
+                    var method = methodStack.Pop();
                     value = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, false);
                     if (value == null && throwsException)
                     {

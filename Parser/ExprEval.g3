@@ -129,7 +129,6 @@ public class_member_declaration:
 
 public primary_expression returns [Expression value]
 @init{
-	TypeOrGeneric method = null;
 	int savepoint = 0;
 }: 
     ('this'    brackets) => 'this'   brackets   (primary_expression_part)*
@@ -149,7 +148,7 @@ public primary_expression returns [Expression value]
 					input.Rewind(savepoint);
 					fakedot = true;
 
-					$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, method, false);
+					$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, false);
 
 					if($value == null) 
 					{
@@ -189,7 +188,7 @@ public primary_expression returns [Expression value]
 			{
 				if (input.LT(1).Text == "(")
 				{
-                    method = ((AccessIdentifier)$primary_expression_part.value).Value;
+                    methodStack.Push(((AccessIdentifier)$primary_expression_part.value).Value);
                 }
 				else
 				{
@@ -206,8 +205,9 @@ public primary_expression returns [Expression value]
 			}
 			else if($primary_expression_part.value.GetType() == typeof(Arguments))
 			{
-				if(method!=null)
+				if(methodStack.Count > 0)
 				{
+					var method = methodStack.Pop();
 					$value = ExpressionHelper.GetMethod($value, method, ((Arguments)$primary_expression_part.value).Values, false);
 					if($value==null)
 					{
