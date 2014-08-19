@@ -136,98 +136,58 @@ public primary_expression returns [Expression value]
     | { savepoint = input.Mark(); } 
 		primary_expression_start 
 		{ 
-			$value = $primary_expression_start.value; 
+$value = $primary_expression_start.value; 
 	
-			// Expression evaluator customization:		
-			if($value == null){
-				if(Scope != null)
-				{
-					$value = Scope;
+// Expression evaluator customization:		
+if ($value == null) 
+{
+	if (Scope != null)
+	{
+		$value = Scope;
 
-					// if initial identifier not found, assume Scope variable
-					input.Rewind(savepoint);
-					fakedot = true;
+		// if initial identifier not found, assume Scope variable
+		input.Rewind(savepoint);
+		fakedot = true;
 
-					$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, false);
+		$value = GetPrimaryExpressionPart(primary_expression_part(), input, $value, false);
 
-					if($value == null) 
-					{
+		if($value == null) 
+		{
 
-						$value = Scope;
+			$value = Scope;
 								
-						var text = $primary_expression_start.text;
+			var text = $primary_expression_start.text;
 
-						var method1 = new TypeOrGeneric() { Identifier = "getVar" };
-						var args1 = new List<Expression>() { Expression.Constant(text, typeof(string)) };
-						if(DynamicTypeLookup != null && DynamicTypeLookup.ContainsKey(text))
-						{
-							var type1 = DynamicTypeLookup[text];
-							$value = Expression.Convert(ExpressionHelper.GetMethod($value, method1, args1, false), type1);
-						} 
-						else
-						{		
-							$value = ExpressionHelper.GetMethod($value, method1, args1, false);
-						}
+			var method1 = new TypeOrGeneric() { Identifier = "getVar" };
+			var args1 = new List<Expression>() { Expression.Constant(text, typeof(string)) };
 
-						if($value == null)
-						{
-							throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
-						}
-
-					}
-				}
-				else
-				{
-					throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
-				}
+			if(DynamicTypeLookup != null && DynamicTypeLookup.ContainsKey(text))
+			{
+				var type1 = DynamicTypeLookup[text];
+				$value = Expression.Convert(ExpressionHelper.GetMethod($value, method1, args1, false), type1);
+			} 
+			else
+			{		
+				$value = ExpressionHelper.GetMethod($value, method1, args1, false);
 			}
+
+			if($value == null)
+			{
+				throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+			}
+
+		}
+	}
+	else
+	{
+		throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+	}
+}
 		}  
 		(primary_expression_part
 		{ 
-			if($primary_expression_part.value.GetType() == typeof(AccessIdentifier))
-			{
-				if (input.LT(1).Text == "(")
-				{
-                    methodStack.Push(((AccessIdentifier)$primary_expression_part.value).Value);
-                }
-				else
-				{
-                    $value = ExpressionHelper.GetProperty($value, ((AccessIdentifier)$primary_expression_part.value).Value.Identifier);
-					if($value==null)
-					{
-						throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
-					}
-                }
-			}
-			else if($primary_expression_part.value.GetType() == typeof(Brackets))
-			{
-				$value = ExpressionHelper.GetPropertyIndex($value, ((Brackets)$primary_expression_part.value).Values);
-			}
-			else if($primary_expression_part.value.GetType() == typeof(Arguments))
-			{
-				if(methodStack.Count > 0)
-				{
-					var method = methodStack.Pop();
-					$value = ExpressionHelper.GetMethod($value, method, ((Arguments)$primary_expression_part.value).Values, false);
-					if($value==null)
-					{
-						throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
-					}
-				}
-				else
-				{
-					// $value = GetMethod($value, membername, ((Arguments)$primary_expression_part.value).Values);
-				}
-			}
-			else if($primary_expression_part.value.GetType() == typeof(PostIncrement))
-			{
-			    $value = Expression.Assign(value, Expression.Increment($value));
-			}
-			else if($primary_expression_part.value.GetType() == typeof(PostDecrement))
-			{
-			    $value = Expression.Assign(value, Expression.Decrement($value));
-			}
-			 fakedot = false;
+$value = GetPrimaryExpressionPart($primary_expression_part.value, input, $value);
+fakedot = false;
 		})* 
     | 'new' (   (object_creation_expression   ('.'|'->'|'[')) => 
                     object_creation_expression   (primary_expression_part)+         // new Foo(arg, arg).Member
@@ -545,7 +505,7 @@ public assignment returns [Expression value]:
     unary_expression   assignment_operator   expression { 
 		switch($assignment_operator.text) {
 			case "=":	
-				$value = ExpressionHelper.Assign($unary_expression.value, $expression.value); 
+				$value = ExpressionHelper.Assign($unary_expression.value, $expression.value, DynamicTypeLookup); 
 				break;
 			case "+=":
 				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.AddAssign); 

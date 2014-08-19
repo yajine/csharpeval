@@ -141,12 +141,13 @@ namespace Tests
 
     public class Super
     {
-        public int x { get; set; }        
+        public int x { get; set; }
         public bool? y { get; set; }
         public bool z { get; set; }
         public object DataContext { get; set; }
 
         public Dictionary<string, object> vars = new Dictionary<string, object>();
+        public Dictionary<string, Type> types = new Dictionary<string, Type>();
 
         public int nullable(int? value)
         {
@@ -155,7 +156,7 @@ namespace Tests
 
         public Type getType(string name)
         {
-            return typeof(int);
+            return types[name];
         }
 
         public object getVar(string name)
@@ -181,6 +182,20 @@ namespace Tests
             {
                 vars.Add(name, value);
             }
+
+            setType(name, value.GetType());
+        }
+
+        private void setType(string name, Type type)
+        {
+            if (types.ContainsKey(name))
+            {
+                types[name] = type;
+            }
+            else
+            {
+                types.Add(name, type);
+            }
         }
     }
 
@@ -203,15 +218,15 @@ namespace Tests
 
             var sobj = new Sub() { y = 3 };
 
-            var tt = new Super() { DataContext = sobj, x = 2, y = true , z = true };
+            var tt = new Super() { DataContext = sobj, x = 2, y = true, z = true };
 
             tt.setVar("z", 1);
 
             //var a = tt.y && tt.z;
 
 
-            var ee = new CompiledExpression<bool>() { StringToParse = "y && z", DynamicTypeLookup = new Dictionary<string, Type>() };
-            ee.DynamicTypeLookup.Add("z", typeof(float));
+            var ee = new CompiledExpression<bool>() { StringToParse = "test = x > 1; test2 = test && true; test2;", ExpressionType = CompiledExpressionType.StatementList, DynamicTypeLookup = tt.types };
+           // ee.DynamicTypeLookup.Add("z", typeof(float));
             var xx = ee.ScopeCompile<Super>();
             var yx = xx(tt);
 
@@ -235,7 +250,6 @@ namespace Tests
             var x1 = new List<ImportedValue>();
             var ce1 = new CompiledExpression<int>() { StringToParse = exp1, TypeRegistry = reg1, ExpressionType = CompiledExpressionType.StatementList };
             var res1 = ce1.ScopeCompile<Test>()(test1);
-
 
 
             var exp = "@ATADJ( @MAX( @SUBTR(@PR( 987043 ) , @AMT( 913000 ) ) , @MULT( @PR( 987043 ) , 0.20f ) ) , 60f ) ";

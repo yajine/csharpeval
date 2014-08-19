@@ -75,7 +75,7 @@ namespace ExpressionEvaluator.Parser
 
         }
 
-        public static Expression Assign(Expression le, Expression re)
+        public static Expression Assign(Expression le, Expression re, Dictionary<string, Type> dynamicTypeLookup = null)
         {
             var type = le.Type;
             var isDynamic = type.IsDynamicOrObject();
@@ -87,7 +87,18 @@ namespace ExpressionEvaluator.Parser
                 {
                     var ce = (ConstantExpression) mc.Arguments[0];
                     var method1 = new TypeOrGeneric() { Identifier = "setVar" };
-                    var args1 = new List<Expression>() { Expression.Constant(ce.Value, typeof(string)), Expression.Convert(re, typeof(object)) };
+                    var args1 = new List<Expression>() { Expression.Constant(ce.Value, typeof(string)), re };
+                    if (dynamicTypeLookup != null)
+                    {
+                        if (dynamicTypeLookup.ContainsKey((string) ce.Value))
+                        {
+                            dynamicTypeLookup[(string)ce.Value] = re.Type;
+                        }
+                        else
+                        {
+                            dynamicTypeLookup.Add((string)ce.Value, re.Type);
+                        }
+                    }
                     return GetMethod(mc.Object, method1, args1, false);
                 }
             }
