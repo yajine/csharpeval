@@ -465,7 +465,7 @@ namespace ExpressionEvaluator.Parser
             return null;
         }
 
-        // 7.6.5.1
+        // 7.5.3.1
         public static List<MemberInfo> GetApplicableMembers(Type type, TypeOrGeneric M, List<Expression> A)
         {
             var candidates = GetCandidateMembers(type, M.Identifier);

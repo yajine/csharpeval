@@ -202,6 +202,11 @@ namespace Tests
     public class Sub
     {
         public int y { get; set; }
+        public List<int> x { get; set; }
+        public int z(IEnumerable<Sub> sub)
+        {
+            return 1;
+        }
     }
 
     class Program
@@ -223,13 +228,19 @@ namespace Tests
             tt.setVar("z", 1);
 
             //var a = tt.y && tt.z;
-
+            var nn = new Sub() {x = new List<int>() {1, 2, 3, 4, 5}};
+            object aa = new List<Sub>();
 
             var ee = new CompiledExpression<bool>() { StringToParse = "test = x > 1; test2 = test && true; test2;", ExpressionType = CompiledExpressionType.StatementList, DynamicTypeLookup = tt.types };
            // ee.DynamicTypeLookup.Add("z", typeof(float));
             var xx = ee.ScopeCompile<Super>();
             var yx = xx(tt);
-
+            
+            var rr = new CompiledExpression<int>() { StringToParse = "z(aa)", ExpressionType = CompiledExpressionType.Expression, TypeRegistry = new TypeRegistry() };
+            // ee.DynamicTypeLookup.Add("z", typeof(float));
+            rr.TypeRegistry.Add("aa", aa);
+            var uu = rr.ScopeCompile<Sub>();
+            var ff = uu(nn);
 
 
             var exp1 = "var x = new List<IImportedValue>(); ";

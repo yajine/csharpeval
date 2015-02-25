@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ExpressionEvaluator.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ExpressionEvaluator;
@@ -72,13 +73,91 @@ namespace ExpressionEvaluator.Tests
         //
         #endregion
 
+        private class Helper
+        {
+            public int availableMethod(int someParameter)
+            {
+                return someParameter + 1;
+            }
+
+            public int availableProperty { get; set; }
+        }
+
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        public void UnavailableMethodThrowsException()
+        {
+            try
+            {
+                var str = "var x = helper.availableMethod(someparameter);\r\nvar y = helper.unavailableMethod(someparameter);";
+                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = CompiledExpressionType.StatementList };
+                var helper = new Helper();
+                var someparameter = 1;
+                c.TypeRegistry.RegisterSymbol("helper", helper);
+                c.TypeRegistry.RegisterSymbol("someparameter", someparameter);
+                var ret = c.Eval();
+                Assert.Fail();
+            }
+            catch (ParseException exception)
+            {
+                var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
+                var m = regex.Match(((ExpressionParseException)exception.InnerException).Message);
+                Assert.AreEqual(m.Groups[1].Value, "unavailableMethod");
+                Assert.AreEqual(m.Groups[2].Value, "Helper");
+            }
+        }
+
+        [TestMethod]
+        public void UnavailablePropertyThrowsException()
+        {
+            try
+            {
+                var str = "var x = helper.availableProperty;\r\nvar y = helper.unavailableProperty;";
+                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = CompiledExpressionType.StatementList };
+                var helper = new Helper() { availableProperty = 1 };
+                var someparameter = 1;
+                c.TypeRegistry.RegisterSymbol("helper", helper);
+                var ret = c.Eval();
+                Assert.Fail();
+            }
+            catch (ParseException exception)
+            {
+                var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
+                var m = regex.Match(((ExpressionParseException) exception.InnerException).Message);
+                Assert.AreEqual(m.Groups[1].Value, "unavailableProperty");
+                Assert.AreEqual(m.Groups[2].Value, "Helper");
+            }
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(ParseException))]
         public void ParseInvalidNumericThrowsException()
         {
             var str = "2.55DX";
             var c = new CompiledExpression(str);
             var ret = c.Eval();
+        }
+
+
+        [TestMethod]
+        public void ScopeCompile()
+        {
+            var helper = new Helper();
+            var str = "availableMethod(1)";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry()};
+            var ret = c.ScopeCompile<Helper>();
+            ret(helper);
+        }
+
+
+        [TestMethod]
+        public void ScopeCompileCall()
+        {
+            var helper = new Helper();
+            var str = "availableMethod(1)";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.ScopeCompileCall<Helper>();
+            ret(helper);
         }
 
         [TestMethod]
@@ -860,17 +939,17 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(ParseException))]
         public void ExpressionException()
         {
-            var c = new CompiledExpression() ;
+            var c = new CompiledExpression();
             c.StringToParse = "(1 + 2))";
             var result = c.Eval();
         }
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(ParseException))]
         public void ExpressionException2()
         {
             var c = new CompiledExpression();
@@ -879,7 +958,7 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(ParseException))]
         public void ExpressionException3()
         {
             var c = new CompiledExpression();

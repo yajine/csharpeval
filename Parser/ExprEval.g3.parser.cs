@@ -57,11 +57,14 @@ namespace ExpressionEvaluator.Parser
                 }
                 else
                 {
-                    value = ExpressionHelper.GetProperty(value, ((AccessIdentifier)primary_expression_part2).Value.Identifier);
-                    if (value == null && throwsException)
+                    var memberName = ((AccessIdentifier) primary_expression_part2).Value.Identifier;
+                    var newValue = ExpressionHelper.GetProperty(value, memberName);
+                    if (newValue == null && throwsException)
                     {
-                        throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+                        throw new ExpressionParseException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", memberName, value.Type.Name), input);
+                        //throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
                     }
+                    value = newValue;
                 }
             }
             else if (primary_expression_part2.GetType() == typeof(Brackets))
@@ -73,11 +76,13 @@ namespace ExpressionEvaluator.Parser
                 if (methodStack.Count > 0)
                 {
                     var method = methodStack.Pop();
-                    value = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, false);
-                    if (value == null && throwsException)
+                    var newValue = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, false);
+                    if (newValue == null && throwsException)
                     {
-                        throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+                        throw new ExpressionParseException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", method.Identifier, value.Type.Name), input);
+                        //throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
                     }
+                    value = newValue;
                 }
                 else
                 {
@@ -135,6 +140,12 @@ namespace ExpressionEvaluator.Parser
                 }
                 if (result.GetType() == typeof(DelegateType))
                 {
+                    var typeValue = (DelegateType)result;
+                    return Expression.Constant(typeValue.Value(), typeValue.Type);
+                }
+                if (result.GetType() == typeof(DelegateType<>))
+                {
+                    )
                     var typeValue = (DelegateType)result;
                     return Expression.Constant(typeValue.Value(), typeValue.Type);
                 }

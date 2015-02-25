@@ -5,47 +5,29 @@ using ExpressionEvaluator.Parser;
 
 namespace ExpressionEvaluator
 {
-    public class ParseException : Exception
-    {
-        public string Expression { get; private set; }
-        
-        public ParseException(string expression, string message) : base(message)
-        {
-            Expression = expression;
-        }
-
-        public ParseException(string expression, string message, Exception innerException)
-            : base(message, innerException)
-        {
-            Expression = expression;
-        }
-    }
-
     /// <summary>
-    /// Creates compiled expressions with return values that are of type T
+    /// Creates compiled expressions with return values that are of type TResult
     /// </summary>
     public class CompiledExpression<TResult> : ExpressionCompiler
     {
         private Func<TResult> _compiledMethod = null;
         private Action _compiledAction = null;
-       
+
         public CompiledExpression()
         {
-            Parser = new AntlrParser();
-            Parser.ReturnType = typeof(TResult);
+            Parser = new AntlrParser { ReturnType = typeof(TResult) };
         }
 
         public CompiledExpression(string expression)
         {
-            Parser = new AntlrParser(expression);
-            Parser.ReturnType = typeof(TResult);
+            Parser = new AntlrParser(expression) { ReturnType = typeof(TResult) };
         }
 
-        public Func<TResult> Compile(bool isCall = false)
+        public Func<TResult> Compile()
         {
             try
             {
-                Expression = WrapExpression(BuildTree(), false);
+                Expression = WrapExpression<TResult>(BuildTree());
                 return Expression.Lambda<Func<TResult>>(Expression).Compile();
             }
             catch (Exception ex)
@@ -59,13 +41,13 @@ namespace ExpressionEvaluator
             var scopeParam = Expression.Parameter(typeof(TParam), "scope");
             var expression = withScope ? BuildTree(scopeParam, asCall) : BuildTree();
             Expression = WrapExpression(expression, false);
-            return withScope ? 
+            return withScope ?
                 Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }) :
                 Expression.Lambda<T>(Expression)
                 ;
         }
 
-        private T Compile<T, TParam>(bool withScope, bool asCall) 
+        private T Compile<T, TParam>(bool withScope, bool asCall)
         {
             return GenerateLambda<T, TParam>(withScope, asCall).Compile();
         }
@@ -105,25 +87,36 @@ namespace ExpressionEvaluator
             return CompileWithScope<Action<TParam>, TParam>(true);
         }
 
+        /// <summary>
+        /// Compiles an expression to a delegate of that accepts a scope context object parameter of type object and a return type of type TResult using scoping to resolve symbols.
+        /// The parameter of the delegate should be the scope context object to be executed against the expression at "run" time
+        /// </summary>
+        /// <returns></returns>
         public Func<object, TResult> ScopeCompile()
         {
             return ScopeCompile<object>();
         }
 
-        public Func<TParam, TResult> ScopeCompile<TParam>()
+        /// <summary>
+        /// Compiles an expression to a delegate of that accepts a scope context object parameter of type TScope and a return type of type TResult using scoping to resolve symbols.
+        /// The parameter of the delegate should be the scope context object to be executed against the expression at "run" time
+        /// </summary>
+        /// <typeparam name="TScope">The type of the scope parameter that will be passed into the compiled function</typeparam>
+        /// <returns></returns>
+        public Func<TScope, TResult> ScopeCompile<TScope>()
         {
-            return CompileWithScope<Func<TParam, TResult>, TParam>(false);
+            return CompileWithScope<Func<TScope, TResult>, TScope>(false);
         }
 
-        private T CompileWithScope<T, TParam>(bool asCall)
+        private T CompileWithScope<T, TScope>(bool asCall)
         {
             try
             {
-                var scopeParam = Expression.Parameter(typeof(TParam), "scope");
+                var scopeParam = Expression.Parameter(typeof(TScope), "scope");
                 Expression = BuildTree(scopeParam, asCall);
-                if (typeof(TResult) == typeof(object) && Expression.Type != typeof(object) && Expression.Type != typeof(void))
+                if (!asCall)
                 {
-                    Expression = Expression.Convert(Expression, typeof(object));
+                    Expression = WrapExpression<T>(Expression);
                 }
                 return Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }).Compile();
             }
@@ -179,120 +172,4 @@ namespace ExpressionEvaluator
         }
     }
 
-    //public class CompiledExpression : ExpressionCompiler
-    //{
-    //    private Func<object> _compiledMethod = null;
-    //    private Action _compiledAction = null;
-
-    //    public CompiledExpression()
-    //    {
-    //        Parser = new AntlrParser();
-    //        Parser.ReturnType = typeof(object);
-    //    }
-
-    //    public CompiledExpression(string expression)
-    //    {
-    //        Parser = new AntlrParser(expression);
-    //    }
-
-    //    /// <summary>
-    //    /// Compiles the expression to a function that returns an object
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    public Func<object> Compile()
-    //    {
-    //        Expression = WrapExpression(BuildTree(), true);
-    //        return Expression.Lambda<Func<object>>(Expression).Compile();
-    //    }
-
-
-    //    /// <summary>
-    //    /// Compiles the expression to a function that returns void
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    public Action CompileCall()
-    //    {
-    //        Expression = BuildTree(null, true);
-    //        return Expression.Lambda<Action>(Expression).Compile();
-    //    }
-
-    //    /// <summary>
-    //    /// Compiles the expression to a function that takes an object as a parameter and returns an object
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    public Func<object, object> ScopeCompile()
-    //    {
-    //        var scopeParam = Expression.Parameter(typeof(object), "scope");
-    //        Expression = WrapExpression(BuildTree(scopeParam), true);
-    //        return Expression.Lambda<Func<dynamic, object>>(Expression, new ParameterExpression[] { scopeParam }).Compile();
-    //    }
-
-    //    public LambdaExpression GenerateLambda()
-    //    {
-    //        var scopeParam = Expression.Parameter(typeof(object), "scope");
-    //        Expression = WrapExpression(BuildTree(scopeParam), true);
-    //        return Expression.Lambda<Func<dynamic, object>>(Expression, new ParameterExpression[] { scopeParam });
-    //    }
-
-    //    /// <summary>
-    //    /// Compiles the expression to a function that takes an object as a parameter and returns an object
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    public Action<object> ScopeCompileCall()
-    //    {
-    //        var scopeParam = Expression.Parameter(typeof(object), "scope");
-    //        Expression = BuildTree(scopeParam, true);
-    //        return Expression.Lambda<Action<dynamic>>(Expression, new ParameterExpression[] { scopeParam }).Compile();
-    //    }
-
-    //    /// <summary>
-    //    /// Compiles the expression to a function that takes an object as a parameter and returns an object
-    //    /// </summary>s
-    //    /// <returns></returns>
-    //    public Action<TParam> ScopeCompileCall<TParam>()
-    //    {
-    //        var scopeParam = Expression.Parameter(typeof(TParam), "scope");
-    //        Expression = WrapToVoid(BuildTree(scopeParam));
-    //        return Expression.Lambda<Action<TParam>>(Expression, new ParameterExpression[] { scopeParam }).Compile();
-    //    }
-
-    //    /// <summary>
-    //    /// Compiles the expression to a function that takes an typed object as a parameter and returns an object
-    //    /// </summary>
-    //    /// <typeparam name="U"></typeparam>
-    //    /// <returns></returns>
-    //    public Func<TParam, object> ScopeCompile<TParam>()
-    //    {
-    //        var scopeParam = Expression.Parameter(typeof(TParam), "scope");
-    //        Expression = WrapExpression(BuildTree(scopeParam), true);
-    //        return Expression.Lambda<Func<TParam, object>>(Expression, new ParameterExpression[] { scopeParam }).Compile();
-    //    }
-
-    //    protected override void ClearCompiledMethod()
-    //    {
-    //        _compiledMethod = null;
-    //        _compiledAction = null;
-    //    }
-
-    //    public object Eval()
-    //    {
-    //        if (_compiledMethod == null) _compiledMethod = Compile();
-    //        return _compiledMethod();
-    //    }
-
-    //    public void Call()
-    //    {
-    //        if (_compiledAction == null) _compiledAction = CompileCall();
-    //        _compiledAction();
-    //    }
-
-    //    public object Global
-    //    {
-    //        set
-    //        {
-    //            Parser.Global = value;
-    //        }
-    //    }
-
-    //}
 }

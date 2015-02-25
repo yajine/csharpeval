@@ -91,7 +91,11 @@ namespace ExpressionEvaluator.Parser
             {
                 le = Expression.Convert(le, type);
             }
-            if (type == typeof (object))
+            if (type == typeof(object))
+            {
+                return Expression.Convert(le, type);
+            }
+            if (le.Type == typeof(object))
             {
                 return Expression.Convert(le, type);
             }

@@ -67,6 +67,7 @@
     <Compile Include="CompiledExpression.cs" />
     <Compile Include="CompiledExpressionType.cs" />
     <Compile Include="ExpressionCompiler.cs" />
+    <Compile Include="ParseException.cs" />
     <Compile Include="Parser\AntlrParser.cs" />
     <Compile Include="Parser\CompilerState.cs" />
     <Compile Include="Parser\ExpressionHelper.cs" />

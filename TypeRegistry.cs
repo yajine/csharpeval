@@ -79,11 +79,24 @@ namespace ExpressionEvaluator
             Add(identifier, new DelegateType() { Type = type, Value = valueGetter });
         }
 
+        public void RegisterParameter<T>(string identifier, Func<T> valueGetter)
+        {
+            var value = valueGetter();
+            var type = value != null ? value.GetType() : typeof(T);
+            Add(identifier, new DelegateType<T>() { Type = type, Value = valueGetter });
+        }
+
         public void RegisterSymbol(string identifier, object value, Type type)
         {
             Add(identifier, new ValueType() { Type = type, Value = value });
         }
 
+    }
+
+    public class DelegateType<T>
+    {
+        public Type Type { get; set; }
+        public Func<T> Value { get; set; }
     }
 
     public class DelegateType
