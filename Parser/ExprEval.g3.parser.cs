@@ -145,7 +145,6 @@ namespace ExpressionEvaluator.Parser
                 }
                 if (result.GetType() == typeof(DelegateType<>))
                 {
-                    )
                     var typeValue = (DelegateType)result;
                     return Expression.Constant(typeValue.Value(), typeValue.Type);
                 }
