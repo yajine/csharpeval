@@ -122,7 +122,7 @@ namespace ExpressionEvaluator.Tests
             catch (ParseException exception)
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
-                var m = regex.Match(((ExpressionParseException) exception.InnerException).Message);
+                var m = regex.Match(((ExpressionParseException)exception.InnerException).Message);
                 Assert.AreEqual(m.Groups[1].Value, "unavailableProperty");
                 Assert.AreEqual(m.Groups[2].Value, "Helper");
             }
@@ -144,7 +144,7 @@ namespace ExpressionEvaluator.Tests
         {
             var helper = new Helper();
             var str = "availableMethod(1)";
-            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry()};
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
             var ret = c.ScopeCompile<Helper>();
             ret(helper);
         }
@@ -197,8 +197,14 @@ namespace ExpressionEvaluator.Tests
             var str = "2.5D + 1";
             var c = new CompiledExpression(str);
             var ret = c.Eval();
+            
             Assert.IsTrue(ret.GetType() == typeof(System.Double));
             Assert.IsTrue(Convert.ToDouble(ret) == 3.5D);
+            
+            c.StringToParse = "1 + 2.5d";
+            ret = c.Eval();
+            Assert.IsTrue(ret.GetType() == typeof(System.Double));
+            Assert.IsTrue(Convert.ToDouble(ret) == 3.5d);
         }
 
         public class Container
@@ -420,6 +426,16 @@ namespace ExpressionEvaluator.Tests
             {
                 func(a);
             }
+        }
+
+        [TestMethod]
+        public void MixedNumericTypes()
+        {
+            var reg = new TypeRegistry();
+            reg.RegisterType("Math", typeof(Math));
+            var exp = "(1*2) + (0.8324057*1)";
+            var expression = new CompiledExpression(exp) { TypeRegistry = reg };
+            var value = expression.Eval();
         }
 
         //[TestMethod]
@@ -868,6 +884,12 @@ namespace ExpressionEvaluator.Tests
             expression.TypeRegistry.RegisterSymbol("Argument1", argument1, typeof(int?));
             expression.TypeRegistry.RegisterSymbol("Argument2", argument2);
 
+            var x = argument2.Count != null;
+            var y = null != argument2.Count;
+
+            expression.StringToParse = "null != Argument2.Count";
+            expression.Eval();
+
             // Works
             expression.StringToParse = "Argument2.Count != null";
             expression.Eval();
@@ -965,6 +987,45 @@ namespace ExpressionEvaluator.Tests
             c.StringToParse = "25.L";
             var result = c.Eval();
         }
+
+        [TestMethod]
+        public void ListIndexers()
+        {
+            var a = new MyClass() { Y = new List<int>() { 1, 45, 88, 22 }, Z = new[] { 7, 11, 33, 65 } };
+            var t = new TypeRegistry();
+            t.RegisterSymbol("a", a);
+            var c = new CompiledExpression() { TypeRegistry = t };
+
+            // Access List item by index
+            c.StringToParse = "a.Y[3]";
+            var result = c.Eval();
+            Assert.AreEqual(result, 22);
+
+            // Access array item by index
+            c.StringToParse = "a.Z[1]";
+            result = c.Eval();
+            Assert.AreEqual(result, 11);
+        }
+
+        [TestMethod]
+        public void ExpandoObjects()
+        {
+            dynamic A = new ExpandoObject();
+            dynamic B = new ExpandoObject();
+            A.Num1 = 1000;
+            B.Num2 = 50;
+
+            var t = new TypeRegistry();
+            t.RegisterSymbol("A", A);
+            t.RegisterSymbol("B", B);
+            var c = new CompiledExpression() { TypeRegistry = t };
+            c.StringToParse = "A.Num1 - B.Num2";
+            var result = c.Eval();
+            Assert.AreEqual(result, 950);
+
+        }
+
+
     }
 
     public class Fact
@@ -976,6 +1037,7 @@ namespace ExpressionEvaluator.Tests
     {
         public int X { get; set; }
         public List<int> Y { get; set; }
+        public int[] Z { get; set; }
         public Func<bool> Value { get; set; }
         public void Foo()
         {

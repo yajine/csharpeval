@@ -43,8 +43,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="c2.cs" />
+    <Compile Include="IImportedValue.cs" />
+    <Compile Include="ImportedValue.cs" />
+    <Compile Include="Indexers.cs" />
+    <Compile Include="MyClass.cs" />
+    <Compile Include="NumEnum.cs" />
+    <Compile Include="objHolder.cs" />
+    <Compile Include="objHolder2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Samples.cs" />
+    <Compile Include="Sub.cs" />
+    <Compile Include="Super.cs" />
+    <Compile Include="Test.cs" />
+    <Compile Include="Utility.cs" />
+    <Compile Include="ValueHolder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

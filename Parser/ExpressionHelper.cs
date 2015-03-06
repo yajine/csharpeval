@@ -70,11 +70,21 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
+                if (type.BaseType == typeof(System.Array))
+                {
+                    return Expression.ArrayAccess(le, args);
+                }
+
                 var interfaces = le.Type.GetInterfaces();
 
                 if (interfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>)))
                 {
-                    var indexer = le.Type.GetProperties().Single(x => x.Name == "Item");
+                    var indexer = le.Type.GetProperties().SingleOrDefault(x => x.Name == "Item");
+                    if (indexer == null)
+                    {
+                        var me = ((MemberExpression)le);
+                        throw new CompilerException(string.Format("The member '{0}' does not implement the index accessor", me.Member.Name));
+                    }
                     return Expression.Property(le, indexer, args);
                 }
                 return Expression.ArrayAccess(le, args);
@@ -747,8 +757,11 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                re = TypeConversion.ImplicitConversion(le, re);
-                le = TypeConversion.DynamicConversion(re, le);
+                var ore = re;
+                var ole = le;
+                re = TypeConversion.ImplicitConversion(ole, ore);
+                le = TypeConversion.ImplicitConversion(ore, ole); 
+                //le = TypeConversion.DynamicConversion(re, le);
                 return GetBinaryOperator(le, re, expressionType);
             }
         }

@@ -136,14 +136,21 @@ namespace ExpressionEvaluator.Parser
             return src;
         }
 
+        public static bool IsNullableType(Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
+        }
+
         // 6.1.7 Boxing Conversions
-        // A boxing conversion permits a value-type to be implicitly converted to a reference type. A boxing conversion exists from any non-nullable-value-type to object and dynamic, to System.ValueType and to any interface-type implemented by the non-nullable-value-type. Furthermore an enum-type can be converted to the type System.Enum.
+        // A boxing conversion permits a value-type to be implicitly converted to a reference type. A boxing conversion exists from any non-nullable-value-type to object and dynamic, 
+        // to System.ValueType and to any interface-type implemented by the non-nullable-value-type. 
+        // Furthermore an enum-type can be converted to the type System.Enum.
         // A boxing conversion exists from a nullable-type to a reference type, if and only if a boxing conversion exists from the underlying non-nullable-value-type to the reference type.
         // A value type has a boxing conversion to an interface type I if it has a boxing conversion to an interface type I0 and I0 has an identity conversion to I.
 
         public static Expression BoxingConversion(Expression dest, Expression src)
         {
-            if (src.Type.IsValueType && dest.Type.IsDynamicOrObject())
+            if (src.Type.IsValueType && !IsNullableType(src.Type) && dest.Type.IsDynamicOrObject())
             {
                 src = Expression.Convert(src, dest.Type);
             }
@@ -166,11 +173,12 @@ namespace ExpressionEvaluator.Parser
         }
 
 
-        //        6.1.5 Null literal conversions
-        //An implicit conversion exists from the null literal to any nullable type. This conversion produces the null value (§4.1.10) of the given nullable type.
+        // 6.1.5 Null literal conversions
+        // An implicit conversion exists from the null literal to any nullable type. 
+        // This conversion produces the null value (§4.1.10) of the given nullable type.
         public static Expression NullLiteralConverion(Expression dest, Expression src)
         {
-            if (src.NodeType == ExpressionType.Constant && src.Type == typeof(object) && ((ConstantExpression)src).Value == null && Nullable.GetUnderlyingType(dest.Type) != null)
+            if (src.NodeType == ExpressionType.Constant && src.Type == typeof(object) && ((ConstantExpression)src).Value == null && IsNullableType(dest.Type))
             {
                 return Expression.Constant(Activator.CreateInstance(dest.Type), dest.Type);
             }
