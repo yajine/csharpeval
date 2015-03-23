@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
 using ExpressionEvaluator;
+using Tests.Contexts;
 
 namespace Tests
 {
@@ -24,12 +25,17 @@ namespace Tests
             var res3 = ce3.ScopeCompile<Indexers>()(idx);
         }
 
-        public static void Mono()
+        public static void DefaultTypes()
         {
-            
+            Console.WriteLine("DefaultTypes");
+            var types = new TypeRegistry();
+            types.RegisterDefaultTypes();
+            var ce1 = new CompiledExpression("Convert.ToInt16(Math.Sin(4) + Math.Cos(5))") { TypeRegistry = types };
+            Console.WriteLine(ce1.Eval());
         }
 
-        public static void Sample1()
+
+        public static void Mono()
         {
             var obj2 = new objHolder2();
             obj2.Value = 5;
@@ -44,7 +50,6 @@ namespace Tests
             var tt = new Super() { DataContext = sobj, x = 2, y = true, z = true };
 
             tt.setVar("z", 1);
-
             //var a = tt.y && tt.z;
             var nn = new Sub() { x = new List<int>() { 1, 2, 3, 4, 5 } };
             object aa = new List<Sub>();
@@ -59,37 +64,78 @@ namespace Tests
             rr.TypeRegistry.Add("aa", aa);
             var uu = rr.ScopeCompile<Sub>();
             var ff = uu(nn);
+        }
 
-
-            var exp1 = "var x = new List<IImportedValue>(); ";
-            exp1 += "for(int i = 0; i < 27; i++){";
-            exp1 += "x.Add(new ImportedValue());";
-            exp1 += "}";
-            exp1 += "Console.WriteLine(x.Count);";
-            exp1 += "int z = Trend(x);";
-            exp1 += "x.Count;";
-
-            {
-                var reg1 = new TypeRegistry();
-                reg1.RegisterType("ImportedValue", typeof(ImportedValue));
-                reg1.RegisterType("IImportedValue", typeof(IImportedValue));
-                reg1.RegisterType("List<IImportedValue>", typeof(List<IImportedValue>));
-                reg1.RegisterType("List<ImportedValue>", typeof(List<ImportedValue>));
-                reg1.RegisterType("Console", typeof(Console));
-                var test1 = new Test();
-                var x1 = new List<ImportedValue>();
-                var ce1 = new CompiledExpression<int>() { StringToParse = exp1, TypeRegistry = reg1, ExpressionType = CompiledExpressionType.StatementList };
-                var res1 = ce1.ScopeCompile<Test>()(test1);
-            }
-
-
+        /// <summary>
+        /// This sample shows how to use a functional-type semantic script as an input expression for EE.
+        /// Some preprocessing will be needed to make the script look like C#
+        /// </summary>
+        public static void Scripting()
+        {
             var exp = "@ATADJ( @MAX( @SUBTR(@PR( 987043 ) , @AMT( 913000 ) ) , @MULT( @PR( 987043 ) , 0.20f ) ) , 60f ) ";
             var util = new Utility();
             var reg = new TypeRegistry();
             reg.RegisterSymbol("util", util);
+
             exp = exp.Replace("@", "util.");
+
             var ce = new CompiledExpression() { StringToParse = exp, TypeRegistry = reg };
             var res = ce.Eval();
+        }
+
+        /// <summary>
+        /// This sample shows how genric types, code blocks, local variables and loops can be used in EE.
+        /// A code block always returns the value of the last expression
+        /// </summary>
+        public static void CodeBlocks()
+        {
+            Console.WriteLine("\n\nCode Blocks");
+
+            var exp1 = "var x = new List<IImportedValue>();\n\n";
+            exp1 += "for(int i = 0; i < 27; i++) {\n";
+            exp1 += "\tx.Add(new ImportedValue());\n";
+            exp1 += "}\n\n";
+            exp1 += "Console.WriteLine(x.Count);\n";
+            exp1 += "double z = Trend(x);\n";
+            exp1 += "z;\n";
+
+            Console.WriteLine(exp1);
+
+            var reg1 = new TypeRegistry();
+            reg1.RegisterType("ImportedValue", typeof(ImportedValue));
+            reg1.RegisterType("IImportedValue", typeof(IImportedValue));
+            reg1.RegisterType("List<IImportedValue>", typeof(List<IImportedValue>));
+            reg1.RegisterType("List<ImportedValue>", typeof(List<ImportedValue>));
+            reg1.RegisterType("Console", typeof(Console));
+
+            var test1 = new Test();
+            //var x1 = new List<ImportedValue>();
+            var ce1 = new CompiledExpression<int>() { StringToParse = exp1, TypeRegistry = reg1, ExpressionType = CompiledExpressionType.StatementList };
+            var res1 = ce1.ScopeCompile<Test>()(test1);
+
+            Console.WriteLine(res1);
+        }
+
+        /// <summary>
+        /// This sample shows that when the current culture is set to a language that uses commas to denote decimal place,
+        /// the expression should still be parsed as regular ANSI, but the result of a method that uses the current culture
+        /// should use the thread's culture.
+        /// </summary>
+        public static void Culture()
+        {
+            Console.WriteLine("Culture Test");
+            var pi_en = 3.141592654.ToString();
+
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
+            var compiledexpression = new CompiledExpression() { StringToParse = "3.141592654.ToString()" };
+            var pi_fr = compiledexpression.Eval(); // returns "3,141592654"
+
+            Console.WriteLine("Host   : {0}", pi_en);
+            Console.WriteLine("Thread : {0}", pi_fr);
+        }
+
+        public static void Sample1()
+        {
 
             var registry1 = new TypeRegistry();
             var registry = new TypeRegistry();
@@ -132,12 +178,7 @@ namespace Tests
             registry.RegisterSymbol("data", data);
 
 
-            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
-            var pi = Convert.ToString(3.141592654);
-            var xs = 2d;
-            var pipi = 3.141592654.ToString();
-            var c0 = new CompiledExpression() { StringToParse = "3.141592654.ToString()" };
-            var pi2 = c0.Eval();
+
 
             var p = scope.x[0];
 

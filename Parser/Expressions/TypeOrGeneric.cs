@@ -7,5 +7,9 @@ namespace ExpressionEvaluator.Parser.Expressions
     {
         public string Identifier { get; set; }
         public List<Type> TypeArgs { get; set; }
+        public override string ToString()
+        {
+            return Identifier;
+        }
     }
 }

@@ -116,7 +116,7 @@ namespace ExpressionEvaluator.Parser
                             dynamicTypeLookup.Add((string)ce.Value, re.Type);
                         }
                     }
-                    return GetMethod(mc.Object, method1, args1, false);
+                    return GetMethod(mc.Object, method1, args1.Select(x => new Argument() { Expression = x }), false);
                 }
             }
 
@@ -340,7 +340,7 @@ namespace ExpressionEvaluator.Parser
             throw new Exception();
         }
 
-        public static Expression GetMethod(Expression le, TypeOrGeneric member, List<Expression> args,
+        public static Expression GetMethod(Expression le, TypeOrGeneric member, IEnumerable<Argument> args,
                                            bool isCall = false)
         {
             Expression instance = null;
@@ -359,14 +359,14 @@ namespace ExpressionEvaluator.Parser
             {
                 type = le.Type;
                 instance = le;
-                isDynamic = type.IsDynamicOrObject();
+                isDynamic = type.IsDynamic();
             }
 
             if (isDynamic)
             {
                 var expArgs = new List<Expression> { instance };
 
-                expArgs.AddRange(args);
+                expArgs.AddRange(args.Select(x => x.Expression));
 
                 if (isCall)
                 {
@@ -393,164 +393,194 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                return OldMethodHandler(type, instance, member, args);
+                return MethodInvokeExpression(type, instance, member, args);
             }
 
             return null;
         }
 
-        private static Expression NewMethodHandler(Type type, Expression instance, TypeOrGeneric member,
-                                                   List<Expression> args)
+        private static Expression MethodInvokeExpression(Type type, Expression instance, TypeOrGeneric member,
+                                                   IEnumerable<Argument> args)
         {
             var membername = member.Identifier;
 
             var mis = MethodResolution.GetApplicableMembers(type, member, args);
-            var methodInfo = (MethodInfo)MethodResolution.OverloadResolution(mis, args);
+            var afm = MethodResolution.OverloadResolution(mis, args);
 
-            InferTypes(methodInfo, args);
+            //InferTypes(methodInfo, args);
 
             // if the method is generic, try to get type args from method, if none, try to get type args from parameters
 
-            if (methodInfo != null)
+            if (afm != null)
             {
-                var parameterInfos = methodInfo.GetParameters();
+                var parameterInfos = afm.Member.GetParameters();
+                var argExps = args.Select(x => x.Expression).ToList();
 
-                foreach (var parameterInfo in parameterInfos)
+                ParameterInfo paramArrayParameter = parameterInfos.FirstOrDefault(p => p.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0);
+                List<Expression> newArgs2 = null;
+
+                if (paramArrayParameter != null)
                 {
-                    var index = parameterInfo.Position;
+                    newArgs2 = argExps.Take(parameterInfos.Length - 1).ToList();
+                    var paramArgs2 = argExps.Skip(parameterInfos.Length - 1).ToList();
 
-                    args[index] = TypeConversion.Convert(args[index], parameterInfo.ParameterType);
+                    for (var i = 0; i < parameterInfos.Length - 1; i++)
+                    {
+                        newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos[i].ParameterType);
+                    }
+
+                    var targetType = paramArrayParameter.ParameterType.GetElementType();
+
+                    if (targetType == null)
+                    {
+                        var ga = paramArrayParameter.ParameterType.GetGenericArguments();
+                        if (ga.Any())
+                        {
+                            targetType = ga.Single();
+                        }
+                    }
+
+                    if (targetType != null)
+                    {
+                        newArgs2.Add(Expression.NewArrayInit(targetType,
+                                                             paramArgs2.Select(x => TypeConversion.Convert(x, targetType))));
+                    }
+
+                }
+                else
+                {
+                    newArgs2 = argExps.ToList();
+
+                    for (var i = 0; i < parameterInfos.Length; i++)
+                    {
+                        newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos[i].ParameterType);
+                    }
                 }
 
-                return Expression.Call(instance, methodInfo, args.ToArray());
+
+                return Expression.Call(instance, afm.Member, newArgs2.ToArray());
             }
 
-            var match = MethodResolution.GetExactMatch(type, instance, membername, args) ??
-                        MethodResolution.GetParamsMatch(type, instance, membername, args);
-
-            if (match != null)
-            {
-                return match;
-            }
+            // Should try an Extension Method call here...
 
             return null;
         }
 
-        private static Expression OldMethodHandler(Type type, Expression instance, TypeOrGeneric member,
-                                                   List<Expression> args)
-        {
-            var argTypes = args.Select(x => x.Type).ToArray();
-            var membername = member.Identifier;
+        //private static Expression OldMethodHandler(Type type, Expression instance, TypeOrGeneric member,
+        //                                           List<Expression> args)
+        //{
+        //    var argTypes = args.Select(x => x.Type).ToArray();
+        //    var membername = member.Identifier;
 
-            // Look for an exact match
-            var methodInfo = type.GetMethod(membername, argTypes);
+        //    // Look for an exact match
+        //    var methodInfo = type.GetMethod(membername, argTypes);
 
-            if (methodInfo == null)
-            {
-                methodInfo = type.GetInterfaces()
-                                 .Select(m => m.GetMethod(membername, argTypes)).FirstOrDefault(i => i != null);
-            }
+        //    if (methodInfo == null)
+        //    {
+        //        methodInfo = type.GetInterfaces()
+        //                         .Select(m => m.GetMethod(membername, argTypes)).FirstOrDefault(i => i != null);
+        //    }
 
-            if (methodInfo != null)
-            {
-                var parameterInfos = methodInfo.GetParameters();
+        //    if (methodInfo != null)
+        //    {
+        //        var parameterInfos = methodInfo.GetParameters();
 
-                for (int i = 0; i < parameterInfos.Length; i++)
-                {
-                    args[i] = TypeConversion.Convert(args[i], parameterInfos[i].ParameterType);
-                }
+        //        for (int i = 0; i < parameterInfos.Length; i++)
+        //        {
+        //            args[i] = TypeConversion.Convert(args[i], parameterInfos[i].ParameterType);
+        //        }
 
-                return Expression.Call(instance, methodInfo, args);
-            }
+        //        return Expression.Call(instance, methodInfo, args);
+        //    }
 
-            // assume params
+        //    // assume params
 
-            var methodInfos = type.GetMethods().Where(x => x.Name == membername);
-            var matchScore = new List<Tuple<MethodInfo, int, bool>>();
+        //    var methodInfos = type.GetMethods().Where(x => x.Name == membername);
+        //    var matchScore = new List<Tuple<MethodInfo, int, bool>>();
 
-            foreach (var info in methodInfos.OrderByDescending(m => m.GetParameters().Count()))
-            {
-                var parameterInfos = info.GetParameters();
-                var lastParam = parameterInfos.Last();
-                var newArgs = args.Take(parameterInfos.Length - 1).ToList();
-                var paramArgs = args.Skip(parameterInfos.Length - 1).ToList();
-                var hasParams = false;
-                int i = 0;
-                int k = 0;
+        //    foreach (var info in methodInfos.OrderByDescending(m => m.GetParameters().Count()))
+        //    {
+        //        var parameterInfos = info.GetParameters();
+        //        var lastParam = parameterInfos.Last();
+        //        var newArgs = args.Take(parameterInfos.Length - 1).ToList();
+        //        var paramArgs = args.Skip(parameterInfos.Length - 1).ToList();
+        //        var hasParams = false;
+        //        int i = 0;
+        //        int k = 0;
 
-                foreach (var expression in newArgs)
-                {
-                    k += TypeConversion.CanConvert(expression.Type, parameterInfos[i].ParameterType);
-                    i++;
-                }
+        //        foreach (var expression in newArgs)
+        //        {
+        //            k += TypeConversion.CanConvert(expression.Type, parameterInfos[i].ParameterType);
+        //            i++;
+        //        }
 
-                if (k > 0)
-                {
-                    if (Attribute.IsDefined(lastParam, typeof(ParamArrayAttribute)))
-                    {
-                        k +=
-                            paramArgs.Sum(
-                                arg => TypeConversion.CanConvert(arg.Type, lastParam.ParameterType.GetElementType()));
-                        hasParams = true;
-                    }
-                }
+        //        if (k > 0)
+        //        {
+        //            if (Attribute.IsDefined(lastParam, typeof(ParamArrayAttribute)))
+        //            {
+        //                k +=
+        //                    paramArgs.Sum(
+        //                        arg => TypeConversion.CanConvert(arg.Type, lastParam.ParameterType.GetElementType()));
+        //                hasParams = true;
+        //            }
+        //        }
 
-                matchScore.Add(new Tuple<MethodInfo, int, bool>(info, k, hasParams));
-            }
+        //        matchScore.Add(new Tuple<MethodInfo, int, bool>(info, k, hasParams));
+        //    }
 
-            var info2 = matchScore.OrderBy(x => x.Item2).FirstOrDefault(x => x.Item2 >= 0 && x.Item3);
+        //    var info2 = matchScore.OrderBy(x => x.Item2).FirstOrDefault(x => x.Item2 >= 0 && x.Item3);
 
-            if (info2 != null)
-            {
-                var parameterInfos2 = info2.Item1.GetParameters();
-                var lastParam2 = parameterInfos2.Last();
-                var newArgs2 = args.Take(parameterInfos2.Length - 1).ToList();
-                var paramArgs2 = args.Skip(parameterInfos2.Length - 1).ToList();
-
-
-                for (int i = 0; i < parameterInfos2.Length - 1; i++)
-                {
-                    newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos2[i].ParameterType);
-                }
-
-                var targetType = lastParam2.ParameterType.GetElementType();
-
-                if (targetType == null)
-                {
-                    var ga = lastParam2.ParameterType.GetGenericArguments();
-                    if (ga.Any())
-                    {
-                        targetType = ga.Single();
-                    }
-                }
-
-                if (targetType != null)
-                {
-                    newArgs2.Add(Expression.NewArrayInit(targetType,
-                                                         paramArgs2.Select(x => TypeConversion.Convert(x, targetType))));
-                }
-
-                return Expression.Call(instance, info2.Item1, newArgs2);
-            }
-
-            info2 = matchScore.OrderBy(x => x.Item2).FirstOrDefault(x => x.Item2 >= 0);
-
-            if (info2 != null)
-            {
-                var parameterInfos2 = info2.Item1.GetParameters();
-                var newArgs2 = args.Take(parameterInfos2.Length).ToList();
+        //    if (info2 != null)
+        //    {
+        //        var parameterInfos2 = info2.Item1.GetParameters();
+        //        var lastParam2 = parameterInfos2.Last();
+        //        var newArgs2 = args.Take(parameterInfos2.Length - 1).ToList();
+        //        var paramArgs2 = args.Skip(parameterInfos2.Length - 1).ToList();
 
 
-                for (int i = 0; i < parameterInfos2.Length; i++)
-                {
-                    newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos2[i].ParameterType);
-                }
+        //        for (int i = 0; i < parameterInfos2.Length - 1; i++)
+        //        {
+        //            newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos2[i].ParameterType);
+        //        }
 
-                return Expression.Call(instance, info2.Item1, newArgs2);
-            }
+        //        var targetType = lastParam2.ParameterType.GetElementType();
 
-            return null;
-        }
+        //        if (targetType == null)
+        //        {
+        //            var ga = lastParam2.ParameterType.GetGenericArguments();
+        //            if (ga.Any())
+        //            {
+        //                targetType = ga.Single();
+        //            }
+        //        }
+
+        //        if (targetType != null)
+        //        {
+        //            newArgs2.Add(Expression.NewArrayInit(targetType,
+        //                                                 paramArgs2.Select(x => TypeConversion.Convert(x, targetType))));
+        //        }
+
+        //        return Expression.Call(instance, info2.Item1, newArgs2);
+        //    }
+
+        //    info2 = matchScore.OrderBy(x => x.Item2).FirstOrDefault(x => x.Item2 >= 0);
+
+        //    if (info2 != null)
+        //    {
+        //        var parameterInfos2 = info2.Item1.GetParameters();
+        //        var newArgs2 = args.Take(parameterInfos2.Length).ToList();
+
+
+        //        for (int i = 0; i < parameterInfos2.Length; i++)
+        //        {
+        //            newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos2[i].ParameterType);
+        //        }
+
+        //        return Expression.Call(instance, info2.Item1, newArgs2);
+        //    }
+
+        //    return null;
+        //}
 
         public static Expression ParseRealLiteral(string token)
         {
@@ -760,7 +790,7 @@ namespace ExpressionEvaluator.Parser
                 var ore = re;
                 var ole = le;
                 re = TypeConversion.ImplicitConversion(ole, ore);
-                le = TypeConversion.ImplicitConversion(ore, ole); 
+                le = TypeConversion.ImplicitConversion(ore, ole);
                 //le = TypeConversion.DynamicConversion(re, le);
                 return GetBinaryOperator(le, re, expressionType);
             }
@@ -974,7 +1004,7 @@ namespace ExpressionEvaluator.Parser
             return Expression.Condition(condition, ifTrue, ifFalse);
         }
 
-        public static Expression New(Type t, IEnumerable<Expression> arguments, IEnumerable<MemberInfo> memberInfos)
+        public static Expression New(Type t, IEnumerable<Argument> arguments, ObjectOrCollectionInitializer initializer)
         {
             ConstructorInfo constructorInfo;
 
@@ -982,21 +1012,33 @@ namespace ExpressionEvaluator.Parser
             {
                 var p = t.GetConstructors();
                 constructorInfo = p.First(x => !x.GetParameters().Any());
+
+                IEnumerable<MemberInfo> memberInfos = null;
+                if (memberInfos == null)
+                {
+                    return Expression.New(constructorInfo, null);
+                }
+                else
+                {
+                    return Expression.New(constructorInfo, null, memberInfos);
+                }
             }
             else
             {
-                constructorInfo = t.GetConstructor(arguments.Select(arg => arg.Type).ToArray());
+                constructorInfo = t.GetConstructor(arguments.Select(arg => arg.Expression.Type).ToArray());
+
+                IEnumerable<MemberInfo> memberInfos = null;
+                if (memberInfos == null)
+                {
+                    return Expression.New(constructorInfo, arguments.Select(x => x.Expression));
+                }
+                else
+                {
+                    return Expression.New(constructorInfo, arguments.Select(x => x.Expression), memberInfos);
+                }
             }
 
 
-            if (memberInfos == null)
-            {
-                return Expression.New(constructorInfo, arguments);
-            }
-            else
-            {
-                return Expression.New(constructorInfo, arguments, memberInfos);
-            }
         }
 
         public static Expression Switch(LabelTarget breakTarget, Expression switchCase, List<SwitchCase> switchBlock)
@@ -1034,7 +1076,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ForEach(LabelTarget exitLabel, LabelTarget continueLabel, ParameterExpression parameter, Expression iterator, Expression body)
         {
-            var enumerator = GetMethod(iterator, new TypeOrGeneric() { Identifier = "GetEnumerator" }, new List<Expression>());
+            var enumerator = GetMethod(iterator, new TypeOrGeneric() { Identifier = "GetEnumerator" }, new List<Argument>());
 
             var enumParam = Expression.Variable(enumerator.Type);
             var assign = Expression.Assign(enumParam, enumerator);
@@ -1043,7 +1085,8 @@ namespace ExpressionEvaluator.Parser
             localVar.Variables.Add(enumParam);
             localVar.Initializers.Add(assign);
 
-            var condition = GetMethod(enumParam, new TypeOrGeneric() { Identifier = "MoveNext" }, new List<Expression>());
+            var condition = GetMethod(enumParam, new TypeOrGeneric() { Identifier = "MoveNext" }, new List<Argument>());
+
             var expressions = new List<Expression>();
             var variables = new List<ParameterExpression>();
 

@@ -43,22 +43,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="c2.cs" />
-    <Compile Include="IImportedValue.cs" />
-    <Compile Include="ImportedValue.cs" />
-    <Compile Include="Indexers.cs" />
-    <Compile Include="MyClass.cs" />
-    <Compile Include="NumEnum.cs" />
-    <Compile Include="objHolder.cs" />
-    <Compile Include="objHolder2.cs" />
+    <Compile Include="Contexts\c2.cs" />
+    <Compile Include="Contexts\IImportedValue.cs" />
+    <Compile Include="Contexts\ImportedValue.cs" />
+    <Compile Include="Contexts\Indexers.cs" />
+    <Compile Include="Contexts\MyClass.cs" />
+    <Compile Include="Contexts\NumEnum.cs" />
+    <Compile Include="Contexts\objHolder.cs" />
+    <Compile Include="Contexts\objHolder2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Samples.cs" />
-    <Compile Include="Sub.cs" />
-    <Compile Include="Super.cs" />
-    <Compile Include="Test.cs" />
-    <Compile Include="Utility.cs" />
-    <Compile Include="ValueHolder.cs" />
+    <Compile Include="Contexts\Sub.cs" />
+    <Compile Include="Contexts\Super.cs" />
+    <Compile Include="Contexts\Test.cs" />
+    <Compile Include="Contexts\Utility.cs" />
+    <Compile Include="Contexts\ValueHolder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

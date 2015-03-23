@@ -51,11 +51,34 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="ImplicitConversions.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="CodeBlockTests.cs" />
+    <Compile Include="Domain\BoxedDecimal.cs" />
+    <Compile Include="Domain\Class1.cs" />
+    <Compile Include="Domain\ClassA.cs" />
+    <Compile Include="Domain\Container.cs" />
+    <Compile Include="Domain\Helper.cs" />
+    <Compile Include="DynamicsPerformanceTest.cs" />
+    <Compile Include="Domain\Fact.cs" />
+    <Compile Include="Domain\FunctionCache.cs" />
+    <Compile Include="Domain\ImplicitConversions.cs" />
+    <Compile Include="Domain\MethodOverloading.cs" />
+    <Compile Include="Domain\MyClass.cs" />
+    <Compile Include="Domain\NameValue.cs" />
+    <Compile Include="Domain\NumEnum.cs" />
+    <Compile Include="Domain\ObjectFunctionCache.cs" />
+    <Compile Include="Domain\objHolder.cs" />
+    <Compile Include="Domain\P.cs" />
+    <Compile Include="Domain\Scope.cs" />
+    <Compile Include="Domain\ScopeDataType.cs" />
+    <Compile Include="Domain\StaticFunctionCache.cs" />
+    <Compile Include="Domain\TestClass.cs" />
+    <Compile Include="DynamicTests.cs" />
+    <Compile Include="OperatorTests.cs" />
+    <Compile Include="ScopeTests.cs" />
+    <Compile Include="UnitTest.cs" />
+    <Compile Include="LiteralParsingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnitTest2.cs" />
+    <Compile Include="Domain\Page.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExpressionEvaluator.csproj">

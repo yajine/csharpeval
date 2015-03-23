@@ -70,17 +70,26 @@
     <Compile Include="IDynamicObjectProvider.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Parser\AntlrParser.cs" />
+    <Compile Include="Parser\Expressions\ApplicableFunctionMember.cs" />
+    <Compile Include="Parser\Expressions\Argument.cs" />
+    <Compile Include="Parser\Expressions\CandidatePoints.cs" />
+    <Compile Include="Parser\CompilerException.cs" />
     <Compile Include="Parser\CompilerState.cs" />
     <Compile Include="Parser\ExpressionHelper.cs" />
     <Compile Include="Parser\ExpressionParseException.cs" />
     <Compile Include="Parser\Expressions\AccessIdentifier.cs" />
     <Compile Include="Parser\Expressions\Arguments.cs" />
     <Compile Include="Parser\Expressions\Brackets.cs" />
+    <Compile Include="Parser\Expressions\DeclarationStatement.cs" />
     <Compile Include="Parser\Expressions\ExpressionList.cs" />
+    <Compile Include="Parser\Expressions\LocalConstDeclaration.cs" />
+    <Compile Include="Parser\Expressions\LocalVariableDeclaration.cs" />
+    <Compile Include="Parser\Expressions\MultiStatement.cs" />
     <Compile Include="Parser\Expressions\PostDecrement.cs" />
     <Compile Include="Parser\Expressions\PostIncrement.cs" />
     <Compile Include="Parser\Expressions\PrimaryExpressionPart.cs" />
     <Compile Include="Parser\Expressions\Statement.cs" />
+    <Compile Include="Parser\Expressions\StatementList.cs" />
     <Compile Include="Parser\Expressions\TypeOrGeneric.cs" />
     <Compile Include="Parser\Expressions\Variable.cs" />
     <Compile Include="Parser\ExprEval.g3.lexer.cs">
@@ -89,12 +98,16 @@
     <Compile Include="Parser\ExprEval.g3.parser.cs">
       <DependentUpon>ExprEval.g3</DependentUpon>
     </Compile>
-    <Compile Include="Parser\HelperMethods.cs" />
+    <Compile Include="Parser\Expressions\InitializerValue.cs" />
+    <Compile Include="Parser\Expressions\MemberInitializer.cs" />
     <Compile Include="Parser\MethodResolution.cs" />
+    <Compile Include="Parser\NullLiteralType.cs" />
+    <Compile Include="Parser\Expressions\ObjectOrCollectionInitializer.cs" />
     <Compile Include="Parser\ParameterList.cs" />
+    <Compile Include="Parser\Expressions\ParameterPassingModeEnum.cs" />
     <Compile Include="Parser\TypeConversion.cs" />
     <Compile Include="Parser\TypeExtensions.cs" />
-    <Compile Include="Parser\TypeVariable.cs" />
+    <Compile Include="Parser\Expressions\TypeVariable.cs" />
     <Compile Include="Parser\UnknownMethodException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeRegistry.cs" />

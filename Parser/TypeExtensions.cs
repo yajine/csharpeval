@@ -33,6 +33,26 @@ namespace ExpressionEvaluator.Parser
                    type == typeof(Object);
         }
 
+        public static bool IsDelegate(this Type t)
+        {
+            return typeof(Delegate).IsAssignableFrom(t.BaseType);
+        }
+
+        public static bool IsReferenceType(this Type T)
+        {
+            return T.IsArray || T.IsClass || T.IsInterface || T.IsDelegate();
+        }
+
+        public static bool IsDerivedFrom(this Type T, Type superClass)
+        {
+            return superClass.IsAssignableFrom(T);
+        }
+
+        public static bool Implements(this Type T, Type interfaceType)
+        {
+            return T.GetInterfaces().Contains(interfaceType);
+        }
+
         public static bool IsDynamic(this Type type)
         {
             return type.GetInterfaces().Contains(typeof(IDynamicMetaObjectProvider));

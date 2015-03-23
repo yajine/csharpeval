@@ -7,7 +7,11 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            Samples.Sample1();
+            Samples.DefaultTypes();
+            Samples.Culture();
+            Samples.CodeBlocks();
+            //Samples.Sample1();
+            Console.WriteLine("Press any key to exit");
             Console.ReadLine();
         }
     }
