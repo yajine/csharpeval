@@ -25,15 +25,8 @@ namespace ExpressionEvaluator
 
         public Func<TResult> Compile()
         {
-            try
-            {
-                Expression = WrapExpression<TResult>(BuildTree());
-                return Expression.Lambda<Func<TResult>>(Expression).Compile();
-            }
-            catch (Exception ex)
-            {
-                throw new ParseException(Parser.ExpressionString, "An error occured while parsing the expression. See the InnerException property for details", ex);
-            }
+            Expression = WrapExpression<TResult>(BuildTree());
+            return Expression.Lambda<Func<TResult>>(Expression).Compile();
         }
 
         public Expression<T> GenerateLambda<T, TParam>(bool withScope, bool asCall)
@@ -110,20 +103,13 @@ namespace ExpressionEvaluator
 
         private T CompileWithScope<T, TScope>(bool asCall)
         {
-            try
+            var scopeParam = Expression.Parameter(typeof(TScope), "scope");
+            Expression = BuildTree(scopeParam, asCall);
+            if (!asCall)
             {
-                var scopeParam = Expression.Parameter(typeof(TScope), "scope");
-                Expression = BuildTree(scopeParam, asCall);
-                if (!asCall)
-                {
-                    Expression = WrapExpression<T>(Expression);
-                }
-                return Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }).Compile();
+                Expression = WrapExpression<T>(Expression);
             }
-            catch (Exception ex)
-            {
-                throw new ParseException(Parser.ExpressionString, "An error occured while parsing the expression. See the InnerException property for details", ex);
-            }
+            return Expression.Lambda<T>(Expression, new ParameterExpression[] { scopeParam }).Compile();
         }
 
         protected override void ClearCompiledMethod()

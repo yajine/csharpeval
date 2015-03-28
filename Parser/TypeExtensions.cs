@@ -19,7 +19,8 @@ namespace ExpressionEvaluator.Parser
                 typeof (ulong),
                 typeof (char),
                 typeof (float),
-                typeof (double)
+                typeof (double),
+                typeof (decimal)
             };
 
         public static bool IsNumericType(this Type type)

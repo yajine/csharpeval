@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using ExpressionEvaluator.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ExpressionEvaluator;
 
@@ -9,7 +10,7 @@ namespace ExpressionEvaluator.Tests
     public class LiteralParsingTests
     {
         [TestMethod]
-        [ExpectedException(typeof(ParseException))]
+        [ExpectedException(typeof(ExpressionParseException))]
         public void ParseInvalidNumericThrowsException()
         {
             var str = "2.55DX";

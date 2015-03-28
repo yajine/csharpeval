@@ -31,10 +31,10 @@ namespace ExpressionEvaluator.Tests
                 var ret = c.Eval();
                 Assert.Fail();
             }
-            catch (ParseException exception)
+            catch (ExpressionParseException exception)
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
-                var m = regex.Match(((ExpressionParseException)exception.InnerException).Message);
+                var m = regex.Match(exception.Message);
                 Assert.AreEqual(m.Groups[1].Value, "unavailableMethod");
                 Assert.AreEqual(m.Groups[2].Value, "Helper");
             }
@@ -53,10 +53,10 @@ namespace ExpressionEvaluator.Tests
                 var ret = c.Eval();
                 Assert.Fail();
             }
-            catch (ParseException exception)
+            catch (ExpressionParseException exception)
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
-                var m = regex.Match(((ExpressionParseException)exception.InnerException).Message);
+                var m = regex.Match(exception.Message);
                 Assert.AreEqual(m.Groups[1].Value, "unavailableProperty");
                 Assert.AreEqual(m.Groups[2].Value, "Helper");
             }
@@ -216,7 +216,7 @@ namespace ExpressionEvaluator.Tests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ParseException))]
+        [ExpectedException(typeof(ExpressionParseException))]
         public void ExpressionException()
         {
             var c = new CompiledExpression();
@@ -226,7 +226,7 @@ namespace ExpressionEvaluator.Tests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ParseException))]
+        [ExpectedException(typeof(ExpressionParseException))]
         public void ExpressionException2()
         {
             var c = new CompiledExpression();
@@ -235,7 +235,7 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ParseException))]
+        [ExpectedException(typeof(ExpressionParseException))]
         public void ExpressionException3()
         {
             var c = new CompiledExpression();

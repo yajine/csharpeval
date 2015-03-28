@@ -1,58 +1,125 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using Converter = System.Convert;
 
 namespace ExpressionEvaluator.Parser
 {
+    internal class InvalidNumericPromotionException : Exception
+    {
+
+    }
+
     internal class TypeConversion
     {
         private static Dictionary<Type, List<Type>> ImplicitNumericConversions = new Dictionary<Type, List<Type>>();
 
-
-        //public static void ConvertType(ExpressionType expressionType, ref Expression a, ref Expression b, Type type, Type[] otherTypes, Type[] invalidTypes, Type targetType)
+        //private static bool PromoteNumericWithAlternate(Type referenceType, ref Expression le, ref Expression re, Type[] alternateTypes, Type targetType)
         //{
-        //    if (targetType == null) targetType = type;
-
-        //    if (a.Type == type && b.Type != type)
+        //    if (le.Type == referenceType && alternateTypes.Contains(re.Type))
         //    {
-        //        if (otherTypes != null)
-        //        {
-        //            if (!otherTypes.Contains(b.Type)) return;
-        //        }
-        //        if (invalidTypes != null)
-        //        {
-        //            if (invalidTypes.Contains(b.Type))
-        //            {
-        //                // 
-        //                throw new Exception(string.Format("Cannot apply operator {0} to operands of type {1} and {2}", expressionType, a.Type, b.Type));
-        //            }
-        //        }
-        //        b = Expression.Convert(b, targetType);
-        //    }
-        //}
-
-        //public static bool ConvertTypes(ExpressionType expressionType, ref Expression le, ref Expression re, Type type, Type[] otherTypes = null, Type[] invalidTypes = null, Type targetType = null)
-        //{
-        //    if (le.Type == type || re.Type == type)
-        //    {
-        //        ConvertType(expressionType, ref le, ref re, type, otherTypes, invalidTypes, targetType);
-        //        ConvertType(expressionType, ref re, ref le, type, otherTypes, invalidTypes, targetType);
+        //        re = Expression.Convert(re, targetType);
         //        return true;
         //    }
+
+        //    if (re.Type == referenceType && alternateTypes.Contains(le.Type))
+        //    {
+        //        le = Expression.Convert(le, targetType);
+        //        return true;
+        //    }
+
+        //    return false;
+
+        //}
+
+        //private static bool PromoteNumeric(Type referenceType, Type thisOperandType, ref Expression otherOperand, Type[] invalidTypes = null)
+        //{
+        //    if (thisOperandType == referenceType && otherOperand.Type != referenceType)
+        //    {
+        //        if (invalidTypes != null && invalidTypes.Contains(otherOperand.Type))
+        //        {
+        //            throw new InvalidNumericPromotionException();
+        //        }
+
+        //        otherOperand = Expression.Convert(otherOperand, referenceType);
+        //        return true;
+        //    }
+
         //    return false;
         //}
 
-        //public static void PromoteNumericBinary(ExpressionType expressionType, ref Expression le, ref Expression re)
+
+        //private static bool PromoteNumeric(Type referenceType, ref Expression le, ref Expression re, Type[] invalidTypes = null)
         //{
-        //    // 7.3.6.2 
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(decimal), null, new Type[] { typeof(float), typeof(double) })) return;
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(double))) return;
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(float))) return;
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(ulong), null, new Type[] { typeof(sbyte), typeof(short), typeof(int), typeof(long) })) return;
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(long))) return;
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(uint), new Type[] { typeof(sbyte), typeof(short), typeof(int) }, null, typeof(long))) return;
-        //    if (ConvertTypes(expressionType, ref le, ref re, typeof(uint))) return;
-        //    ConvertTypes(expressionType, ref le, ref re, typeof(int));
+        //    return PromoteNumeric(referenceType, le.Type, ref re, invalidTypes) ||
+        //    PromoteNumeric(referenceType, re.Type, ref le, invalidTypes);
+        //}
+
+        //private static bool PromoteNumericInt(ref Expression le, ref Expression re)
+        //{
+        //    le = Expression.Convert(le, typeof(int));
+        //    re = Expression.Convert(re, typeof(int));
+        //    return true;
+        //}
+
+
+        // 7.3.6.2 Binary numeric promotions
+        //public static bool BinaryNumericPromotion(ExpressionType expressionType, ref Expression le, ref Expression re)
+        //{
+        //    try
+        //    {
+        //        // Binary numeric promotion occurs for the operands of the predefined +, –, *, /, %, &, |, ^, ==, !=, >, <, >=, and <= binary operators. Binary numeric promotion implicitly converts both operands to a common type which, in case of the non-relational operators, also becomes the result type of the operation. Binary numeric promotion consists of applying the following rules, in the order they appear here:
+        //        switch (expressionType)
+        //        {
+        //            case ExpressionType.Add:
+        //            case ExpressionType.AddChecked:
+        //            case ExpressionType.Subtract:
+        //            case ExpressionType.SubtractChecked:
+        //            case ExpressionType.Multiply:
+        //            case ExpressionType.MultiplyChecked:
+        //            case ExpressionType.Divide:
+        //            case ExpressionType.Modulo:
+        //            case ExpressionType.And:
+        //            case ExpressionType.Or:
+        //            case ExpressionType.ExclusiveOr:
+        //            case ExpressionType.Equal:
+        //            case ExpressionType.NotEqual:
+        //            case ExpressionType.GreaterThan:
+        //            case ExpressionType.LessThan:
+        //            case ExpressionType.GreaterThanOrEqual:
+        //            case ExpressionType.LessThanOrEqual:
+        //                if (le.Type.IsNumericType() && re.Type.IsNumericType())
+        //                {
+        //                    // •	If either operand is of type decimal, the other operand is converted to type decimal, or a binding-time error occurs if the other operand is of type float or double.
+        //                    return PromoteNumeric(typeof(decimal), ref le, ref re, new Type[] { typeof(float), typeof(double) }) ||
+        //                        // •	Otherwise, if either operand is of type double, the other operand is converted to type double.
+        //                    PromoteNumeric(typeof(double), ref le, ref re) ||
+        //                        // •	Otherwise, if either operand is of type float, the other operand is converted to type float.
+        //                    PromoteNumeric(typeof(float), ref le, ref re) ||
+        //                        // •	Otherwise, if either operand is of type ulong, the other operand is converted to type ulong, or a binding-time error occurs if the other operand is of type sbyte, short, int, or long.
+        //                    PromoteNumeric(typeof(ulong), ref le, ref re, new Type[] { typeof(sbyte), typeof(short), typeof(int), typeof(long) }) ||
+        //                        // •	Otherwise, if either operand is of type long, the other operand is converted to type long.
+        //                    PromoteNumeric(typeof(long), ref le, ref re) ||
+        //                        // •	Otherwise, if either operand is of type uint and the other operand is of type sbyte, short, or int, both operands are converted to type long.
+        //                    PromoteNumericWithAlternate(typeof(uint), ref le, ref re, new Type[] { typeof(sbyte), typeof(short), typeof(int) }, typeof(long)) ||
+        //                        // •	Otherwise, if either operand is of type uint, the other operand is converted to type uint.
+        //                    PromoteNumeric(typeof(uint), ref le, ref re) ||
+        //                        // •	Otherwise, both operands are converted to type int.
+        //                    PromoteNumericInt(ref le, ref re)
+        //                   ;
+        //                }
+        //                // Note that the first rule disallows any operations that mix the decimal type with the double and float types. The rule follows from the fact that there are no implicit conversions between the decimal type and the double and float types.
+        //                // Also note that it is not possible for an operand to be of type ulong when the other operand is of a signed integral type. The reason is that no integral type exists that can represent the full range of ulong as well as the signed integral types.
+        //                break;
+        //        }
+        //    }
+        //    catch (InvalidNumericPromotionException)
+        //    {
+        //        throw new Exception(string.Format("Cannot apply operator {0} to operands of type {1} and {2}", expressionType, le.Type, re.Type));
+        //    }
+
+        //    return false;
         //}
 
         readonly Dictionary<Type, int> _typePrecedence = null;
@@ -123,8 +190,7 @@ namespace ExpressionEvaluator.Parser
         }
 
         // 6.1.6 Implicit Reference Conversions
-
-        public static Expression ReferenceConversion(Expression dest, Expression src)
+        public static bool ReferenceConversion(ref Expression src, Type destType)
         {
             //if (!src.Type.IsValueType)
             //{
@@ -133,12 +199,7 @@ namespace ExpressionEvaluator.Parser
             //        src = Expression.Convert(src, dest.Type);
             //    }
             //}
-            return src;
-        }
-
-        public static bool IsNullableType(Type type)
-        {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
+            return false;
         }
 
         // 6.1.7 Boxing Conversions
@@ -148,73 +209,150 @@ namespace ExpressionEvaluator.Parser
         // A boxing conversion exists from a nullable-type to a reference type, if and only if a boxing conversion exists from the underlying non-nullable-value-type to the reference type.
         // A value type has a boxing conversion to an interface type I if it has a boxing conversion to an interface type I0 and I0 has an identity conversion to I.
 
-        public static Expression BoxingConversion(Expression dest, Expression src)
+        public static bool BoxingConversion(ref Expression src, Type destType)
         {
-            if (src.Type.IsValueType && !IsNullableType(src.Type) && dest.Type.IsDynamicOrObject())
+            if (src.Type.IsValueType && !src.Type.IsNullable() && destType.IsDynamicOrObject())
             {
-                src = Expression.Convert(src, dest.Type);
+                src = Expression.Convert(src, destType);
+                return true;
             }
-            return src;
+            return false;
         }
 
 
         //6.1.4 Nullable Type conversions
-        public static Expression NullableConverion(Expression dest, Expression src)
+        public static bool NullableConverion(ref Expression src, Type destType)
         {
-            if (src.Type.IsNullable() && Nullable.GetUnderlyingType(src.Type) == dest.Type)
+            if (src.Type.IsNullable() && Nullable.GetUnderlyingType(src.Type) == destType)
             {
                 src = Expression.Property(src, "Value");
+                return true;
             }
-            if (dest.Type.IsNullable() && Nullable.GetUnderlyingType(dest.Type) == src.Type)
+            if (destType.IsNullable() && Nullable.GetUnderlyingType(destType) == src.Type)
             {
-                src = Expression.Convert(src, dest.Type);
+                src = Expression.Convert(src, destType);
+                return true;
             }
-            return src;
+            return false;
         }
 
 
         // 6.1.5 Null literal conversions
         // An implicit conversion exists from the null literal to any nullable type. 
         // This conversion produces the null value (§4.1.10) of the given nullable type.
-        public static Expression NullLiteralConverion(Expression dest, Expression src)
+        public static bool NullLiteralConverion(ref Expression src, Type destType)
         {
-            if (src.NodeType == ExpressionType.Constant && src.Type == typeof(object) && ((ConstantExpression)src).Value == null && IsNullableType(dest.Type))
+            if (src.NodeType == ExpressionType.Constant && src.Type == typeof(object) && ((ConstantExpression)src).Value == null && destType.IsNullable())
             {
-                return Expression.Constant(Activator.CreateInstance(dest.Type), dest.Type);
+                src = Expression.Constant(Activator.CreateInstance(destType), destType);
+                return true;
             }
-            return src;
+            return false;
         }
 
         // 6.1 Implicit Conversions
-        public static Expression ImplicitConversion(Expression dest, Expression src)
+        public static bool ImplicitConversion(ref Expression src, Type destType)
         {
-            if (dest.Type != src.Type)
-            {
-                if (dest.Type.IsNumericType() && src.Type.IsNumericType())
-                {
-                    src = ImplicitNumericConversion(src, dest.Type);
-                }
-                src = NullableConverion(dest, src);
-                src = NullLiteralConverion(dest, src);
-                src = ReferenceConversion(dest, src);
-                src = BoxingConversion(dest, src);
-                src = DynamicConversion(dest, src);
-            }
-            return src;
+            return src.Type != destType && (
+                    (destType.IsNumericType() && src.Type.IsNumericType() && ImplicitNumericConversion(ref src, destType)) ||
+                    NullableConverion(ref src, destType) ||
+                    NullLiteralConverion(ref src, destType) ||
+                    ReferenceConversion(ref src, destType) ||
+                    BoxingConversion(ref src, destType) ||
+                    DynamicConversion(ref src, destType) ||
+                    ImplicitConstantConversion(ref src, destType)
+                );
         }
 
-        public static Expression DynamicConversion(Expression dest, Expression src)
+        // 6.1.9 Implicit constant expression conversions
+        public static bool ImplicitConstantConversion(ref Expression src, Type destType)
+        {
+            //An implicit constant expression conversion permits the following conversions:
+            if (src.NodeType == ExpressionType.Constant)
+            {
+                //•	A constant-expression (§7.19) of type int can be converted to type sbyte, byte, short, ushort, uint, or ulong, provided the value of the constant-expression is within the range of the destination type.
+                if (src.Type == typeof(int))
+                {
+                    var value = (int)((ConstantExpression)src).Value;
+                    if (destType == typeof (sbyte))
+                    {
+                        if (value >= sbyte.MinValue && value <= sbyte.MinValue)
+                        {
+                            src = Expression.Convert(src, typeof(sbyte));
+                            return true;                         
+                        }
+                    }
+                    if (destType == typeof(byte))
+                    {
+                        if (value >= byte.MinValue && value <= byte.MaxValue)
+                        {
+                            src = Expression.Convert(src, typeof(byte));
+                            return true;                         
+                        }
+                    }
+                    if (destType == typeof(short))
+                    {
+                        if (value >= short.MinValue && value <= short.MaxValue)
+                        {
+                            src = Expression.Convert(src, typeof(short));
+                            return true;                         
+                        }
+                    }
+                    if (destType == typeof(ushort))
+                    {
+                        if (value >= ushort.MinValue && value <= ushort.MaxValue)
+                        {
+                            src = Expression.Convert(src, typeof(ushort));
+                            return true;                         
+                        }
+                    }
+                    if (destType == typeof(uint))
+                    {
+                        if (value >= uint.MinValue && value <= uint.MaxValue)
+                        {
+                            src = Expression.Convert(src, typeof(uint));
+                            return true;                         
+                        }
+                    }
+                    if (destType == typeof(ulong))
+                    {
+                        if (value >= 0 && Converter.ToUInt64(value) <= ulong.MaxValue)
+                        {
+                            src = Expression.Convert(src, typeof(ulong));
+                            return true;
+                        }
+                    }
+                }
+                //•	A constant-expression of type long can be converted to type ulong, provided the value of the constant-expression is not negative.
+                if (src.Type == typeof(long))
+                {
+                    var value = (long)((ConstantExpression)src).Value;
+                    if (destType == typeof(ulong))
+                    {
+                        if (value >= 0)
+                        {
+                            src = Expression.Convert(src, typeof(ulong));
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool DynamicConversion(ref Expression src, Type destType)
         {
             if (src.Type.IsObject())
             {
-                return Expression.Convert(src, dest.Type);
+                src = Expression.Convert(src, destType);
+                return true;
             }
-            return src;
+            return false;
         }
 
         // 6.1.2 Implicit numeric conversions
 
-        public static Expression ImplicitNumericConversion(Expression src, Type target)
+        public static bool ImplicitNumericConversion(ref Expression src, Type target)
         {
             List<Type> allowed;
             if (ImplicitNumericConversions.TryGetValue(src.Type, out allowed))
@@ -222,9 +360,11 @@ namespace ExpressionEvaluator.Parser
                 if (allowed.Contains(target))
                 {
                     src = Expression.Convert(src, target);
+                    return true;
                 }
+                return false;
             }
-            return src;
+            return false;
         }
 
         TypeConversion()

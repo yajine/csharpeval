@@ -141,7 +141,9 @@ namespace ExpressionEvaluator.Parser
 
             }
 
-            return Expression.Assign(le, TypeConversion.ImplicitConversion(le, re));
+            TypeConversion.ImplicitConversion(ref re, le.Type);
+
+            return Expression.Assign(le, re);
         }
 
         public static Type[] InferTypes(MethodInfo methodInfo, List<Expression> args)
@@ -631,7 +633,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ParseIntLiteral(string token)
         {
-            var m = Regex.Match(token, "(\\d+)(l|u|ul|lu)?", RegexOptions.IgnoreCase);
+            var m = Regex.Match(token, "(\\d+)(ul|lu|l|u)?", RegexOptions.IgnoreCase);
             string suffix = "";
 
             if (m.Success)
@@ -787,10 +789,10 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                var ore = re;
-                var ole = le;
-                re = TypeConversion.ImplicitConversion(ole, ore);
-                le = TypeConversion.ImplicitConversion(ore, ole);
+                //var ore = re;
+                //var ole = le;
+                var t = TypeConversion.ImplicitConversion(ref le, re.Type) || TypeConversion.ImplicitConversion(ref re, le.Type);
+                //TypeConversion.BinaryNumericPromotion(expressionType, ref le, ref re);
                 //le = TypeConversion.DynamicConversion(re, le);
                 return GetBinaryOperator(le, re, expressionType);
             }
@@ -998,9 +1000,8 @@ namespace ExpressionEvaluator.Parser
                 condition = Expression.Dynamic(binderM, typeof(bool), expArgs);
             }
 
-            // perform implicit conversion on known types ???
-            condition = TypeConversion.Convert(condition, typeof(bool));
-            TypeConversion.Convert(ref ifFalse, ref ifTrue);
+            TypeConversion.ImplicitConversion(ref condition, typeof(bool));
+            var x = TypeConversion.ImplicitConversion(ref ifTrue, ifFalse.Type) || TypeConversion.ImplicitConversion(ref ifFalse, ifTrue.Type);
             return Expression.Condition(condition, ifTrue, ifFalse);
         }
 
