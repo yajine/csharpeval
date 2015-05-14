@@ -51,8 +51,19 @@ namespace ExpressionEvaluator.Parser
 
         public static bool Implements(this Type T, Type interfaceType)
         {
-            return T.GetInterfaces().Contains(interfaceType);
+            return T.GetInterfaces().Any(x =>
+            {
+                return x.Name == interfaceType.Name;
+            });
         }
+
+        //public static bool HasGenericParameter(this Type T)
+        //{
+        //    return T.GetInterfaces().Any(x =>
+        //    {
+        //        return x.Name == interfaceType.Name;
+        //    });
+        //}
 
         public static bool IsDynamic(this Type type)
         {

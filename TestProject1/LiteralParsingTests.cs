@@ -86,5 +86,15 @@ namespace ExpressionEvaluator.Tests
             var expression = new CompiledExpression(exp) { TypeRegistry = reg };
             var value = expression.Eval();
         }
+
+        [TestMethod]
+        public void DateType()
+        {
+            var t = new TypeRegistry();
+            t.RegisterDefaultTypes();
+            var _compiledExpr = new CompiledExpression("DateTime.Now.ToString('dd/MM/yyyy')") { TypeRegistry = t };
+            var vv = _compiledExpr.Eval();
+        }
+
     }
 }

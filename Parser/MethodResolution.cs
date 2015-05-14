@@ -7,6 +7,27 @@ using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
+
+    public class TypeInferrence
+    {
+        public Argument Argument { get; set; }
+        public ParameterInfo Parameter { get; set; }
+        public Type[] UnfixedBounds { get; set; }
+        public Type FixedType { get; set; }
+    }
+
+    public class TypeParameter
+    {
+        public TypeParameter()
+        {
+            LowerBounds = new List<Type>();
+            Unfixed = new List<Type>();
+        }
+        public string Name { get; set; }
+        public List<Type> LowerBounds { get; set; }
+        public List<Type> Unfixed { get; set; }
+    }
+
     internal class MethodResolution
     {
         private static Dictionary<Type, List<Type>> NumConv = new Dictionary<Type, List<Type>> {
@@ -25,6 +46,90 @@ namespace ExpressionEvaluator.Parser
         private static Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
         {
             return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
+        }
+
+
+        public static List<TypeInferrence> SecondPhase(ApplicableFunctionMember member, IEnumerable<Argument> arguments)
+        {
+            return null;
+        }
+
+        //        7.5.2.9 Lower-bound inferences
+        public void MakeLowerBoundInference(TypeParameter X, Type U, Type V)
+        {
+            //A lower-bound inference from a type U to a type V is made as follows:
+            //•	If V is one of the unfixed Xi then U is added to the set of lower bounds for Xi.
+            if (X.Unfixed.Contains(V))
+            {
+                X.LowerBounds.Add(U);
+            }
+
+            //•	Otherwise, if V is the type V1? and U is the type U1? then a lower bound inference is made from U1 to V1.
+            //•	Otherwise, sets U1…Uk and V1…Vk are determined by checking if any of the following cases apply:
+            //•	V is an array type V1[…]and U is an array type U1[…] (or a type parameter whose effective base type is U1[…]) of the same rank
+            //•	V is one of IEnumerable<V1>, ICollection<V1> or IList<V1> and U is a one-dimensional array type U1[](or a type parameter whose effective base type is U1[]) 
+            //•	V is a constructed class, struct, interface or delegate type C<V1…Vk> and there is a unique type C<U1…Uk> such that U (or, if U is a type parameter, its effective base class or any member of its effective interface set) is identical to, inherits from (directly or indirectly), or implements (directly or indirectly) C<U1…Uk>.
+            //(The “uniqueness” restriction means that in the case interface C<T>{} class U: C<X>, C<Y>{}, then no inference is made when inferring from U to C<T> because U1 could be X or Y.)
+            //If any of these cases apply then an inference is made from each Ui to the corresponding Vi as follows:
+            //•	If  Ui is not known to be a reference type then an exact inference is made
+            //•	Otherwise, if U is an array type then a lower-bound inference is made
+            //•	Otherwise, if V is C<V1…Vk> then inference depends on the i-th type parameter of C:
+            //•	If it is covariant then a lower-bound inference is made.
+            //•	If it is contravariant then an upper-bound inference is made.
+            //•	If it is invariant then an exact inference is made.
+            //•	Otherwise, no inferences are made.
+
+        }
+
+
+
+        //7.5.2.1 The first phase
+        public static List<TypeInferrence> FirstPhase(ApplicableFunctionMember member, IEnumerable<Argument> arguments)
+        {
+            var genericArgs = member.Member.GetGenericArguments().ToList();
+            var parameters = member.Member.GetParameters().ToList();
+            var typeParameters = genericArgs.Select(x => new TypeParameter());
+
+            var E = arguments.ToList();
+
+            //            For each of the method arguments Ei:
+            for (var i = 0; i < E.Count(); i++)
+            {
+                if (E[i].Expression.NodeType == ExpressionType.Lambda)
+                {
+                    //•	If Ei is an anonymous function, an explicit parameter type inference (§7.5.2.7) is made from Ei to Ti
+                }
+                else if (parameters[i].ParameterType.IsValueType)
+                {
+                    //•	Otherwise, if Ei has a type U and xi is a value parameter then a lower-bound inference is made from U to Ti.
+                }
+                else if (parameters[i].IsOut || parameters[i].ParameterType.IsByRef)
+                {
+                    //•	Otherwise, if Ei has a type U and xi is a ref or out parameter then an exact inference is made from U to Ti. 
+                }
+            }
+            //•	Otherwise, no inference is made for this argument.
+
+            return null;
+        }
+
+
+        // 7.5.2 Type inference 
+        // http://blogs.msdn.com/b/ericlippert/archive/2012/10/02/how-do-we-ensure-that-method-type-inference-terminates.aspx
+        // Add bounds to type parameters based on all non-lambda arguments, and all lambda arguments where the delegate type has no type parameters in its inputs.
+        // Loop
+        //   Is every type parameter fixed?
+        //      Type inference has succeeded. Terminate the algorithm.
+        //   Is there any lambda argument converted to a delegate type where the inputs of the delegate type are all known and the output type involves an unfixed type parameter?
+        //      Deduce the return type of all such lambdas and make inferences that add bounds to the corresponding delegate's output types.
+        //   Is there any unfixed, bounded type parameter that does not appear in an output type of a delegate that has unfixed input types?
+        //      Fix all such type parameters and go back to the top of the loop.
+        //   Is there any unfixed, bounded type parameter such that an unfixed type parameter depends on it, directly or indirectly?
+        //      Fix all such type parameters and go back to the top of the loop.
+        //   If we make it here then we failed to make progress; we have just as many fixed type parameters as we started with. Type inference fails. Terminate the algorithm.
+        public static List<TypeInferrence> TypeInference(ApplicableFunctionMember member, IEnumerable<Argument> arguments)
+        {
+            return null;
         }
 
         public static bool CanConvertType(object value, bool isLiteral, Type from, Type to)
@@ -232,7 +337,7 @@ namespace ExpressionEvaluator.Parser
                     if (pInfo.IsOptional)
                     {
                         // If an argument for this parameter position was specified, check its type
-                        if (haveArg && !CanConvertType(((ConstantExpression)args[argCount].Expression).Value, false, args[argCount].Expression.Type, pInfo.ParameterType))
+                        if (haveArg && !HasImplicitConversion(args[argCount].Expression, args[argCount].Expression.Type, pInfo.ParameterType))
                         {
                             isMatch = false;
                         }
@@ -244,10 +349,11 @@ namespace ExpressionEvaluator.Parser
                         if (argCount < args.Count)
                         {
                             isExpanded = true;
+                            var elementType = pInfo.ParameterType.GetElementType();
 
                             for (int j = pInfo.Position; j < args.Count; j++)
                             {
-                                if (!CanConvertType(null, false, args[j].Expression.Type, pInfo.ParameterType.GetElementType()))
+                                if (!HasImplicitConversion(args[j].Expression, args[j].Expression.Type, elementType))
                                 {
                                     isMatch = false;
                                 }
@@ -260,7 +366,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     else
                     { // Checking non-optional, non-ParamArray arguments
-                        if (!haveArg || !CanConvertType(null, false, args[argCount].Expression.Type, pInfo.ParameterType))
+                        if (!haveArg || !HasImplicitConversion(args[argCount].Expression, args[argCount].Expression.Type, pInfo.ParameterType))
                         {
                             isMatch = false;
                         }
@@ -334,13 +440,13 @@ namespace ExpressionEvaluator.Parser
                     //•	If the nullable conversion is from S? to T?:
                     // o	If the source value is null (HasValue property is false), the result is the null value of type T?.
                     // o	Otherwise, the conversion is evaluated as an unwrapping from S? to S, followed by the underlying conversion from S to T, followed by a wrapping (§4.1.10) from T to T?.
-                    return HasImplicitConversion(Nullable.GetUnderlyingType(S), Nullable.GetUnderlyingType(T));
+                    return HasImplicitConversion(null, Nullable.GetUnderlyingType(S), Nullable.GetUnderlyingType(T));
 
                 }
                 else
                 {
                     //•	If the nullable conversion is from S to T?, the conversion is evaluated as the underlying conversion from S to T followed by a wrapping from T to T?.
-                    return HasImplicitConversion(S, Nullable.GetUnderlyingType(T));
+                    return HasImplicitConversion(null, S, Nullable.GetUnderlyingType(T));
                 }
             }
             return false;
@@ -348,7 +454,7 @@ namespace ExpressionEvaluator.Parser
 
 
         /// 6.1.5 Null literal conversions
-        public static bool NullLiteralConversion(Expression E, Type T1)
+        public static bool HasNullLiteralConversion(Expression E, Type T1)
         {
             // An implicit conversion exists from the null literal to any nullable type. This conversion produces the null value (§4.1.10) of the given nullable type.
             return T1.IsNullable() && ((E.NodeType == ExpressionType.Constant) && ((ConstantExpression)E).Value == null);
@@ -384,8 +490,8 @@ namespace ExpressionEvaluator.Parser
                 (S.GetArrayRank() == T.GetArrayRank()) &&
                 (S.GetElementType().IsReferenceType() && T.GetElementType().IsReferenceType()) &&
                 (HasImplicitReferenceConversion(S.GetElementType(), T.GetElementType()))
-            ));
-            //•	From any array-type to System.Array and the interfaces it implements.
+            )) ||
+                //•	From any array-type to System.Array and the interfaces it implements.
 
             //•	From a single-dimensional array type S[] to System.Collections.Generic.IList<T> and its base interfaces, provided that there is an implicit identity or reference conversion from S to T.
 
@@ -397,30 +503,95 @@ namespace ExpressionEvaluator.Parser
             //•	From any reference-type to a reference-type T if it has an implicit identity or reference conversion to a reference-type T0 and T0 has an identity conversion to T.
 
             //•	From any reference-type to an interface or delegate type T if it has an implicit identity or reference conversion to an 
-            // interface or delegate type T0 and T0 is variance-convertible (§13.1.3.2) to T.
+                // interface or delegate type T0 and T0 is variance-convertible (§13.1.3.2) to T.
 
             //•	Implicit conversions involving type parameters that are known to be reference types. See §6.1.10 for more details on implicit conversions involving type parameters.
 
             //The implicit reference conversions are those conversions between reference-types that can be proven to always succeed, and therefore require no checks at run-time.
 
+            S.IsClass && T.IsInterface && S.IsGenericType && S.GetGenericTypeDefinition().Implements(T);
+
             //Reference conversions, implicit or explicit, never change the referential identity of the object being converted. In other words, while a reference conversion may change the type of the reference, it never changes the type or value of the object being referred to.
         }
 
-        public static bool HasImplicitConversion(Type T1, Type T2)
+        // 6.1.9 Implicit constant expression conversions
+        public static bool HasImplicitConstantExpressionConversions(Expression E, Type T2)
+        {
+            //An implicit constant expression conversion permits the following conversions:
+            //•	A constant-expression (§7.19) of type int can be converted to type sbyte, byte, short, ushort, uint, or ulong, provided the value of the constant-expression 
+            //is within the range of the destination type.
+            if (E != null && E.NodeType == ExpressionType.Constant)
+            {
+                if (E.Type == typeof(int))
+                {
+                    var value = (int)((ConstantExpression)E).Value;
+                    return (T2 == typeof(sbyte) && value >= sbyte.MinValue && value <= sbyte.MaxValue) ||
+                    (T2 == typeof(byte) && value >= byte.MinValue && value <= byte.MaxValue) ||
+                    (T2 == typeof(short) && value >= short.MinValue && value <= short.MaxValue) ||
+                    (T2 == typeof(ushort) && value >= ushort.MinValue && value <= ushort.MaxValue) ||
+                    (T2 == typeof(uint) && value >= uint.MinValue && value <= uint.MaxValue) ||
+                    (T2 == typeof(ulong) && (ulong)value >= ulong.MinValue && (ulong)value <= ulong.MaxValue);
+                }
+                if (E.Type == typeof(long))
+                {
+                    //•	A constant-expression of type long can be converted to type ulong, provided the value of the constant-expression is not negative.
+                    var value = (long)((ConstantExpression)E).Value;
+                    return (T2 == typeof(ulong) && value >= 0);
+                }
+            }
+            return false;
+        }
+
+        // 6.1.10 Implicit conversions involving type parameters
+        public static bool HasImplicitConversionInvolvingTypeParameters(Type T1, Type T2)
+        {
+            return T2.IsGenericParameter && true;
+            //The following implicit conversions exist for a given type parameter T:
+            //•	From T to its effective base class C, from T to any base class of C, and from T to any interface implemented by C. At run-time, 
+            // if T is a value type, the conversion is executed as a boxing conversion. 
+            // Otherwise, the conversion is executed as an implicit reference conversion or identity conversion.
+
+            //•	From T to an interface type I in T’s effective interface set and from T to any base interface of I. 
+            // At run-time, if T is a value type, the conversion is executed as a boxing conversion. Otherwise, the 
+            // conversion is executed as an implicit reference conversion or identity conversion.
+
+            //•	From T to a type parameter U, provided T depends on U (§10.1.5). At run-time, if U is a value type, then T and U are 
+            // necessarily the same type and no conversion is performed. Otherwise, if T is a value type, the conversion is executed as a boxing conversion. 
+            // Otherwise, the conversion is executed as an implicit reference conversion or identity conversion.
+
+            //•	From the null literal to T, provided T is known to be a reference type.
+
+            //•	From T to a reference type I if it has an implicit conversion to a reference type S0 and S0 has an identity conversion to S. 
+            // At run-time the conversion is executed the same way as the conversion to S0.
+
+            //•	From T to an interface type I if it has an implicit conversion to an interface or delegate type I0 and I0 is variance-convertible 
+            // to I (§13.1.3.2). At run-time, if T is a value type, the conversion is executed as a boxing conversion. Otherwise, the
+            // conversion is executed as an implicit reference conversion or identity conversion.
+
+            //If T is known to be a reference type (§10.1.5), the conversions above are all classified as implicit reference conversions (§6.1.6). 
+            // If T is not known to be a reference type, the conversions above are classified as boxing conversions (§6.1.7).
+
+        }
+
+
+        public static bool HasImplicitConversion(Expression E, Type T1, Type T2)
         {
             return HasIdentityConversion(T1, T2) ||
                 HasImplicitNumericConversion(T1, T2) ||
                 HasImplicitNullableConversion(T1, T2) ||
-                HasImplicitReferenceConversion(T1, T2);
+                HasNullLiteralConversion(E, T2) ||
+                HasImplicitReferenceConversion(T1, T2) ||
+                HasImplicitConstantExpressionConversions(E, T2) ||
+                HasImplicitConversionInvolvingTypeParameters(T1, T2);
         }
 
         //7.5.3.5 Better conversion target
-        public static bool IsBetterConversionTarget(Type T1, Type T2)
+        public static bool IsBetterConversionTarget(Expression E, Type T1, Type T2)
         {
             // Given two different types T1 and T2, T1 is a better conversion target than T2 if at least one of the following holds:
             // •	An implicit conversion from T1 to T2 exists, and no implicit conversion from T2 to T1 exists
-            return HasImplicitConversion(T1, T2) && !HasImplicitConversion(T2, T1) ||
-            // •	T1 is a signed integral type and T2 is an unsigned integral type. Specifically:
+            return HasImplicitConversion(E, T1, T2) && !HasImplicitConversion(E, T2, T1) ||
+                // •	T1 is a signed integral type and T2 is an unsigned integral type. Specifically:
             (
                 //o	T1 is sbyte and T2 is byte, ushort, uint, or ulong
                 (T1 == typeof(sbyte) && (T2 == typeof(byte) || T2 == typeof(ushort) || T2 == typeof(uint) || T2 == typeof(ulong))) ||
@@ -429,7 +600,7 @@ namespace ExpressionEvaluator.Parser
                 //o	T1 is int and T2 is uint, or ulong
                 (T1 == typeof(int) && (T2 == typeof(uint) || T2 == typeof(ulong))) ||
                 //o	T1 is long and T2 is ulong
-                (T1 == typeof(long) && T2 == typeof(ulong)) 
+                (T1 == typeof(long) && T2 == typeof(ulong))
             );
         }
 
@@ -440,11 +611,11 @@ namespace ExpressionEvaluator.Parser
             // that converts from an expression E to a type T2, C1 is a better conversion than C2 if at least one of the following holds:
             var S = E.Type;
             //•	E has a type S and an identity conversion exists from S to T1 but not from S to T2
-            if (HasIdentityConversion(S,T1) && !HasIdentityConversion(S, T2)) return true;
+            if (HasIdentityConversion(S, T1) && !HasIdentityConversion(S, T2)) return true;
             //•	E is not an anonymous function and T1 is a better conversion target than T2 (§7.5.3.5)
             if (E.NodeType != ExpressionType.Lambda)
             {
-                return IsBetterConversionTarget(T1, T2);
+                return IsBetterConversionTarget(E, T1, T2);
             }
             else
             {
@@ -464,11 +635,11 @@ namespace ExpressionEvaluator.Parser
             ParameterInfo currentParameter = null;
 
             ParameterInfo paramArrayParameter =
-                parameters.FirstOrDefault(p => p.GetCustomAttributes(typeof (ParamArrayAttribute), false).Length > 0);
+                parameters.FirstOrDefault(p => p.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0);
 
             for (int i = 0; i < argCount; i++)
             {
-                if (i< paramArrayParameter.Position)
+                if (i < paramArrayParameter.Position)
                 {
                     expandedParameterTypes[i] = parameters[i].ParameterType;
                 }
@@ -843,7 +1014,7 @@ namespace ExpressionEvaluator.Parser
                 foreach (var iinterface in type.GetInterfaces())
                 {
                     results.AddRange(GetMethodInfos(iinterface, membername));
-                }                
+                }
             }
 
             // Traverse through class hierarchy

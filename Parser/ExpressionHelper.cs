@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using ExpressionEvaluator.Parser.Expressions;
 using Microsoft.CSharp.RuntimeBinder;
@@ -395,39 +396,79 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                return MethodInvokeExpression(type, instance, member, args);
+                var method = MethodInvokeExpression(type, instance, member, args);
+
+                if (method == null)
+                {
+                    var extensionmethodArgs = new List<Argument>() { new Argument() { Expression = instance } };
+                    extensionmethodArgs.AddRange(args);
+
+                    // Should try an Extension Method call here...
+                    method = MethodInvokeExpression(typeof(Enumerable), null, member, extensionmethodArgs);
+                }
+
+                return method;
             }
 
             return null;
         }
 
+
+
+
         private static Expression MethodInvokeExpression(Type type, Expression instance, TypeOrGeneric member,
                                                    IEnumerable<Argument> args)
         {
             var membername = member.Identifier;
+            Type[] typeArgs = null;
+            var applicableMembers = MethodResolution.GetApplicableMembers(type, member, args).ToList();
+            var genericMethods = applicableMembers.Where(x => x.Member.IsGenericMethod).ToList();
 
-            var mis = MethodResolution.GetApplicableMembers(type, member, args);
-            var afm = MethodResolution.OverloadResolution(mis, args);
+            Dictionary<ApplicableFunctionMember, List<TypeInferrence>> methodTypeInferences = new Dictionary<ApplicableFunctionMember, List<TypeInferrence>>();
 
-            //InferTypes(methodInfo, args);
-
-            // if the method is generic, try to get type args from method, if none, try to get type args from parameters
-
-            if (afm != null)
+            if (genericMethods.Any() && member.TypeArgs == null)
             {
-                var parameterInfos = afm.Member.GetParameters();
+                foreach (var genericMethod in genericMethods)
+                {
+                    var inferences = MethodResolution.TypeInference(genericMethod, args);
+                    if (inferences != null)
+                    {
+                        methodTypeInferences.Add(genericMethod, inferences);
+                    }
+                }
+            }
+
+            var applicableMemberFunction = MethodResolution.OverloadResolution(applicableMembers, args);
+
+            if (applicableMemberFunction != null)
+            {
+                var parameterInfos = applicableMemberFunction.Member.GetParameters();
                 var argExps = args.Select(x => x.Expression).ToList();
 
                 ParameterInfo paramArrayParameter = parameterInfos.FirstOrDefault(p => p.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0);
                 List<Expression> newArgs2 = null;
+
+                if (member.TypeArgs != null)
+                {
+                    typeArgs = member.TypeArgs.ToArray();
+                }
 
                 if (paramArrayParameter != null)
                 {
                     newArgs2 = argExps.Take(parameterInfos.Length - 1).ToList();
                     var paramArgs2 = argExps.Skip(parameterInfos.Length - 1).ToList();
 
+                    var typeArgCount = parameterInfos.Count(x => x.ParameterType.IsGenericParameter);
+                    if (typeArgs == null && typeArgCount > 0) typeArgs = new Type[typeArgCount];
+
+
                     for (var i = 0; i < parameterInfos.Length - 1; i++)
                     {
+                        if (parameterInfos[i].ParameterType.IsGenericParameter)
+                        {
+                            var genericParameterPosition = parameterInfos[i].ParameterType.GenericParameterPosition;
+                            typeArgs[genericParameterPosition] = newArgs2[i].Type;
+                        }
                         newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos[i].ParameterType);
                     }
 
@@ -452,18 +493,49 @@ namespace ExpressionEvaluator.Parser
                 else
                 {
                     newArgs2 = argExps.ToList();
+                    var typeArgCount = parameterInfos.Count(x => x.ParameterType.IsGenericParameter || x.ParameterType.IsGenericType && x.ParameterType.GetGenericArguments().Any(y => y.IsGenericParameter));
+                    if (typeArgs == null && typeArgCount > 0) typeArgs = new Type[typeArgCount];
 
                     for (var i = 0; i < parameterInfos.Length; i++)
                     {
+                        if (parameterInfos[i].ParameterType.IsGenericParameter)
+                        {
+                            var genericParameterPosition = parameterInfos[i].ParameterType.GenericParameterPosition;
+                            typeArgs[genericParameterPosition] = newArgs2[i].Type;
+                        }
+                        if (parameterInfos[i].ParameterType.IsGenericType)
+                        {
+                            var genericArgs = parameterInfos[i].ParameterType.GetGenericArguments();
+                            var genericArgParameters = genericArgs.Where(y => y.IsGenericParameter).ToList();
+                            if (genericArgParameters.Any())
+                            {
+                                foreach (var genericArgParameter in genericArgParameters)
+                                {
+                                    var genericArgParameterPosition = genericArgParameter.GenericParameterPosition;
+                                    typeArgs[genericArgParameterPosition] = typeof(int);
+                                }
+                            }
+                        }
                         newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos[i].ParameterType);
                     }
                 }
 
+                if (applicableMemberFunction.Member.ContainsGenericParameters)
+                {
+                    if (instance == null)
+                    {
+                        return Expression.Call(type, member.Identifier, typeArgs, newArgs2.ToArray());
+                    }
+                    else
+                    {
+                        return Expression.Call(instance, member.Identifier, typeArgs, newArgs2.ToArray());
+                    }
+                }
 
-                return Expression.Call(instance, afm.Member, newArgs2.ToArray());
+
+                return Expression.Call(instance, applicableMemberFunction.Member, newArgs2.ToArray());
             }
 
-            // Should try an Extension Method call here...
 
             return null;
         }
@@ -738,9 +810,94 @@ namespace ExpressionEvaluator.Parser
             return Expression.Constant(Convert.ToChar(token), typeof(char));
         }
 
+        private const string HexChars = "0123456789abcdefABCDEF";
+
+        public static string Unescape(string txt)
+        {
+            if (string.IsNullOrEmpty(txt)) { return txt; }
+            StringBuilder retval = new StringBuilder(txt.Length);
+            for (int ix = 0; ix < txt.Length; )
+            {
+                int jx = txt.IndexOf('\\', ix);
+                if (jx < 0 || jx == txt.Length - 1) jx = txt.Length;
+                retval.Append(txt, ix, jx - ix);
+                if (jx >= txt.Length) break;
+                var skip = 2;
+                switch (txt[jx + 1])
+                {
+                    case '\'': retval.Append('\''); break;  // Single quote
+                    case '"': retval.Append('\"'); break;  // Double quote
+                    case '\\': retval.Append('\\'); break; // Don't escape
+                    case '0': retval.Append('\0'); break;  // null character
+                    case 'a': retval.Append('\a'); break;  // Alert
+                    case 'b': retval.Append('\b'); break;  // Backspace
+                    case 'f': retval.Append('\f'); break;  // Form feed
+                    case 'n': retval.Append('\n'); break;  // New line
+                    case 'r': retval.Append('\r'); break;  // Carriage return
+                    case 't': retval.Append('\t'); break;  // Horizontal Tab
+                    case 'u': // Unicode Character
+                        var unicode = "";
+                        {
+                            int i;
+                            for (i = 0; jx + 2 + i < txt.Length && i < 4; i++)
+                            {
+                                var chr = txt[jx + 2 + i];
+                                if (HexChars.Contains(chr))
+                                {
+                                    unicode = unicode + chr;
+                                }
+                                else
+                                {
+                                    throw new Exception("Invalid literal character");
+                                }
+                            }
+                            if (i < 4)
+                            {
+                                throw new Exception("Invalid literal character");
+                            }
+                            skip += 4;
+                            retval.Append(char.ToString((char)ushort.Parse(unicode, NumberStyles.AllowHexSpecifier)));
+                        }
+                        break;
+                    case 'x': // Hex
+                        {
+                            var hex = "";
+                            var i = 0;
+                            while (jx + 2 + i < txt.Length)
+                            {
+                                var chr = txt[jx + 2 + i];
+                                if (HexChars.Contains(chr))
+                                {
+                                    hex = hex + chr;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                i++;
+                            }
+                            if (i == 0)
+                            {
+                                throw new Exception("Invalid literal character");
+                            }
+                            skip += i;
+                            retval.Append(char.ToString((char)ushort.Parse(hex, NumberStyles.AllowHexSpecifier)));
+                        }
+                        break;
+
+                    case 'v': retval.Append('\v'); break;  // Vertical Tab
+                    default:
+                        throw new Exception("Invalid literal character");
+                }
+                ix = jx + skip;
+            }
+            return retval.ToString();
+        }
+
         public static Expression ParseStringLiteral(string token)
         {
             token = token.Substring(1, token.Length - 2);
+            token = Unescape(token);
             return Expression.Constant(token, typeof(string));
         }
 

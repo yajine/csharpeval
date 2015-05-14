@@ -1550,8 +1550,8 @@ COMMENT:
     { Skip(); } ;
 STRINGLITERAL
     :
-    '"' (EscapeSequence | ~('"' | '\\'))* '"'
-	| '\'' (EscapeSequence | ~('\'' | '\\'))* '\'' ;  // ExpressionEvaluator in-string strings
+    '"' (StringEscapeSequence | ~('"' | '\\'))* '"'
+	| '\'' (StringEscapeSequence  | ~('\'' | '\\'))* '\'' ;  // ExpressionEvaluator in-string strings
 Verbatim_string_literal:
     '@'  '"' Verbatim_string_literal_character* '"' 
 	| '@' '\'' Verbatim_string_literal_character* '\'' ;  // ExpressionEvaluator in-string strings
@@ -1732,6 +1732,9 @@ fragment
 IdentifierPart
 : 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' ;
 fragment
+StringEscapeSequence 
+   :   '\\' ANYCHAR ; 
+fragment
 EscapeSequence 
    :   '\\' (
                 'b' 
@@ -1782,6 +1785,8 @@ Sign:
 fragment
 Real_type_suffix:
     'F' | 'f' | 'D' | 'd' | 'M' | 'm' ;    
+
+ANYCHAR : .; 
     
 // Testing rules - so you can just use one file with a list of items
 public assignment_list:

@@ -83,6 +83,17 @@ namespace ExpressionEvaluator.Tests
             Assert.IsTrue(Convert.ToInt32(ret) == 0);
         }
 
+
+        [TestMethod]
+        public void UnaryNegation()
+        {
+            var x = -1 - 10;
+            var str = "-1 - 10";
+            var c = new CompiledExpression<int>(str);
+            var ret = c.Eval();
+            Assert.IsTrue(Convert.ToInt32(ret) == x);
+        }
+
         private void TestExpression(string expr, object expected, Type expectedType = null, Type expectedException = null, TypeRegistry typeRegistry = null, Func<CompiledExpression, object> compiler = null)
         {
             try

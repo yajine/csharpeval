@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
@@ -63,7 +64,7 @@ namespace ExpressionEvaluator.Tests
         }
 
 
-   
+
 
         [TestMethod]
         public void UnderscoreVariables()
@@ -224,6 +225,80 @@ namespace ExpressionEvaluator.Tests
             var result = c.Eval();
         }
 
+        [TestMethod]
+        public void GenericMethodCall()
+        {
+            var p1 = new Parametro("A", 12);
+            var p2 = new Parametro("B", 13);
+            var expected = p1.Valor<int>() + p2.Valor<int>();
+            var t = new TypeRegistry();
+            t.RegisterSymbol("p1", p1);
+            t.RegisterSymbol("p2", p2);
+            var c = new CompiledExpression() { TypeRegistry = t };
+            c.StringToParse = "p1.Valor<int>() + p2.Valor<int>()";
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+
+        [TestMethod]
+        public void GenericMethodCall2()
+        {
+            var p1 = new Parametro("A", 12);
+            var expected = p1.Valor2(255);
+            var t = new TypeRegistry();
+            t.RegisterSymbol("p1", p1);
+            var c = new CompiledExpression() { TypeRegistry = t };
+            c.StringToParse = "p1.Valor2(255)";
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void GenericMethodCall3()
+        {
+            var p1 = new Parametro("A", 12);
+            var expected1 = p1.Valor3(1, 255, 128f);
+            var expected2 = p1.Valor3(2, 255L, 128d);
+            var expected3 = p1.Valor3(3, 255f, 128L);
+            var t = new TypeRegistry();
+            t.RegisterSymbol("p1", p1);
+            var c = new CompiledExpression() { TypeRegistry = t };
+            c.StringToParse = "p1.Valor3(1, 255, 128f)";
+            var actual1 = c.Eval();
+            c.StringToParse = "p1.Valor3(2, 255L, 128d)";
+            var actual2 = c.Eval();
+            c.StringToParse = "p1.Valor3(3, 255f, 128L)";
+            var actual3 = c.Eval();
+            Assert.AreEqual(expected1, actual1);
+            Assert.AreEqual(expected1.GetType(), actual1.GetType());
+            Assert.AreEqual(expected2, actual2);
+            Assert.AreEqual(expected2.GetType(), actual2.GetType());
+            Assert.AreEqual(expected3, actual3);
+        }
+
+
+        [TestMethod]
+        public void ExtensionMethods()
+        {
+            IEnumerable<int> p1 = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            var expected1 = p1.Count();
+            var expected2 = p1.Count(x => x >= 5);
+            var expected3 = p1.Where(x => x % 2 == 0);
+            var t = new TypeRegistry();
+            t.RegisterSymbol("p1", p1);
+            var c = new CompiledExpression() { TypeRegistry = t };
+            c.StringToParse = "p1.Count()";
+            var actual1 = c.Eval();
+            //c.StringToParse = "p1.Count(x => x >= 5)";
+            //var actual2 = c.Eval();
+            //c.StringToParse = "p1.Where(x => x % 2 == 0)";
+            //var actual3 = c.Eval();
+            Assert.AreEqual(expected1, actual1);
+            //Assert.AreEqual(expected2, actual2);
+            //Assert.AreEqual(expected3, actual3);
+        }
+
 
         [TestMethod]
         [ExpectedException(typeof(ExpressionParseException))]
@@ -278,6 +353,93 @@ namespace ExpressionEvaluator.Tests
             var result = c.Eval();
             Assert.AreEqual(result, 950);
 
+        }
+
+        public class Z
+        {
+            public string z { get; set; }
+        }
+
+        private string CreateEmbeddedString(string text)
+        {
+            return text.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        }
+
+        [TestMethod]
+        public void Escaping()
+        {
+            var x = "//table[@id=\"ct_lookup\"]/descendant::tr[last()]/th[2]/descendant::button[@type=\"submit\"]";
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var w = CreateEmbeddedString(x);
+            Assert.AreNotEqual(x, w);
+            c.StringToParse = "var x = \""+ w + "\";";
+            var z = new Z {z = x};
+            var func = c.ScopeCompile<Z>();
+            var result = func(z);
+            Assert.AreEqual(x, result);
+        }
+
+        [TestMethod]
+        public void EmbeddedUnicodeStrings()
+        {
+            var x = "\u8ba1\u7b97\u673a\u2022\u7f51\u7edc\u2022\u6280\u672f\u7c7b";
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            c.StringToParse = "var x = \"\\u8ba1\\u7b97\\u673a\\u2022\\u7f51\\u7edc\\u2022\\u6280\\u672f\\u7c7b\";";
+            var z = new Z { z = x };
+            var func = c.ScopeCompile<Z>();
+            var result = func(z);
+            Assert.AreEqual(x, result);
+        }
+
+        [TestMethod]
+        public void EmbeddedHexStrings()
+        {
+            var x = "\x010\x045\x32\x12\x1002\x444\x333\x232\x11\x0";
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            c.StringToParse = "var x = \"\\x010\\x045\\x32\\x12\\x1002\\x444\\x333\\x232\\x11\\x0\";";
+            var z = new Z { z = x };
+            var func = c.ScopeCompile<Z>();
+            var result = func(z);
+            Assert.AreEqual(x, result);
+        }
+
+        [TestMethod]
+        public void EmbeddedEscapeStrings()
+        {
+            var x = "\a\b\f\r\n\t\v\0";
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            c.StringToParse = "var x = \"\\a\\b\\f\\r\\n\\t\\v\\0\";";
+            var z = new Z { z = x };
+            var func = c.ScopeCompile<Z>();
+            var result = func(z);
+            Assert.AreEqual(x, result);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void InvalidEscapeLiteral()
+        {
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            c.StringToParse = "var x = \"\\c\";";
+            var result = c.Eval();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void InvalidUnicodeLiteral()
+        {
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            c.StringToParse = "var x = \"\\u123\";";
+            var result = c.Eval();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void InvalidHexiteral()
+        {
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            c.StringToParse = "var x = \"\\x\";";
+            var result = c.Eval();
         }
 
 
