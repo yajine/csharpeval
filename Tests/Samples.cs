@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Globalization;
 using ExpressionEvaluator;
@@ -7,8 +8,128 @@ using Tests.Contexts;
 
 namespace Tests
 {
+    public class Player
+    {
+        public void Test(object p)
+        {
+            Debug.WriteLine(p);
+        }
+    }
+
+    public class Dialog
+    {
+
+    }
+
+    public class Table1
+    {
+        public int MyField { get; set; }
+    }
+
+    public class DataSets
+    {
+        public DataSets()
+        {
+            Table1 = new Table1();
+        }
+
+        public Table1 Table1 { get; set; }
+    }
+
+    public class Context
+    {
+        public Context()
+        {
+            Parameters = new Parameters();
+            DataSets = new DataSets();
+        }
+
+        public DataSets DataSets { get; set; }
+        public Parameters Parameters { get; set; }
+    }
+
+    public class Parameters
+    {
+        public string IsTypeA
+        {
+            get { return "Context.DataSets.Table1.MyField == 0"; }
+        }
+
+        public string IsTypeB
+        {
+            get { return "Context.DataSets.Table1.MyField == 1"; }
+        }
+
+        public string IsAorBType
+        {
+            get { return "Context.Parameters.IsTypeA || Context.Parameters.IsTypeB"; }
+        }
+    }
+
+    public class RecursiveExpressions
+    {
+        private TypeRegistry _registry = new TypeRegistry();
+
+        public RecursiveExpressions(Context context)
+        {
+            _registry.RegisterSymbol("Context", context);
+        }
+
+        private object EvaluateExpression(string expression)
+        {
+            var exp = new CompiledExpression(expression);
+            exp.TypeRegistry = _registry;
+            try
+            {
+                var result = exp.Eval();
+                return result;
+            }
+            catch (Exception e)
+            {
+                //If here's some error, i return the expression
+                return expression;
+            }
+        }
+
+        public object EvaluateExpressionRecursive(string expression, int deepLevel = 0)
+        {
+            if (deepLevel == 10) return expression; //Temp protection from loops
+
+            var result = EvaluateExpression(expression);
+
+            if (Convert.ToString(result) != expression)
+                return EvaluateExpressionRecursive(Convert.ToString(result), deepLevel++);
+            else
+                return result;
+
+        }
+    }
+
     public static class Samples
     {
+
+        public static void RecursiveExpression()
+        {
+            var re = new RecursiveExpressions(new Context());
+            Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsTypeA"));
+            Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsTypeB"));
+            Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsAorBType"));
+        }
+
+
+        public static void ParameterObjectCasts()
+        {
+            var player = new Player();
+            var dialog = new Dialog();
+
+            var t = new TypeRegistry();
+            t.RegisterSymbol("player", player);
+            t.RegisterSymbol("dialog", dialog);
+
+            var ce1 = new CompiledExpression() { StringToParse = "player.Test(dialog)", TypeRegistry = t };
+            ce1.Eval();
+        }
+
         public static void Indexers()
         {
             var idx = new Indexers()

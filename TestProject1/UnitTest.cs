@@ -338,6 +338,24 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
+        public void CustomIndexers()
+        {
+            var a = new MyClass();
+            var t = new TypeRegistry();
+            t.RegisterSymbol("a", a);
+            var c = new CompiledExpression() { TypeRegistry = t };
+
+            c.StringToParse = "a[3]";
+            var result = c.Eval();
+            Assert.AreEqual(result, 3);
+
+            c.StringToParse = "a[\"Hello World\"]";
+            result = c.Eval();
+            Assert.AreEqual(result, 11);
+        }
+
+
+        [TestMethod]
         public void ExpandoObjects()
         {
             dynamic A = new ExpandoObject();

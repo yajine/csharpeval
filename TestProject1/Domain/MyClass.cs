@@ -23,5 +23,17 @@ namespace UnitTestProject1.Domain
         {
             return value * 2;
         }
+
+        public int this[int index]
+        {
+           get { return index; }
+        }
+
+        public int this[string index]
+        {
+            get { return index.Length; }
+        }
+
+
     }
 }

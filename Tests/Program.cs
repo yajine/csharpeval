@@ -7,6 +7,10 @@ namespace Tests
     {
         static void Main(string[] args)
         {
+            Samples.RecursiveExpression();
+            Console.ReadLine();
+            Samples.ParameterObjectCasts();
+            Console.ReadLine();
             Samples.DefaultTypes();
             Samples.Culture();
             Samples.CodeBlocks();
