@@ -50,20 +50,30 @@ namespace Tests
 
     public class Parameters
     {
+        [ExpressionContainer]
         public string IsTypeA
         {
             get { return "Context.DataSets.Table1.MyField == 0"; }
         }
 
+        [ExpressionContainer]
         public string IsTypeB
         {
             get { return "Context.DataSets.Table1.MyField == 1"; }
         }
 
+        [ExpressionContainer]
         public string IsAorBType
         {
-            get { return "Context.Parameters.IsTypeA || Context.Parameters.IsTypeB"; }
+            get { return "(bool)Context.Parameters.IsTypeA || (bool)Context.Parameters.IsTypeB"; }
         }
+
+        [ExpressionContainer]
+        public string IsTypeC
+        {
+            get { return "(bool)Context.Parameters.IsAorBType && (bool)Context.Parameters.IsTypeB"; }
+        }
+
     }
 
     public class RecursiveExpressions
@@ -79,16 +89,8 @@ namespace Tests
         {
             var exp = new CompiledExpression(expression);
             exp.TypeRegistry = _registry;
-            try
-            {
-                var result = exp.Eval();
-                return result;
-            }
-            catch (Exception e)
-            {
-                //If here's some error, i return the expression
-                return expression;
-            }
+            var result = exp.Eval();
+            return result;
         }
 
         public object EvaluateExpressionRecursive(string expression, int deepLevel = 0)
@@ -96,17 +98,23 @@ namespace Tests
             if (deepLevel == 10) return expression; //Temp protection from loops
 
             var result = EvaluateExpression(expression);
-
-            if (Convert.ToString(result) != expression)
-                return EvaluateExpressionRecursive(Convert.ToString(result), deepLevel++);
-            else
-                return result;
+            return result;
 
         }
     }
 
     public static class Samples
     {
+        public static void Dynamictest()
+        {
+            var x = "test";
+            var flag = x.Contains("te");
+
+            var expression = "var x = \"test\";\n\n";
+            expression = expression + "if(null!=10d) x= \"rest\"; ";
+            var ce1 = new CompiledExpression() { StringToParse = expression, ExpressionType = CompiledExpressionType.StatementList };
+            var result = ce1.Eval();
+        }
 
         public static void RecursiveExpression()
         {
@@ -114,6 +122,7 @@ namespace Tests
             Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsTypeA"));
             Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsTypeB"));
             Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsAorBType"));
+            Console.WriteLine(re.EvaluateExpressionRecursive("Context.Parameters.IsTypeC"));
         }
 
 

@@ -48,8 +48,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ExpressionEvaluator.csproj">
-      <Project>{EE3AC276-2314-4D7F-9C6A-B89CA1D650C5}</Project>
+    <ProjectReference Include="..\..\ExpressionEvaluator\ExpressionEvaluator.csproj">
+      <Project>{ee3ac276-2314-4d7f-9c6a-b89ca1d650c5}</Project>
       <Name>ExpressionEvaluator</Name>
     </ProjectReference>
   </ItemGroup>

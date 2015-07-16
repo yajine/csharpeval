@@ -1,3 +1,3 @@
 @echo off
-nuget pack ExpressionEvaluator.csproj -Properties Configuration=Release -OutputDirectory "bin\Release"
+nuget pack ExpressionEvaluator\ExpressionEvaluator.csproj -Properties Configuration=Release -OutputDirectory "ExpressionEvaluator\bin\Release"
 pause

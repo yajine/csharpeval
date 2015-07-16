@@ -91,12 +91,12 @@ namespace ExpressionEvaluator.Parser
 
                 // Alternative, note that we could even look for the type of parameters, if there are indexer overloads.
                 PropertyInfo indexerpInfo = (from p in le.Type.GetDefaultMembers().OfType<PropertyInfo>()
-                                        // This check is probably useless. You can't overload on return value in C#.
-                                        where p.PropertyType == typeof(int)
-                                        let q = p.GetIndexParameters()
-                                        // Here we can search for the exact overload. Length is the number of "parameters" of the indexer, and then we can check for their type.
-                                        where q.Length == args.Count() && q.Join(args, r => r.ParameterType, a => a.Type, (info, expression) => info).Count() == q.Count()
-                                        select p).Single();
+                                             // This check is probably useless. You can't overload on return value in C#.
+                                             where p.PropertyType == typeof(int)
+                                             let q = p.GetIndexParameters()
+                                             // Here we can search for the exact overload. Length is the number of "parameters" of the indexer, and then we can check for their type.
+                                             where q.Length == args.Count() && q.Join(args, r => r.ParameterType, a => a.Type, (info, expression) => info).Count() == q.Count()
+                                             select p).Single();
 
                 return Expression.Property(le, indexerpInfo, args);
             }
@@ -290,7 +290,8 @@ namespace ExpressionEvaluator.Parser
             {
                 type = le.Type;
                 instance = le;
-                isDynamic = type.IsDynamicOrObject();
+                isDynamic = type.IsDynamic();
+
                 if (!isDynamic)
                 {
                     var prop = type.GetProperty(membername);
@@ -337,6 +338,13 @@ namespace ExpressionEvaluator.Parser
                 if (propertyInfo != null)
                 {
                     exp = Expression.Property(instance, propertyInfo);
+
+                    if (propertyInfo.GetCustomAttributes(typeof(ExpressionContainerAttribute), false).Any())
+                    {
+                        throw new ExpressionContainerException(exp);
+                        //var x = propertyInfo.GetValue(((MemberExpression)instance).Member, BindingFlags.Instance, null, null, null);
+                    }
+
                 }
                 else
                 {
@@ -426,7 +434,7 @@ namespace ExpressionEvaluator.Parser
 
 
 
-        private static Expression MethodInvokeExpression(Type type, Expression instance, TypeOrGeneric member,
+        public static Expression MethodInvokeExpression(Type type, Expression instance, TypeOrGeneric member,
                                                    IEnumerable<Argument> args)
         {
             var membername = member.Identifier;

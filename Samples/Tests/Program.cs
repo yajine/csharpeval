@@ -7,7 +7,7 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            Samples.RecursiveExpression();
+            Samples.Dynamictest();
             Console.ReadLine();
             Samples.ParameterObjectCasts();
             Console.ReadLine();

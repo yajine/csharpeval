@@ -1,24 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator", "ExpressionEvaluator.csproj", "{EE3AC276-2314-4D7F-9C6A-B89CA1D650C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator", "ExpressionEvaluator\ExpressionEvaluator.csproj", "{EE3AC276-2314-4D7F-9C6A-B89CA1D650C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator.Tests", "TestProject1\ExpressionEvaluator.Tests.csproj", "{98939DC9-FB10-43AB-ABE3-2A15DE00EB9B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{504ED3BB-D102-417D-8FB7-DBF8C3DCEAAA}"
-	ProjectSection(SolutionItems) = preProject
-		ExpressionEvaluator.vsmdi = ExpressionEvaluator.vsmdi
-		Local.testsettings = Local.testsettings
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C9D08C31-B948-4A22-A061-123050496657}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator.Tests", "UnitTests\ExpressionEvaluator.Tests.csproj", "{98939DC9-FB10-43AB-ABE3-2A15DE00EB9B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{59E6DA53-9375-43A4-81E4-98AD83D79084}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Samples\Tests\Tests.csproj", "{C9D08C31-B948-4A22-A061-123050496657}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "REPL", "REPL", "{8FD19312-03CB-4469-B335-4C91C1DA0CCD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "REPLSample", "Samples\REPLSample\REPLSample.csproj", "{7C2A968A-F65F-4F5F-859E-9B6A2F9F8E2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B9807F10-AE88-4273-BDC9-F1088F8799F8}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -102,6 +97,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8FD19312-03CB-4469-B335-4C91C1DA0CCD} = {59E6DA53-9375-43A4-81E4-98AD83D79084}
+		{B9807F10-AE88-4273-BDC9-F1088F8799F8} = {59E6DA53-9375-43A4-81E4-98AD83D79084}
 		{7C2A968A-F65F-4F5F-859E-9B6A2F9F8E2A} = {8FD19312-03CB-4469-B335-4C91C1DA0CCD}
+		{C9D08C31-B948-4A22-A061-123050496657} = {B9807F10-AE88-4273-BDC9-F1088F8799F8}
 	EndGlobalSection
 EndGlobal

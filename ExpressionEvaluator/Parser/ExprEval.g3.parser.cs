@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using Antlr.Runtime;
 using ExpressionEvaluator;
 using ExpressionEvaluator.Parser.Expressions;
@@ -45,6 +47,43 @@ namespace ExpressionEvaluator.Parser
         //    }
         //    return null;
         //}
+        public object Eval(string expressionString)
+        {
+            var ms = new MemoryStream(Encoding.UTF8.GetBytes(expressionString));
+            var input = new ANTLRInputStream(ms);
+            var lexer = new ExprEvalLexer(input);
+            var tokens = new TokenRewriteStream(lexer);
+            if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
+            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = Scope, IsCall = IsCall, DynamicTypeLookup = DynamicTypeLookup };
+
+            Expression expression = parser.single_expression();
+
+            if (expression == null)
+            {
+                var statement = parser.statement();
+                if (statement != null)
+                {
+                    expression = statement.Expression;
+                }
+                if (expression == null)
+                {
+                    var statements = parser.statement_list();
+                    expression = statements.ToBlock();
+                }
+            }
+
+            if (Scope != null)
+            {
+                var func = Expression.Lambda<Func<object, object>>(Expression.Convert(expression, typeof(Object)), new ParameterExpression[] { (ParameterExpression)Scope }).Compile();
+                return func(Scope);
+            }
+            else
+            {
+                var func = Expression.Lambda<Func<object>>(Expression.Convert(expression, typeof(Object))).Compile();
+                return func();
+            }
+
+        }
 
 
         protected Expression GetPrimaryExpressionPart(PrimaryExpressionPart primary_expression_part2, ITokenStream input, Expression value, bool throwsException = true)
@@ -57,14 +96,25 @@ namespace ExpressionEvaluator.Parser
                 }
                 else
                 {
-                    var memberName = ((AccessIdentifier) primary_expression_part2).Value.Identifier;
-                    var newValue = ExpressionHelper.GetProperty(value, memberName);
-                    if (newValue == null && throwsException)
+                    var memberName = ((AccessIdentifier)primary_expression_part2).Value.Identifier;
+
+                    try
                     {
-                        throw new ExpressionParseException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", memberName, value.Type.Name), input);
-                        //throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+                        var newValue = ExpressionHelper.GetProperty(value, memberName);
+                        if (newValue == null && throwsException)
+                        {
+                            throw new ExpressionParseException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", memberName, value.Type.Name), input);
+                            //throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+                        }
+                        value = newValue;
                     }
-                    value = newValue;
+                    catch (ExpressionContainerException ex)
+                    {
+                        value = ExpressionHelper.MethodInvokeExpression(typeof(ExprEvalParser), Expression.Constant(this),
+                            new TypeOrGeneric() { Identifier = "Eval" }, new Argument[] { new Argument() { Expression = ex.Container } });
+                    }
+
+
                 }
             }
             else if (primary_expression_part2.GetType() == typeof(Brackets))

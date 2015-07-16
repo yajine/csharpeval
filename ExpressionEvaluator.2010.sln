@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator", "ExpressionEvaluator.csproj", "{EE3AC276-2314-4D7F-9C6A-B89CA1D650C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator", "ExpressionEvaluator\ExpressionEvaluator.csproj", "{EE3AC276-2314-4D7F-9C6A-B89CA1D650C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C9D08C31-B948-4A22-A061-123050496657}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Samples\Tests\Tests.csproj", "{C9D08C31-B948-4A22-A061-123050496657}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
