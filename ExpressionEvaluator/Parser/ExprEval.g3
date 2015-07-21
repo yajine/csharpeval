@@ -291,7 +291,7 @@ public member_declarator_list:
 public member_declarator: 
     qid   ('='   expression)? ;
 public primary_or_array_creation_expression returns [Expression value]:
-	(array_creation_expression) => array_creation_expression |
+	(array_creation_expression) => array_creation_expression  { $value = $array_creation_expression.value; }|
      primary_expression { $value = $primary_expression.value; }
     | '(' primary_expression ')' { $value = $primary_expression.value; }
 	;
@@ -304,16 +304,19 @@ public array_creation_expression returns [Expression value]:
                     | ( ((arguments   ('['|'.'|'->')) => arguments   invocation_part)// new object[2].GetEnumerator()
                       | invocation_part)*   arguments
                     )                            // new int[4]()
-                | array_initializer        
+                | arr1=array_initializer { $value = $arr1.value; }         
                 )
         | rank_specifier   // [,]
-            (array_initializer    // var a = new[] { 1, 10, 100, 1000 }; // int[]
+            ( arr2=array_initializer { $value = $arr2.value; }   // var a = new[] { 1, 10, 100, 1000 }; // int[]
             )
         ) ;
-public array_initializer returns [Expression value]:
-    '{'   variable_initializer_list?   ','?   '}' ;
-public variable_initializer_list returns [Expression value]:
-    variable_initializer (',' variable_initializer)* ;
+public array_initializer returns [NewArrayExpression value]:
+    '{'   (variable_initializer_list { $value =  Expression.NewArrayInit(TypeConversion.GetBaseCommonType($variable_initializer_list.value), $variable_initializer_list.value); })?   ','?   '}' ;
+public variable_initializer_list returns [List<Expression> value]
+@init {
+	$value = new List<Expression>();
+}:
+    first=variable_initializer { $value.Add(first); } (',' succeeding=variable_initializer { $value.Add(succeeding); } )*  ;
 public variable_initializer returns [Expression value]:
     expression  { $value = $expression.value; }  | array_initializer  { $value = $array_initializer.value; } ;
 public sizeof_expression:

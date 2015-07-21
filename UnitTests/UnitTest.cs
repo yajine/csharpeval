@@ -390,8 +390,8 @@ namespace ExpressionEvaluator.Tests
             var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
             var w = CreateEmbeddedString(x);
             Assert.AreNotEqual(x, w);
-            c.StringToParse = "var x = \""+ w + "\";";
-            var z = new Z {z = x};
+            c.StringToParse = "var x = \"" + w + "\";";
+            var z = new Z { z = x };
             var func = c.ScopeCompile<Z>();
             var result = func(z);
             Assert.AreEqual(x, result);
@@ -460,6 +460,24 @@ namespace ExpressionEvaluator.Tests
             var result = c.Eval();
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void BinaryOperatorNullTypeInference()
+        {
+            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.Expression };
+            c.StringToParse = "null!=10d";
+            var x = null != 10d;
+            var result = c.Eval();
+        }
 
+        [TestMethod]
+        public void StringJoin()
+        {
+  
+            var str = "String.Join(\",\", new[]{1, 2, 3, 4})";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.Eval();
+            Assert.AreEqual(ret, "1,2,3,4");
+        }
     }
 }

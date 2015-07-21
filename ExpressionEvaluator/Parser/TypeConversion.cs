@@ -177,14 +177,14 @@ namespace ExpressionEvaluator.Parser
         /// <returns>-1 if conversion is not possible, 0 if no conversion necessary, +1 if conversion possible</returns>
         internal static int CanConvert(Type from, Type to)
         {
-            if (Instance._typePrecedence.ContainsKey(from) && Instance._typePrecedence.ContainsKey(to))
+            if (Instance._typePrecedence.ContainsKey(@from) && Instance._typePrecedence.ContainsKey(to))
             {
-                return Instance._typePrecedence[to] - Instance._typePrecedence[from];
+                return Instance._typePrecedence[to] - Instance._typePrecedence[@from];
             }
             else
             {
-                if (from == to) return 0;
-                if (to.IsAssignableFrom(from)) return 1;
+                if (@from == to) return 0;
+                if (to.IsAssignableFrom(@from)) return 1;
             }
             return -1;
         }
@@ -276,7 +276,7 @@ namespace ExpressionEvaluator.Parser
                     var value = (int)((ConstantExpression)src).Value;
                     if (destType == typeof (sbyte))
                     {
-                        if (value >= sbyte.MinValue && value <= sbyte.MinValue)
+                        if (value >= SByte.MinValue && value <= SByte.MinValue)
                         {
                             src = Expression.Convert(src, typeof(sbyte));
                             return true;                         
@@ -284,7 +284,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     if (destType == typeof(byte))
                     {
-                        if (value >= byte.MinValue && value <= byte.MaxValue)
+                        if (value >= Byte.MinValue && value <= Byte.MaxValue)
                         {
                             src = Expression.Convert(src, typeof(byte));
                             return true;                         
@@ -292,7 +292,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     if (destType == typeof(short))
                     {
-                        if (value >= short.MinValue && value <= short.MaxValue)
+                        if (value >= Int16.MinValue && value <= Int16.MaxValue)
                         {
                             src = Expression.Convert(src, typeof(short));
                             return true;                         
@@ -300,7 +300,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     if (destType == typeof(ushort))
                     {
-                        if (value >= ushort.MinValue && value <= ushort.MaxValue)
+                        if (value >= UInt16.MinValue && value <= UInt16.MaxValue)
                         {
                             src = Expression.Convert(src, typeof(ushort));
                             return true;                         
@@ -308,7 +308,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     if (destType == typeof(uint))
                     {
-                        if (value >= uint.MinValue && value <= uint.MaxValue)
+                        if (value >= UInt32.MinValue && value <= UInt32.MaxValue)
                         {
                             src = Expression.Convert(src, typeof(uint));
                             return true;                         
@@ -316,7 +316,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     if (destType == typeof(ulong))
                     {
-                        if (value >= 0 && Converter.ToUInt64(value) <= ulong.MaxValue)
+                        if (value >= 0 && Converter.ToUInt64(value) <= UInt64.MaxValue)
                         {
                             src = Expression.Convert(src, typeof(ulong));
                             return true;
@@ -338,6 +338,32 @@ namespace ExpressionEvaluator.Parser
                 }
             }
             return false;
+        }
+
+        public static Type GetBaseCommonType(IEnumerable<Expression> expressions)
+        {
+            Type baseType = null;
+
+            foreach (var expression in expressions)
+            {
+                if (baseType == null)
+                {
+                    baseType = expression.Type;
+                }
+                else
+                {
+                    switch (CanConvert(expression.Type, baseType))
+                    {
+                        case 1:
+                            baseType = expression.Type;
+                            break;
+                        case -1:
+                            throw new Exception(string.Format("Cannot convert between types {0} and {1}", baseType.Name, expression.Type.Name));
+                    }
+                }
+            }
+
+            return baseType;
         }
 
         public static bool DynamicConversion(ref Expression src, Type destType)
@@ -370,7 +396,7 @@ namespace ExpressionEvaluator.Parser
         TypeConversion()
         {
             _typePrecedence = new Dictionary<Type, int>
-                {
+            {
                     {typeof (object), 0},
                     {typeof (bool), 1},
                     {typeof (byte), 2},
