@@ -224,7 +224,6 @@ namespace ExpressionEvaluator.Tests
         public void NestedWhileLoopWithBreak()
         {
             var registry = new TypeRegistry();
-
             var obj = new objHolder() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);

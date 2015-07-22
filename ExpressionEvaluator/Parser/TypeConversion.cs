@@ -250,6 +250,15 @@ namespace ExpressionEvaluator.Parser
             return false;
         }
 
+        public static Expression EnumConversion(ref Expression src)
+        {
+            if (typeof(Enum).IsAssignableFrom(src.Type))
+            {
+                return Expression.Convert(src, Enum.GetUnderlyingType(src.Type));
+            }
+            return src;
+        }
+
         // 6.1 Implicit Conversions
         public static bool ImplicitConversion(ref Expression src, Type destType)
         {

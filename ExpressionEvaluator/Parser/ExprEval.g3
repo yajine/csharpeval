@@ -1562,7 +1562,7 @@ fragment
 Verbatim_string_literal_character:
     '"' '"' | ~('"') ;
 NUMBER:
-    Decimal_digits INTEGER_TYPE_SUFFIX?;
+    ('-')? Decimal_digits INTEGER_TYPE_SUFFIX?;
 // For the rare case where 0.ToString() etc is used.
 GooBall
 @after        
@@ -1586,10 +1586,10 @@ fragment GooBallIdentifier
 // Date_literal:
 //  '#' ~('#')+ '#';
 Real_literal:
-    Decimal_digits   '.'   Decimal_digits   Exponent_part?   Real_type_suffix?
-    | '.'   Decimal_digits   Exponent_part?   Real_type_suffix?
-    | Decimal_digits   Exponent_part   Real_type_suffix?
-    | Decimal_digits   Real_type_suffix;
+    ('-')? Decimal_digits   '.'   Decimal_digits   Exponent_part?   Real_type_suffix?
+    | ('-')? '.'   Decimal_digits   Exponent_part?   Real_type_suffix?
+    | ('-')? Decimal_digits   Exponent_part   Real_type_suffix?
+    | ('-')? Decimal_digits   Real_type_suffix;
 Character_literal:
 	// Expression Eval changes
     'c\''

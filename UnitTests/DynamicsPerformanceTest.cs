@@ -25,7 +25,7 @@ namespace UnitTestProject1
             scope.settings = new ExpandoObject();
             var p = new CompiledExpression { StringToParse = expr };
             p.ExpressionType = CompiledExpressionType.StatementList;
-            var f = p.ScopeCompile();
+            var f = p.ScopeCompile<ExpandoObject>();
             f(scope);
             Assert.AreEqual(true, scope.settings.showAsteriskMessage);
             Assert.AreEqual("10px", scope.rowHeight);
@@ -74,28 +74,6 @@ namespace UnitTestProject1
             st.Stop();
             Debug.WriteLine("{0}", st.ElapsedMilliseconds);
         }
-
-        [TestMethod]
-        public void ObjectTest()
-        {
-            var scope = new Scope();
-            var fc = new ObjectFunctionCache();
-
-            scope.Property1 = 5;
-            scope.Property2 = 6;
-            var expression = "Property1 + Property2";
-
-            var st = new Stopwatch();
-            st.Start();
-            for (var x = 0; x < 1000000; x++)
-            {
-                var fn = fc.GetCachedFunction(expression);
-                fn(scope);
-            }
-            st.Stop();
-            Debug.WriteLine("{0}", st.ElapsedMilliseconds);
-        }
-
 
 
     }

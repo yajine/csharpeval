@@ -460,15 +460,16 @@ namespace ExpressionEvaluator.Tests
             var result = c.Eval();
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(Exception))]
-        public void BinaryOperatorNullTypeInference()
-        {
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.Expression };
-            c.StringToParse = "null!=10d";
-            var x = null != 10d;
-            var result = c.Eval();
-        }
+        //[TestMethod]
+        //public void BinaryOperatorNullTypeInference()
+        //{
+        //    var val = 10d;
+        //    var nullval = null;
+        //    var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.Expression };
+        //    c.StringToParse = "null != 10d";
+        //    var x = nullval != val;
+        //    var result = c.Eval();
+        //}
 
         [TestMethod]
         public void StringJoin()

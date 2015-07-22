@@ -514,6 +514,29 @@ namespace ExpressionEvaluator.Parser
             //Reference conversions, implicit or explicit, never change the referential identity of the object being converted. In other words, while a reference conversion may change the type of the reference, it never changes the type or value of the object being referred to.
         }
 
+        //6.1.7 Boxing conversions
+        //A boxing conversion permits a value-type to be implicitly converted to a reference type. A boxing conversion exists from any non-nullable-value-type to object and dynamic, to System.ValueType and to any interface-type implemented by the non-nullable-value-type. Furthermore an enum-type can be converted to the type System.Enum.
+        //A boxing conversion exists from a nullable-type to a reference type, if and only if a boxing conversion exists from the underlying non-nullable-value-type to the reference type.
+        //A value type has a boxing conversion to an interface type I if it has a boxing conversion to an interface type I0 and I0 has an identity conversion to I.
+        //A value type has a boxing conversion to an interface type I if it has a boxing conversion to an interface or delegate type I0 and I0 is variance-convertible (§13.1.3.2) to I.
+        //Boxing a value of a non-nullable-value-type consists of allocating an object instance and copying the value-type value into that instance. A struct can be boxed to the type System.ValueType, since that is a base class for all structs (§11.3.2).
+        //Boxing a value of a nullable-type proceeds as follows:
+        //•	If the source value is null (HasValue property is false), the result is a null reference of the target type.
+        //•	Otherwise, the result is a reference to a boxed T produced by unwrapping and boxing the source value.
+        //Boxing conversions are described further in §4.3.1.
+
+        public static bool HasImplicitBoxingConversions(Expression E, Type T2)
+        {
+            if (E.Type.IsValueType)
+            {
+                if (T2 == typeof (object))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // 6.1.9 Implicit constant expression conversions
         public static bool HasImplicitConstantExpressionConversions(Expression E, Type T2)
         {
@@ -581,6 +604,7 @@ namespace ExpressionEvaluator.Parser
                 HasImplicitNullableConversion(T1, T2) ||
                 HasNullLiteralConversion(E, T2) ||
                 HasImplicitReferenceConversion(T1, T2) ||
+                HasImplicitBoxingConversions(E, T2) ||
                 HasImplicitConstantExpressionConversions(E, T2) ||
                 HasImplicitConversionInvolvingTypeParameters(T1, T2);
         }

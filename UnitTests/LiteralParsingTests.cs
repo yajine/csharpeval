@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using ExpressionEvaluator.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -93,8 +94,79 @@ namespace ExpressionEvaluator.Tests
             var t = new TypeRegistry();
             t.RegisterDefaultTypes();
             var _compiledExpr = new CompiledExpression("DateTime.Now.ToString('dd/MM/yyyy')") { TypeRegistry = t };
-            var vv = _compiledExpr.Eval();
+            var expected = DateTime.Now.ToString("dd/MM/yyyy");
+            var actual = _compiledExpr.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
+        [TestMethod]
+        public void Long()
+        {
+            var expected = 123456789012345;
+            var str = "123456789012345";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.Eval();
+            Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+        }
+
+
+        [TestMethod]
+        public void ULongMax()
+        {
+            var expected = 18446744073709551615;
+            var str = "18446744073709551615";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.Eval();
+            Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+        }
+
+
+        [TestMethod]
+        public void LongMin()
+        {
+            var expected = -9223372036854775808;
+            var str = "-9223372036854775808";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.Eval();
+            Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+        }
+
+        [TestMethod]
+        public void LongInvalidMin()
+        {
+            // ambiguous invocation -(decimal|double|float)
+            //var expected = -9223372036854775809;
+            try
+            {
+                var str = "-9223372036854775809";
+                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+                var ret = c.Eval();
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Ambiguous invocation"));
+            }
+            //Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+        }
+
+        [TestMethod]
+        public void Double()
+        {
+            var expected = -9223372036854775809d;
+            var str = "-9223372036854775809d";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual, "Input: <{0}>", str);
+        }
+        
+        [TestMethod]
+        public void LongMax()
+        {
+            var expected = 9223372036854775807;
+            var str = "9223372036854775807";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.Eval();
+            Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+        }
     }
 }

@@ -288,9 +288,10 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
+
                 type = le.Type;
                 instance = le;
-                isDynamic = type.IsDynamic();
+                isDynamic = (le.NodeType == ExpressionType.Dynamic) || type.IsDynamic();
 
                 if (!isDynamic)
                 {
@@ -676,7 +677,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ParseRealLiteral(string token)
         {
-            var m = Regex.Match(token, "(\\d+(.\\d+)?)(d|f|m)?", RegexOptions.IgnoreCase);
+            var m = Regex.Match(token, "(-?(?:\\d+)?(?:.\\d+)?)(d|f|m)?", RegexOptions.IgnoreCase);
             var suffix = "";
 
             Type ntype = null;
@@ -686,9 +687,9 @@ namespace ExpressionEvaluator.Parser
             {
                 token = m.Groups[1].Value;
 
-                if (m.Groups[3].Success)
+                if (m.Groups[2].Success)
                 {
-                    suffix = m.Groups[3].Value;
+                    suffix = m.Groups[2].Value;
                 }
 
 
@@ -723,7 +724,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ParseIntLiteral(string token)
         {
-            var m = Regex.Match(token, "(\\d+)(ul|lu|l|u)?", RegexOptions.IgnoreCase);
+            var m = Regex.Match(token, "(-?\\d+)(ul|lu|l|u)?", RegexOptions.IgnoreCase);
             string suffix = "";
 
             if (m.Success)
@@ -760,8 +761,36 @@ namespace ExpressionEvaluator.Parser
                 }
                 else
                 {
-                    ntype = typeof(Int32);
-                    val = int.Parse(token, CultureInfo.InvariantCulture);
+                    int intval;
+                    uint uintval;
+                    long longval;
+                    ulong ulongval;
+                    if (int.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out intval))
+                    {
+                        val = intval;
+                        ntype = typeof(Int32);
+                    }
+                    else if (uint.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out uintval))
+                    {
+                        val = uintval;
+                        ntype = typeof(UInt32);
+                    }
+                    else if (long.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out longval))
+                    {
+                        val = longval;
+                        ntype = typeof(Int64);
+                    }
+                    else if (ulong.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out ulongval))
+                    {
+                        val = ulongval;
+                        ntype = typeof (UInt64);
+                    }
+                    else
+                    {
+                        throw new Exception("Ambiguous invocation: -(decimal), -(double), -(float)");
+                    }
+
+
                 }
                 return Expression.Constant(val, ntype);
             }
@@ -964,9 +993,15 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                //var ore = re;
-                //var ole = le;
-                var t = TypeConversion.ImplicitConversion(ref le, re.Type) || TypeConversion.ImplicitConversion(ref re, le.Type);
+
+                re = TypeConversion.EnumConversion(ref re);
+                le = TypeConversion.EnumConversion(ref le);
+                
+                var ret = re.Type;
+                var let = le.Type;
+
+                TypeConversion.ImplicitConversion(ref le, ret);
+                TypeConversion.ImplicitConversion(ref re, let);
                 //TypeConversion.BinaryNumericPromotion(expressionType, ref le, ref re);
                 //le = TypeConversion.DynamicConversion(re, le);
                 return GetBinaryOperator(le, re, expressionType);
