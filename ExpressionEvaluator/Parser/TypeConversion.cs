@@ -211,7 +211,7 @@ namespace ExpressionEvaluator.Parser
 
         public static bool BoxingConversion(ref Expression src, Type destType)
         {
-            if (src.Type.IsValueType && !src.Type.IsNullable() && destType.IsDynamicOrObject())
+            if (src.Type.IsValueType && !src.Type.IsNullable())
             {
                 src = Expression.Convert(src, destType);
                 return true;

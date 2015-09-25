@@ -41,6 +41,7 @@ namespace ExpressionEvaluator.Parser.Expressions
 
         public IEnumerable<Expression> Expressions { get { return Statements.Select(x => x.Expression); } }
 
+#if NET40
         public BlockExpression ToBlock()
         {
             var expressions = new List<Expression>();
@@ -61,5 +62,6 @@ namespace ExpressionEvaluator.Parser.Expressions
 
             return Expression.Block(expressions);
         }
+#endif
     }
 }

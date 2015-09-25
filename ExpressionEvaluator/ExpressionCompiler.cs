@@ -74,10 +74,12 @@ namespace ExpressionEvaluator
 
         protected Expression WrapExpression(Expression source, bool castToObject)
         {
+#if NET40
             if (source.Type == typeof(void))
             {
                 return WrapToNull(source);
             }
+#endif
             return castToObject ? Expression.Convert(source, typeof(object)) : Expression;
         }
 
@@ -88,12 +90,13 @@ namespace ExpressionEvaluator
 
             // Check if this expression is a statement that does not return a value
             // We need to return a value since the delegate we are using is a Func<>, not an Action<>
+#if NET40
             if (source.Type == typeof(void))
             {
                 // Wrap the expression in a code block that returns null
                 return WrapToNull(source);
             }
-
+#endif
             // If we are passing in a Func<>, the first argument is the Scope type, the second argument is the return type
             if (returnType.IsGenericType)
             {
@@ -112,12 +115,13 @@ namespace ExpressionEvaluator
 
             // Check if this expression is a statement that does not return a value
             // We need to return a value since the delegate we are using is a Func<>, not an Action<>
+#if NET40
             if (source.Type == typeof(void))
             {
                 // Wrap the expression in a code block that returns null
                 return WrapToNull(source);
             }
-
+#endif
             // If we are passing in a Func<>, the first argument is the Scope type, the second argument is the return type
             if (returnType.IsGenericType)
             {
@@ -129,6 +133,7 @@ namespace ExpressionEvaluator
             return source.Type != returnType ? Expression.Convert(source, returnType) : Expression;
         }
 
+#if NET40
         protected Expression WrapToVoid(Expression source)
         {
             return Expression.Block(source, Expression.Empty());
@@ -138,7 +143,7 @@ namespace ExpressionEvaluator
         {
             return Expression.Block(source, Expression.Constant(null));
         }
-
+#endif
         public override string ToString()
         {
             return Expression.ToString();

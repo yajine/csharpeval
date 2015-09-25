@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
-using System.Dynamic;
+//using System.Dynamic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ExpressionEvaluator.Parser;
@@ -226,59 +226,6 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        public void GenericMethodCall()
-        {
-            var p1 = new Parametro("A", 12);
-            var p2 = new Parametro("B", 13);
-            var expected = p1.Valor<int>() + p2.Valor<int>();
-            var t = new TypeRegistry();
-            t.RegisterSymbol("p1", p1);
-            t.RegisterSymbol("p2", p2);
-            var c = new CompiledExpression() { TypeRegistry = t };
-            c.StringToParse = "p1.Valor<int>() + p2.Valor<int>()";
-            var actual = c.Eval();
-            Assert.AreEqual(expected, actual);
-        }
-
-
-        [TestMethod]
-        public void GenericMethodCall2()
-        {
-            var p1 = new Parametro("A", 12);
-            var expected = p1.Valor2(255);
-            var t = new TypeRegistry();
-            t.RegisterSymbol("p1", p1);
-            var c = new CompiledExpression() { TypeRegistry = t };
-            c.StringToParse = "p1.Valor2(255)";
-            var actual = c.Eval();
-            Assert.AreEqual(expected, actual);
-        }
-
-        [TestMethod]
-        public void GenericMethodCall3()
-        {
-            var p1 = new Parametro("A", 12);
-            var expected1 = p1.Valor3(1, 255, 128f);
-            var expected2 = p1.Valor3(2, 255L, 128d);
-            var expected3 = p1.Valor3(3, 255f, 128L);
-            var t = new TypeRegistry();
-            t.RegisterSymbol("p1", p1);
-            var c = new CompiledExpression() { TypeRegistry = t };
-            c.StringToParse = "p1.Valor3(1, 255, 128f)";
-            var actual1 = c.Eval();
-            c.StringToParse = "p1.Valor3(2, 255L, 128d)";
-            var actual2 = c.Eval();
-            c.StringToParse = "p1.Valor3(3, 255f, 128L)";
-            var actual3 = c.Eval();
-            Assert.AreEqual(expected1, actual1);
-            Assert.AreEqual(expected1.GetType(), actual1.GetType());
-            Assert.AreEqual(expected2, actual2);
-            Assert.AreEqual(expected2.GetType(), actual2.GetType());
-            Assert.AreEqual(expected3, actual3);
-        }
-
-
-        [TestMethod]
         public void ExtensionMethods()
         {
             IEnumerable<int> p1 = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -352,25 +299,6 @@ namespace ExpressionEvaluator.Tests
             c.StringToParse = "a[\"Hello World\"]";
             result = c.Eval();
             Assert.AreEqual(result, 11);
-        }
-
-
-        [TestMethod]
-        public void ExpandoObjects()
-        {
-            dynamic A = new ExpandoObject();
-            dynamic B = new ExpandoObject();
-            A.Num1 = 1000;
-            B.Num2 = 50;
-
-            var t = new TypeRegistry();
-            t.RegisterSymbol("A", A);
-            t.RegisterSymbol("B", B);
-            var c = new CompiledExpression() { TypeRegistry = t };
-            c.StringToParse = "A.Num1 - B.Num2";
-            var result = c.Eval();
-            Assert.AreEqual(result, 950);
-
         }
 
         public class Z

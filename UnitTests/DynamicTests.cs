@@ -1,3 +1,4 @@
+#if NET40
 using System.Collections;
 using System.Dynamic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -100,3 +101,4 @@ namespace ExpressionEvaluator.Tests
         }
     }
 }
+#endif

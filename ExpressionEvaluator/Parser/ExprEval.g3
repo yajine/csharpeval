@@ -475,13 +475,9 @@ public pointer_type:
 ///////////////////////////////////////////////////////
 //    Statement Section
 ///////////////////////////////////////////////////////
-public block returns [Expression value]:
-    ';' { $value = Expression.Empty(); }
-    | '{'   statement_list?   '}' 
-	{ 
-		var statements = $statement_list.value;
-		return statements.ToBlock();
-	};
+public block:
+    ';' 
+    | '{'   statement_list?   '}' ;
 public statement_list returns [StatementList value]
 @init{
 	$value = new StatementList();
@@ -500,7 +496,7 @@ public single_expression returns [Expression value]:
 	expression { $value = $expression.value; } EOF;
 
 public expression returns [Expression value]: 
-    (unary_expression   assignment_operator) => assignment { $value = $assignment.value; }  \  
+    (unary_expression   assignment_operator) => assignment  \  
     | non_assignment_expression { value = $non_assignment_expression.value; }
     ;
 
@@ -511,45 +507,9 @@ public expression_list returns [List<Expression> values]
     }:
     first=expression { $values.Add($first.value); }  (',' succeeding=expression { $values.Add($succeeding.value); })* ;
 
-public assignment returns [Expression value]:
-    unary_expression   assignment_operator   expression { 
-		switch($assignment_operator.text) {
-			case "=":	
-				$value = ExpressionHelper.Assign($unary_expression.value, $expression.value, DynamicTypeLookup); 
-				break;
-			case "+=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.AddAssign); 
-				break;
-			case "-=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.SubtractAssign); 
-				break;
-			case "*=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.MultiplyAssign); 
-				break;
-			case "/=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.DivideAssign); 
-				break;
-			// Note: StringTemplate requires escaping the percent symbol
-			case "\%=": 
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.ModuloAssign); 
-				break;
-			case "&=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.AndAssign); 
-				break;
-			case "|=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.OrAssign); 
-				break;
-			case "^=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.PowerAssign); 
-				break;
-			case "<<=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.LeftShiftAssign); 
-				break;
-			case ">>=":
-				$value = ExpressionHelper.BinaryOperator($unary_expression.value, $expression.value, ExpressionType.RightShiftAssign); 
-				break;
-		}
-	} ;
+public assignment:
+    unary_expression   assignment_operator   expression;
+
 public unary_expression returns [Expression value]: 
     //('(' arguments ')' ('[' | '.' | '(')) => primary_or_array_creation_expression
     (cast_expression) => cast_expression { $value = $cast_expression.value; }
@@ -558,8 +518,8 @@ public unary_expression returns [Expression value]:
     | '-' uex=unary_expression  { $value = ExpressionHelper.UnaryOperator($uex.value, ExpressionType.Negate); }
     | '!' uex=unary_expression  { $value = ExpressionHelper.UnaryOperator($uex.value, ExpressionType.Not); }
     | '~' uex=unary_expression  { $value = ExpressionHelper.UnaryOperator($uex.value, ExpressionType.Not); }
-    | uex=pre_increment_expression  { $value = ExpressionHelper.UnaryOperator($uex.value, ExpressionType.PreIncrementAssign); }
-    | uex=pre_decrement_expression  { $value = ExpressionHelper.UnaryOperator($uex.value, ExpressionType.PreDecrementAssign); }
+    | uex=pre_increment_expression  
+    | uex=pre_decrement_expression  
     | pointer_indirection_expression
     | addressof_expression 
     ;
@@ -759,7 +719,7 @@ public implicit_anonymous_function_parameter returns [ParameterExpression value]
     identifier { $value = Expression.Parameter(typeof(object), $identifier.text ); };
 public anonymous_function_body returns [Expression value]:
     expression { $value = $expression.value; }
-    | block { $value = $block.value; };
+    | block;
 
 ///////////////////////////////////////////////////////
 //    LINQ Section
@@ -1172,10 +1132,10 @@ public statement returns [Statement value]:
     | embedded_statement { $value = new Statement() { Expression = $embedded_statement.value }; }
     ;
 public embedded_statement returns [Expression value]:
-    block { $value = $block.value; } 
-    | selection_statement { $value = $selection_statement.value; }    // if, switch
-    | iteration_statement { $value = $iteration_statement.value; }   // while, do, for, foreach
-    | jump_statement  { $value = $jump_statement.value; }         // break, continue, goto, return, throw
+    block 
+    | selection_statement     // if, switch
+    | iteration_statement     // while, do, for, foreach
+    | jump_statement          // break, continue, goto, return, throw
     | try_statement 
     | checked_statement
     | unchecked_statement 
@@ -1207,41 +1167,11 @@ public labeled_statement:
     identifier   ':'   statement ;
 
 public declaration_statement returns [DeclarationStatement value]:
-    (local_variable_declaration { $value = $local_variable_declaration.value; } 
+    (local_variable_declaration 
     | local_constant_declaration { $value = $local_constant_declaration.value; }) ';' ;
 
-public local_variable_declaration returns [LocalVariableDeclaration value]:
-    local_variable_type   local_variable_declarators { 
-		var result = new LocalVariableDeclaration();
-
-		foreach(var variable in $local_variable_declarators.value)
-		{
-			Type varType = null;
-
-			if($local_variable_type.value.Identifier == "var" && variable.Initializer != null)
-			{
-				varType = variable.Initializer.Type;
-			}
-			else
-			{
-				varType = GetType($local_variable_type.value.Identifier);
-			}
-
-			var parameter = Expression.Variable(varType, variable.Identifier);
-			result.Variables.Add(parameter);
-			
-			ParameterList.Add(parameter);
-
-			if(variable.Initializer != null) {
-				result.Initializers.Add(Expression.Assign(parameter, variable.Initializer));
-			}
-		}
-		
-		// ParameterList.Add(parameters);
-		
-		// result.Expression = Expression.RuntimeVariables(parameters);
-		$value = result;
-	} ;
+public local_variable_declaration:
+    local_variable_type   local_variable_declarators;
 
 public local_constant_declaration returns [LocalConstDeclaration value]:
     'const'   type   constant_declarators ;
@@ -1270,136 +1200,66 @@ public expression_statement returns [Expression value]:
 
 
 // TODO: should be assignment, call, increment, decrement, and new object expressions
-public selection_statement returns [Expression value]:
-    if_statement { $value = $if_statement.value; }
-    | switch_statement  { $value = $switch_statement.value; } ;
+public selection_statement:
+    if_statement 
+    | switch_statement ;
 
-public if_statement returns [Expression value]:
+public if_statement:
     // else goes with closest if
-    'if'   '('   boolean_expression   ')'  embedded_statement (('else') => else_statement )?
-	 {
-		var boolExp = $boolean_expression.value;
-		
-		if(boolExp.Type != typeof(System.Boolean))
-		{
-			boolExp = Expression.Convert(boolExp, typeof(bool));
-		}
+    'if'   '('   boolean_expression   ')'  embedded_statement (('else') => else_statement )?; 
 
-		if($else_statement.value == null)
-		{
-			$value = Expression.IfThen(boolExp, $embedded_statement.value); 
-		}
-		else
-		{
-			$value = Expression.IfThenElse(boolExp, $embedded_statement.value, $else_statement.value); 
-		}
-	 }
-     ; 
+public else_statement:
+    'else'   embedded_statement;
 
-public else_statement returns [Expression value]:
-    'else'   embedded_statement { $value = $embedded_statement.value; };
+public switch_statement:
+    'switch'   '('   expression   ')'   switch_block;
 
-public switch_statement returns [Expression value]
-@init{ var breakTarget = compilerState.PushBreak(); }
-@after{ compilerState.PopBreak(); }:
-    'switch'   '('   expression   ')'   switch_block  { 
-		$value = ExpressionHelper.Switch(breakTarget, $expression.value, $switch_block.value);
-	};
+public switch_block:
+    '{'   switch_sections?  '}';
 
-public switch_block returns [List<SwitchCase> value]:
-    '{'   switch_sections?  '}' { $value = $switch_sections.value; };
+public switch_sections:
+    (switch_section)+ ;
 
-public switch_sections returns [List<SwitchCase> value]
-@init{
-	$value = new List<SwitchCase>();
-}:
-    (switch_section { $value.Add($switch_section.value); } )+ ;
+public switch_section:
+    switch_labels   statement_list ;
 
-public switch_section returns [SwitchCase value]:
-    switch_labels   statement_list { $value = Expression.SwitchCase(Expression.Block($statement_list.value.Expressions), $switch_labels.value); } ;
+public switch_labels:
+    (switch_label)+ ;
 
-public switch_labels returns [List<Expression> value]
-@init{
-	$value = new List<Expression>();
-}:
-    (switch_label { $value.Add($switch_label.value); } )+ ;
+public switch_label:
+    ('case'   constant_expression   ':') 
+    | ('default'   ':') ; 
 
-public switch_label returns [Expression value]:
-    ('case'   constant_expression   ':') { $value = $constant_expression.value; }
-    | ('default'   ':') { $value = Expression.Empty(); } ; 
+public iteration_statement:
+    while_statement 
+    | do_statement 
+    | for_statement 
+    | foreach_statement;
 
-public iteration_statement returns [Expression value]:
-    while_statement { $value = $while_statement.value; }
-    | do_statement { $value = $do_statement.value; }
-    | for_statement { $value = $for_statement.value; }
-    | foreach_statement { $value = $foreach_statement.value; };
+public while_statement:
+    'while' '('   boolean_expression   ')'   embedded_statement;
 
-public while_statement returns [Expression value] 
-@init{ var breakTarget = compilerState.PushBreak(); var continueTarget = compilerState.PushContinue(); }
-@after{ compilerState.PopContinue(); compilerState.PopBreak(); }:
-    'while' '('   boolean_expression   ')'   embedded_statement 
-	{ $value = ExpressionHelper.While(breakTarget, continueTarget, null, $boolean_expression.value, $embedded_statement.value); };
+public do_statement:
+    'do'   embedded_statement   'while'   '('   boolean_expression   ')'   ';';
 
-public do_statement returns [Expression value]
-@init{ var breakTarget = compilerState.PushBreak(); var continueTarget = compilerState.PushContinue(); }
-@after{ compilerState.PopContinue(); compilerState.PopBreak(); }:
-    'do'   embedded_statement   'while'   '('   boolean_expression   ')'   ';' 
-	{ $value = ExpressionHelper.DoWhile(breakTarget, continueTarget, $embedded_statement.value, $boolean_expression.value); };
+public for_statement:
+    'for'   '('   for_initializer?   ';'   for_condition?   ';'   for_iterator?   ')'   embedded_statement ;
 
-public for_statement returns [Expression value]
-@init{ var breakTarget = compilerState.PushBreak(); var continueTarget = compilerState.PushContinue(); }
-@after{ compilerState.PopContinue(); compilerState.PopBreak(); }:
-    'for'   '('   for_initializer?   ';'   for_condition?   ';'   for_iterator?   ')'   embedded_statement 
-	{ $value = ExpressionHelper.For(breakTarget, continueTarget, $for_initializer.value, $for_condition.value, $for_iterator.value, $embedded_statement.value); };
-
-public foreach_statement returns [Expression value]
-@init{ ParameterExpression parameter = null; var breakTarget = compilerState.PushBreak(); var continueTarget = compilerState.PushContinue(); }
-@after{ compilerState.PopContinue(); compilerState.PopBreak(); }:
+public foreach_statement:
     'foreach'   '('   local_variable_type   identifier  'in'   expression   ')' 
-	 {
-		var typeName = $local_variable_type.value.Identifier;
-		Type type = null;
-
-		if(typeName == "var")
-		{
-            if ($expression.value.Type.IsGenericType)
-            {
-                type = $expression.value.Type.GetGenericArguments()[0];
-            }
-			else if ($expression.value.Type.IsArray)
-			{
-				type = $expression.value.Type.GetElementType();
-			}
-			else
-			{
-				type = typeof (object);
-			}
-		}
-		else
-		{
-			type = GetType(typeName);
-		}
-
-		parameter = Expression.Variable(type, $identifier.text);
-
-		ParameterList.Add(parameter);
-	
-	}
 	embedded_statement 
-	{ 
-		$value = ExpressionHelper.ForEach(breakTarget, continueTarget, parameter, $expression.value, $embedded_statement.value); 
-	};
+;
 
-public for_initializer returns [MultiStatement value]:
-    (local_variable_declaration) => local_variable_declaration { $value = $local_variable_declaration.value; }
-    | statement_expression_list { $value = $statement_expression_list.value; }
+public for_initializer:
+    (local_variable_declaration) => local_variable_declaration
+    | statement_expression_list
     ;
 
-public for_condition returns [Expression value]:
-    boolean_expression { $value = $boolean_expression.value; };
+public for_condition:
+    boolean_expression ;
 
-public for_iterator returns [StatementList value]:
-    statement_expression_list { $value = $statement_expression_list.value; } ;
+public for_iterator:
+    statement_expression_list;
 
 public statement_expression_list returns [StatementList value] @init{ $value = new StatementList(); }:
     first=statement_expression { $value.Add($first.value); } (',' succeeding=statement_expression { $value.Add($succeeding.value); } )* ;
@@ -1407,36 +1267,26 @@ public statement_expression_list returns [StatementList value] @init{ $value = n
 public statement_expression returns [Expression value]:
     expression { $value = $expression.value; } ;
 
-public jump_statement returns [Expression value]:
-    break_statement { $value = $break_statement.value; }
-    | continue_statement { $value = $continue_statement.value; }
+public jump_statement:
+    break_statement 
+    | continue_statement 
     | goto_statement
-    | return_statement { $value = $return_statement.value; }
+    | return_statement 
     | throw_statement ;
 
-public break_statement returns [Expression value]:
-    'break'   ';' { $value = compilerState.Break(); };
+public break_statement:
+    'break'   ';' ;
 
-public continue_statement returns [Expression value]:
-    'continue'   ';' { $value = compilerState.Continue(); };
+public continue_statement:
+    'continue'   ';';
 
 public goto_statement:
     'goto'   ( identifier
              | 'case'   constant_expression
              | 'default')   ';' ;
 
-public return_statement returns [Expression value]:
-    'return'   expression?  { 
-		HasReturn = true;
-		if($expression.value == null) 
-		{ 
-			$value = Expression.Return(ReturnTarget); 
-		} 
-		else 
-		{ 
-			$value = Expression.Return(ReturnTarget, $expression.value, ReturnTarget.Type); 
-		} 
-	}  ';' ;
+public return_statement:
+    'return'   expression?  ';' ;
 
 public throw_statement:
     'throw'   expression?   ';' ;

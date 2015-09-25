@@ -1,17 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if NET40
 using System.Dynamic;
+using System.Runtime.CompilerServices;
+using Microsoft.CSharp.RuntimeBinder;
+using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using ExpressionEvaluator.Parser.Expressions;
-using Microsoft.CSharp.RuntimeBinder;
-using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
 namespace ExpressionEvaluator.Parser
 {
@@ -35,6 +37,7 @@ namespace ExpressionEvaluator.Parser
             return Expression.Add(le, re);
         }
 
+#if NET40
         public static Expression GetPropertyIndex(Expression le, IEnumerable<Expression> args)
         {
             Expression instance = null;
@@ -76,7 +79,7 @@ namespace ExpressionEvaluator.Parser
                     return Expression.ArrayAccess(le, args);
                 }
 
-                var interfaces = le.Type.GetInterfaces();
+            var interfaces = le.Type.GetInterfaces();
 
                 if (interfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>)))
                 {
@@ -100,7 +103,6 @@ namespace ExpressionEvaluator.Parser
 
                 return Expression.Property(le, indexerpInfo, args);
             }
-
         }
 
         public static Expression Assign(Expression le, Expression re, Dictionary<string, Type> dynamicTypeLookup = null)
@@ -156,6 +158,7 @@ namespace ExpressionEvaluator.Parser
 
             return Expression.Assign(le, re);
         }
+#endif //NET40
 
         public static Type[] InferTypes(MethodInfo methodInfo, List<Expression> args)
         {
@@ -183,11 +186,11 @@ namespace ExpressionEvaluator.Parser
                     // An explicit argument type inference is made from an expression e with type T in the following way:
                     // If e is an explicitly typed lambda expression or anonymous method with argument types U1...Uk and T is a delegate type with parameter types V1...Vk then for each Ui an exact inference (§26.3.3.8) is made from Ui for the corresponding Vi.
 
-                    var x = lambda.Parameters.Select(p => p.Type).Zip(Ti.GetGenericArguments(), (type, type1) =>
-                        {
-                            ExactInference(type, type1, lookup);
-                            return 1;
-                        }).ToList();
+                    //var x = lambda.Parameters.Select(p => p.Type).Zip(Ti.GetGenericArguments(), (type, type1) =>
+                    //    {
+                    //        ExactInference(type, type1, lookup);
+                    //        return 1;
+                    //    }).ToList();
 
 
                 }
@@ -202,9 +205,6 @@ namespace ExpressionEvaluator.Parser
                     // Otherwise, no inferences are made.
                 }
             }
-
-
-
 
 
 
@@ -259,11 +259,11 @@ namespace ExpressionEvaluator.Parser
             //Otherwise if V is a constructed type C<V1...Vk> and there is a unique set of types U1...Uk such that a standard implicit conversion exists from U to C<U1...Uk> then an exact inference is made from each Ui for the corresponding Vi.
             if (V.IsGenericType && U.IsGenericType)
             {
-                var x = U.GetGenericArguments().Zip(V.GetGenericArguments(), (type, type1) =>
-                    {
-                        ExactInference(type, type1, lookup);
-                        return 1;
-                    }).ToList();
+                //var x = U.GetGenericArguments().Zip(V.GetGenericArguments(), (type, type1) =>
+                //    {
+                //        ExactInference(type, type1, lookup);
+                //        return 1;
+                //    }).ToList();
 
             }
             //Otherwise, no inferences are made.
@@ -291,6 +291,7 @@ namespace ExpressionEvaluator.Parser
 
                 type = le.Type;
                 instance = le;
+#if NET40
                 isDynamic = (le.NodeType == ExpressionType.Dynamic) || type.IsDynamic();
 
                 if (!isDynamic)
@@ -316,8 +317,10 @@ namespace ExpressionEvaluator.Parser
                     }
                 }
 
+#endif
             }
 
+#if NET40
             if (isDynamic)
             {
                 var binder = Binder.GetMember(
@@ -333,7 +336,8 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                Expression exp = null;
+#endif
+            Expression exp = null;
 
                 var propertyInfo = type.GetProperty(membername);
                 if (propertyInfo != null)
@@ -357,13 +361,14 @@ namespace ExpressionEvaluator.Parser
                 }
 
                 return exp;
+#if NET40
             }
+#endif
 
             throw new Exception();
         }
 
-        public static Expression GetMethod(Expression le, TypeOrGeneric member, IEnumerable<Argument> args,
-                                           bool isCall = false)
+        public static Expression GetMethod(Expression le, TypeOrGeneric member, IEnumerable<Argument> args, bool isCall = false)
         {
             Expression instance = null;
             Type type = null;
@@ -377,6 +382,7 @@ namespace ExpressionEvaluator.Parser
                 isRuntimeType = true;
                 type = ((Type)((ConstantExpression)le).Value);
             }
+#if NET40
             else
             {
                 type = le.Type;
@@ -415,7 +421,8 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
-                var method = MethodInvokeExpression(type, instance, member, args);
+#endif
+            var method = MethodInvokeExpression(type, instance, member, args);
 
                 if (method == null)
                 {
@@ -427,8 +434,9 @@ namespace ExpressionEvaluator.Parser
                 }
 
                 return method;
+#if NET40
             }
-
+#endif
             return null;
         }
 
@@ -952,20 +960,25 @@ namespace ExpressionEvaluator.Parser
         {
             // perform implicit conversion on known types
 
+#if NET40
             if (le.Type.IsDynamicOrObject())
             {
                 return DynamicUnaryOperator(le, expressionType);
             }
             else
             {
-                return GetUnaryOperator(le, expressionType);
+#endif
+            return GetUnaryOperator(le, expressionType);
+#if NET40
             }
+#endif
         }
 
         public static Expression BinaryOperator(Expression le, Expression re, ExpressionType expressionType)
         {
             // perform implicit conversion on known types
 
+#if NET40
             if (le.NodeType == ExpressionType.Dynamic || re.NodeType == ExpressionType.Dynamic)
             {
                 if (expressionType == ExpressionType.OrElse)
@@ -993,6 +1006,7 @@ namespace ExpressionEvaluator.Parser
             }
             else
             {
+#endif //NET40
 
                 re = TypeConversion.EnumConversion(ref re);
                 le = TypeConversion.EnumConversion(ref le);
@@ -1005,7 +1019,9 @@ namespace ExpressionEvaluator.Parser
                 //TypeConversion.BinaryNumericPromotion(expressionType, ref le, ref re);
                 //le = TypeConversion.DynamicConversion(re, le);
                 return GetBinaryOperator(le, re, expressionType);
+#if NET40
             }
+#endif
         }
 
         public static Expression GetUnaryOperator(Expression le, ExpressionType expressionType)
@@ -1024,6 +1040,7 @@ namespace ExpressionEvaluator.Parser
 
                 case ExpressionType.Not:
                     return Expression.Not(le);
+#if NET40
 
                 case ExpressionType.Decrement:
                     return Expression.Decrement(le);
@@ -1045,7 +1062,7 @@ namespace ExpressionEvaluator.Parser
 
                 case ExpressionType.PostDecrementAssign:
                     return Expression.PostDecrementAssign(le);
-
+#endif
                 default:
                     throw new ArgumentOutOfRangeException("expressionType");
             }
@@ -1114,6 +1131,7 @@ namespace ExpressionEvaluator.Parser
 
                 case ExpressionType.Subtract:
                     return Expression.Subtract(le, re);
+#if NET40
 
                 case ExpressionType.Assign:
                     return Expression.Assign(le, re);
@@ -1159,12 +1177,13 @@ namespace ExpressionEvaluator.Parser
 
                 case ExpressionType.SubtractAssignChecked:
                     return Expression.SubtractAssignChecked(le, re);
-
+#endif
                 default:
                     throw new ArgumentOutOfRangeException("expressionType");
             }
         }
 
+#if NET40
         private static Expression DynamicUnaryOperator(Expression le, ExpressionType expressionType)
         {
             var expArgs = new List<Expression>() { le };
@@ -1193,10 +1212,11 @@ namespace ExpressionEvaluator.Parser
 
             return Expression.Dynamic(binderM, typeof(object), expArgs);
         }
-
+#endif
 
         public static Expression Condition(Expression condition, Expression ifTrue, Expression ifFalse)
         {
+#if NET40
             if (condition.NodeType == ExpressionType.Dynamic)
             {
                 var expArgs = new List<Expression>() { condition };
@@ -1209,7 +1229,7 @@ namespace ExpressionEvaluator.Parser
 
                 condition = Expression.Dynamic(binderM, typeof(bool), expArgs);
             }
-
+#endif
             TypeConversion.ImplicitConversion(ref condition, typeof(bool));
             var x = TypeConversion.ImplicitConversion(ref ifTrue, ifFalse.Type) || TypeConversion.ImplicitConversion(ref ifFalse, ifTrue.Type);
             return Expression.Condition(condition, ifTrue, ifFalse);
@@ -1252,6 +1272,7 @@ namespace ExpressionEvaluator.Parser
 
         }
 
+#if NET40
         public static Expression Switch(LabelTarget breakTarget, Expression switchCase, List<SwitchCase> switchBlock)
         {
             var defaultCase = switchBlock.SingleOrDefault(x => x.TestValues[0].Type == typeof(void));
@@ -1397,5 +1418,6 @@ namespace ExpressionEvaluator.Parser
             }
             return Expression.Block(loopBody);
         }
+#endif
     }
 }

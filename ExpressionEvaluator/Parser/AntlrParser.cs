@@ -52,10 +52,12 @@ namespace ExpressionEvaluator.Parser
                         Expression = statement.Expression;
                     }
                     break;
+#if NET40
                 case CompiledExpressionType.StatementList:
                     var statements = parser.statement_list();
                     Expression = statements.ToBlock();
                     break;
+#endif
             }
             return Expression;
         }

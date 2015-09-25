@@ -1,3 +1,4 @@
+#if NET40
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -37,3 +38,4 @@ namespace UnitTestProject1.Domain
 
     }
 }
+#endif

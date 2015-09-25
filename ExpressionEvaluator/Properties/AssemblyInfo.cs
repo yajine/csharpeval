@@ -37,4 +37,6 @@ using System.Security;
 
 [assembly: AllowPartiallyTrustedCallers]
 [assembly: SecurityTransparent]
+#if NET40
 [assembly: SecurityRules(SecurityRuleSet.Level2, SkipVerificationInFullTrust = true)]
+#endif

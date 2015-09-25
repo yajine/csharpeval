@@ -149,43 +149,64 @@ namespace ExpressionEvaluator.Parser
             {
                 bool canConv = false;
 
-                dynamic num = value;
                 if (@from == typeof(int))
                 {
                     switch (Type.GetTypeCode(to))
                     {
                         case TypeCode.SByte:
+                        {
+                            Int64 num = Convert.ToInt32(value);
                             if (num >= SByte.MinValue && num <= SByte.MaxValue)
                                 canConv = true;
                             break;
-                        case TypeCode.Byte:
+                        }
+                    case TypeCode.Byte:
+                        {
+                            Int64 num = Convert.ToInt32(value);
                             if (num >= Byte.MinValue && num <= Byte.MaxValue)
                                 canConv = true;
                             break;
+                        }
                         case TypeCode.Int16:
+                        {
+                            Int64 num = Convert.ToInt32(value);
                             if (num >= Int16.MinValue && num <= Int16.MaxValue)
                                 canConv = true;
                             break;
+                        }
                         case TypeCode.UInt16:
+                        {
+                            Int64 num = Convert.ToInt32(value);
                             if (num >= UInt16.MinValue && num <= UInt16.MaxValue)
                                 canConv = true;
                             break;
+                        }
                         case TypeCode.UInt32:
+                        {
+                            Int64 num = Convert.ToInt32(value);
                             if (num >= UInt32.MinValue && num <= UInt32.MaxValue)
                                 canConv = true;
                             break;
+                        }
                         case TypeCode.UInt64:
+                        {
+                            Int64 num = Convert.ToInt32(value);
+
                             if (num >= 0)
                                 canConv = true;
                             break;
+                        }
                     }
                 }
                 else if (@from == typeof(long))
                 {
                     if (to == typeof(ulong))
                     {
-                        if (num >= 0)
-                            canConv = true;
+                        {
+                            Int64 num = Convert.ToInt32(value);
+                            if (num >= 0)
+                                canConv = true;
+                        }
                     }
                 }
 
@@ -475,7 +496,7 @@ namespace ExpressionEvaluator.Parser
         {
             return
                 //•	From any reference-type to object and dynamic.
-            (S.IsReferenceType() && T.IsDynamicOrObject()) ||
+            (S.IsReferenceType()) ||
                 //•	From any class-type S to any class-type T, provided S is derived from T.
             (S.IsClass && T.IsClass && S.IsDerivedFrom(T)) ||
                 //•	From any class-type S to any interface-type T, provided S implements T.

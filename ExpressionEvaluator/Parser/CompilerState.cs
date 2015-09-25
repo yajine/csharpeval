@@ -6,7 +6,8 @@ namespace ExpressionEvaluator.Parser
 {
     internal class CompilerState
     {
-        public LabelTarget ReturnTarget { get; set; }
+#if NET40
+        ]public LabelTarget ReturnTarget { get; set; }
         public Stack<LabelTarget> BreakContext { get; private set; }
         public Stack<LabelTarget> ContinueContext { get; private set; }
         public LabelTarget CurrentBreak { get; private set; }
@@ -31,7 +32,6 @@ namespace ExpressionEvaluator.Parser
             BreakContext.Push(CurrentBreak);
             return CurrentBreak;
         }
-
         public void PopBreak()
         {
             CurrentBreak = BreakContext.Pop();
@@ -60,5 +60,6 @@ namespace ExpressionEvaluator.Parser
             return Expression.Continue(ContinueContext.Peek());
         }
 
+#endif
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+#if NET40
 using System.Dynamic;
+#endif //NET40
 using System.Linq;
 
 namespace ExpressionEvaluator.Parser
@@ -28,12 +30,13 @@ namespace ExpressionEvaluator.Parser
             return NumericTypes.Contains(type);
         }
 
+#if NET40
         public static bool IsDynamicOrObject(this Type type)
         {
             return type.GetInterfaces().Contains(typeof(IDynamicMetaObjectProvider)) ||
                    type == typeof(Object);
         }
-
+#endif
         public static bool IsDelegate(this Type t)
         {
             return typeof(Delegate).IsAssignableFrom(t.BaseType);
@@ -65,10 +68,12 @@ namespace ExpressionEvaluator.Parser
         //    });
         //}
 
+#if NET40
         public static bool IsDynamic(this Type type)
         {
             return type.GetInterfaces().Contains(typeof(IDynamicMetaObjectProvider));
         }
+#endif //NET40
 
         public static bool IsObject(this Type type)
         {

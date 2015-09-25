@@ -18,7 +18,9 @@ namespace ExpressionEvaluator.Parser
         public Expression Scope { get; set; }
 
         public bool IsCall { get; set; }
+#if NET40
         public LabelTarget ReturnTarget { get; set; }
+#endif
         public bool HasReturn { get; private set; }
         public TypeRegistry TypeRegistry { get; set; }
 
@@ -65,11 +67,13 @@ namespace ExpressionEvaluator.Parser
                 {
                     expression = statement.Expression;
                 }
+#if NET40
                 if (expression == null)
                 {
                     var statements = parser.statement_list();
                     expression = statements.ToBlock();
                 }
+#endif
             }
 
             if (Scope != null)
@@ -117,10 +121,12 @@ namespace ExpressionEvaluator.Parser
 
                 }
             }
+#if NET40
             else if (primary_expression_part2.GetType() == typeof(Brackets))
             {
                 value = ExpressionHelper.GetPropertyIndex(value, ((Brackets)primary_expression_part2).Values);
             }
+#endif
             else if (primary_expression_part2.GetType() == typeof(Arguments))
             {
                 if (methodStack.Count > 0)
@@ -139,6 +145,7 @@ namespace ExpressionEvaluator.Parser
                     // value = GetMethod(value, membername, ((Arguments)primary_expression_part2).Values);
                 }
             }
+#if NET40
             else if (primary_expression_part2.GetType() == typeof(PostIncrement))
             {
                 value = Expression.Assign(value, Expression.Increment(value));
@@ -147,7 +154,7 @@ namespace ExpressionEvaluator.Parser
             {
                 value = Expression.Assign(value, Expression.Decrement(value));
             }
-
+#endif
             return value;
         }
 

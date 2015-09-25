@@ -1,3 +1,4 @@
+#if NET40
 using System.Diagnostics;
 using System.Dynamic;
 using ExpressionEvaluator;
@@ -78,3 +79,4 @@ namespace UnitTestProject1
 
     }
 }
+#endif

@@ -12,6 +12,5 @@ namespace UnitTestProject1.Domain
         public IEnumerable<string> iterator;
         public IEnumerable objectIterator;
         public string[] stringIterator;
-        public dynamic Value;
     }
 }
