@@ -382,14 +382,16 @@ namespace ExpressionEvaluator.Parser
                 isRuntimeType = true;
                 type = ((Type)((ConstantExpression)le).Value);
             }
-#if NET40
             else
             {
                 type = le.Type;
                 instance = le;
+#if NET40
                 isDynamic = type.IsDynamic();
+#endif
             }
 
+#if NET40
             if (isDynamic)
             {
                 var expArgs = new List<Expression> { instance };
