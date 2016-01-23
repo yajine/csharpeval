@@ -1,14 +1,51 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Dynamic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitTestProject1.Domain;
 
 namespace ExpressionEvaluator.Tests
 {
+    public class DynamicContainer
+    {
+        public dynamic a { get; set; }
+        public dynamic b { get; set; }
+        public dynamic c(dynamic d, dynamic e)
+        {
+            return d + e;
+        }
+    }
+
     [TestClass]
     public class DynamicTests
     {
+        [TestMethod]
+        public void CallMethodOnDynamicProperty()
+        {
+            dynamic invoice = new ExpandoObject();
+            invoice.Date = DateTime.Now;
+            var val = invoice.Date.ToString("mm/dd/yyyy");
+            var reg = new TypeRegistry();
+            reg.RegisterSymbol("invoice", invoice);
+            var expression = new CompiledExpression("invoice.Date.ToString(\"mm/dd/yyyy\")");
+            expression.TypeRegistry = reg;
+            var result2 = expression.Eval();
+        }
+
+        [TestMethod]
+        public void DynamicBinaryOperators()
+        {
+            var c = new DynamicContainer();
+            c.a = 1;
+            c.b = 2;
+            var actual = c.a + c.b - c.c(c.a * c.b, c.c(c.a, c.b));
+            var compiler = new CompiledExpression {  StringToParse = "a + b - c(a * b, c(a, b))" };
+            var f = compiler.ScopeCompile<DynamicContainer>();
+            var result = f(c);
+            Assert.AreEqual(actual, result);
+        }
+
 
         [TestMethod]
         public void DynamicsUnboxingTest()

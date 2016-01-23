@@ -385,7 +385,7 @@ namespace ExpressionEvaluator.Parser
             {
                 type = le.Type;
                 instance = le;
-                isDynamic = type.IsDynamic();
+                isDynamic = IsDynamic(le);
             }
 
             if (isDynamic)
@@ -970,7 +970,7 @@ namespace ExpressionEvaluator.Parser
         {
             // perform implicit conversion on known types
 
-            if (le.NodeType == ExpressionType.Dynamic || re.NodeType == ExpressionType.Dynamic)
+            if (IsDynamic(le) || IsDynamic(re))
             {
                 if (expressionType == ExpressionType.OrElse)
                 {
