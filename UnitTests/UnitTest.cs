@@ -480,5 +480,48 @@ namespace ExpressionEvaluator.Tests
             var ret = c.Eval();
             Assert.AreEqual(ret, "1,2,3,4");
         }
+
+        public class IndexableType
+        {
+            public string this[string name] => "Hello world";
+        }
+
+        [TestMethod]
+        public void CustomIndexer()
+        {
+            TypeRegistry t = new TypeRegistry();
+            t.RegisterSymbol("MyObject", new IndexableType());
+            CompiledExpression s = new CompiledExpression("MyObject[\"asdf\"]");
+            s.TypeRegistry = t;
+            Assert.AreEqual("Hello world", s.Eval());
+        }
+
+        [TestMethod]
+        public void DictionaryIndexer()
+        {
+            const string key = "asdf";
+            const string helloWorld = "Hello world";
+
+            TypeRegistry t = new TypeRegistry();
+            Dictionary<string, string> dict = new Dictionary<string, string> { [key] = helloWorld };
+            t.RegisterSymbol("FooBar", dict);
+            CompiledExpression s = new CompiledExpression("FooBar[\"asdf\"]");
+            s.TypeRegistry = t;
+            Assert.AreEqual(helloWorld, s.Eval());
+        }
+
+        [TestMethod]
+        public void ListIndexer()
+        {
+            // this one is working as expected!
+            const int key = 1;
+
+            TypeRegistry t = new TypeRegistry();
+            IList<int> dict = new List<int> { key };
+            t.RegisterSymbol("FooBar", dict);
+            CompiledExpression s = new CompiledExpression("FooBar[0]");
+            s.TypeRegistry = t;
+            Assert.AreEqual(1, s.Eval());
+        }
     }
 }

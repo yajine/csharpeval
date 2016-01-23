@@ -52,7 +52,7 @@ namespace ExpressionEvaluator.Parser
             {
                 type = le.Type;
                 instance = le;
-                isDynamic = type.IsDynamicOrObject();
+                isDynamic = IsDynamic(le);
             }
 
             if (isDynamic)
@@ -76,22 +76,77 @@ namespace ExpressionEvaluator.Parser
                     return Expression.ArrayAccess(le, args);
                 }
 
+                var defaultMembers = type.GetCustomAttributes(typeof(DefaultMemberAttribute), true);
+
+                if (defaultMembers.Length > 0)
+                {
+                    foreach (var defaultMember in defaultMembers)
+                    {
+                        var pi = type.GetProperty(((DefaultMemberAttribute)defaultMember).MemberName, args.Select(x => x.Type).ToArray());
+
+                        if (pi == null)
+                        {
+                            throw new CompilerException(string.Format("No default member found on type '{0}' that matches the given arguments", type.Name));
+                        }
+
+                        return Expression.Property(le, pi, args);
+                    }
+                }
+
+
                 var interfaces = le.Type.GetInterfaces();
 
-                if (interfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>)))
+                foreach (var @interface in interfaces)
                 {
-                    var indexer = le.Type.GetProperties().SingleOrDefault(x => x.Name == "Item");
-                    if (indexer == null)
+
+                    foreach (PropertyInfo pi in @interface.GetProperties())
                     {
-                        var me = ((MemberExpression)le);
-                        throw new CompilerException(string.Format("The member '{0}' does not implement the index accessor", me.Member.Name));
+                        var indexParameters = pi.GetIndexParameters();
+
+                        if (indexParameters.Length > 0)
+                        {
+                            var position = 0;
+                            var argMatch = 0;
+                            foreach (var expression in args)
+                            {
+
+                                var indexParameter = indexParameters[position];
+                                if (indexParameter.Position == position && indexParameter.ParameterType == expression.Type)
+                                {
+                                    argMatch++;
+                                }
+                                position++;
+                            }
+
+                            if (argMatch == indexParameters.Length)
+                            {
+                                return Expression.Property(le, pi, args);
+                            }
+                            //var indexer = le.Type.GetProperties().SingleOrDefault(x => x.Name == "Item");
+                            //if (indexer == null)
+                            //{
+                            //    var me = ((MemberExpression)le);
+                            //    throw new CompilerException(string.Format("The member '{0}' does not implement the index accessor", me.Member.Name));
+                            //}
+                        }
                     }
-                    return Expression.Property(le, indexer, args);
                 }
+
+                //if (interfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>)) ||
+                //    interfaces.Any(t => t == typeof(IDictionary)))
+                //{
+                //    var indexer = le.Type.GetProperties().SingleOrDefault(x => x.Name == "Item");
+                //    if (indexer == null)
+                //    {
+                //        var me = ((MemberExpression)le);
+                //        throw new CompilerException(string.Format("The member '{0}' does not implement the index accessor", me.Member.Name));
+                //    }
+                //    return Expression.Property(le, indexer, args);
+                //}
 
                 // Alternative, note that we could even look for the type of parameters, if there are indexer overloads.
                 PropertyInfo indexerpInfo = (from p in le.Type.GetDefaultMembers().OfType<PropertyInfo>()
-                                             // This check is probably useless. You can't overload on return value in C#.
+                                                 // This check is probably useless. You can't overload on return value in C#.
                                              where p.PropertyType == typeof(int)
                                              let q = p.GetIndexParameters()
                                              // Here we can search for the exact overload. Length is the number of "parameters" of the indexer, and then we can check for their type.
@@ -246,7 +301,7 @@ namespace ExpressionEvaluator.Parser
             }
             //Otherwise if U is an array type Ue[...] and V is either an array type Ve[...] of the same rank, 
             if ((U.IsArray && V.IsArray && U.GetArrayRank() == V.GetArrayRank() ||
-                // or if U is a one-dimensional array type Ue[]and V is one of IEnumerable<Ve>, ICollection<Ve> or IList<Ve> then:
+                 // or if U is a one-dimensional array type Ue[]and V is one of IEnumerable<Ve>, ICollection<Ve> or IList<Ve> then:
                  U.IsArray && U.GetArrayRank() == 1 &&
                  (V.IsAssignableFrom(typeof(IEnumerable<>)) || V.IsAssignableFrom(typeof(ICollection<>)) ||
                   V.IsAssignableFrom(typeof(IList<>)))
@@ -787,7 +842,7 @@ namespace ExpressionEvaluator.Parser
                     else if (ulong.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out ulongval))
                     {
                         val = ulongval;
-                        ntype = typeof (UInt64);
+                        ntype = typeof(UInt64);
                     }
                     else
                     {
@@ -867,7 +922,7 @@ namespace ExpressionEvaluator.Parser
         {
             if (string.IsNullOrEmpty(txt)) { return txt; }
             StringBuilder retval = new StringBuilder(txt.Length);
-            for (int ix = 0; ix < txt.Length; )
+            for (int ix = 0; ix < txt.Length;)
             {
                 int jx = txt.IndexOf('\\', ix);
                 if (jx < 0 || jx == txt.Length - 1) jx = txt.Length;
@@ -1000,7 +1055,7 @@ namespace ExpressionEvaluator.Parser
 
                 re = TypeConversion.EnumConversion(ref re);
                 le = TypeConversion.EnumConversion(ref le);
-                
+
                 var ret = re.Type;
                 var let = le.Type;
 
@@ -1283,9 +1338,9 @@ namespace ExpressionEvaluator.Parser
             }
 
             return Expression.Block(new[] {
-			    switchExp,
-			    Expression.Label(breakTarget)
-    		});
+                switchExp,
+                Expression.Label(breakTarget)
+            });
 
         }
 

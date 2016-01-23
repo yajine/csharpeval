@@ -112,6 +112,42 @@ namespace ExpressionEvaluator.Tests
             Assert.IsTrue(Convert.ToInt32(ret) == x);
         }
 
+        [TestMethod]
+        public void And()
+        {
+            var str = "true && false";
+            var c = new CompiledExpression<bool>(str);
+            var ret = c.Eval();
+            Assert.IsFalse(ret);
+        }
+
+        [TestMethod]
+        public void Or()
+        {
+            var str = "true || false";
+            var c = new CompiledExpression<bool>(str);
+            var ret = c.Eval();
+            Assert.IsTrue(ret);
+        }
+
+        [TestMethod]
+        public void Xor()
+        {
+            var str = "false ^ true";
+            var c = new CompiledExpression<bool>(str);
+            var ret = c.Eval();
+            Assert.IsTrue(ret);
+        }
+
+        [TestMethod]
+        public void Not()
+        {
+            var str = "!true";
+            var c = new CompiledExpression<bool>(str);
+            var ret = c.Eval();
+            Assert.IsFalse(ret);
+        }
+
         private void TestExpression(string expr, object expected, Type expectedType = null, Type expectedException = null, TypeRegistry typeRegistry = null, Func<CompiledExpression, object> compiler = null)
         {
             try
