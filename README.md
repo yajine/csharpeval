@@ -55,3 +55,5 @@ Expression Evaluator is 100% free, but if you would like to support the project 
 # Disclaimer
 
 This is *not* a fully C#-compliant compiler, and as such features may be missing and there may be bugs or discrepancies in how the parser and compiler work.  If you wish to use this library in production code do so at your own risk.
+
+[![E-iceblue](http://www.e-iceblue.com/components/com_affiliate/banners/3ca481a23a214e4c43b56861a904e189.gif)](http://www.e-iceblue.com/Spire.PDF/Spire.PDF-for-.NET.html?aff_id=96&amp;amp;banner_id=15)
