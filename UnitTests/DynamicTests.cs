@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Dynamic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -98,5 +99,42 @@ namespace ExpressionEvaluator.Tests
             ret = cc.Eval();
             Assert.AreEqual(true, ret);
         }
+
+        [TestMethod]
+        public void DynamicMethodReturnType()
+        {
+            var typeRegistry = new TypeRegistry();
+            dynamic obj = new Entity { Name = "MyName" };
+            typeRegistry.RegisterSymbol("obj", obj);
+            typeRegistry.RegisterSymbol("entity", new EntityLoader());
+
+            var entity = new EntityLoader();
+            Console.WriteLine("Expected: " + entity.GetParent(obj).Name);
+            ValidateExpression<string>(typeRegistry, "entity.GetParent(obj).Name");
+        }
+
+        private static void ValidateExpression<T>(TypeRegistry typeRegistry, string expression)
+        {
+            var compiler = new CompiledExpression<string> { TypeRegistry = typeRegistry, StringToParse = expression };
+            compiler.Compile();
+            var result = compiler.Eval();
+            Console.WriteLine(expression + " :: " + result);
+        }
+
     }
+
+    public class Entity
+    {
+        public string Name { get; set; }
+    }
+
+    public class EntityLoader
+    {
+        public dynamic GetParent(dynamic entity)
+        {
+            return new Entity { Name = "Parent of " + entity.Name };
+        }
+    }
+
+
 }

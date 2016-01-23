@@ -269,6 +269,10 @@ namespace ExpressionEvaluator.Parser
             //Otherwise, no inferences are made.
         }
 
+        private static bool IsDynamic(Expression expr)
+        {
+            return (expr.NodeType == ExpressionType.Dynamic) || expr.Type.IsDynamic() || (expr.NodeType == ExpressionType.Call && ((MethodCallExpression)expr).Method.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(DynamicAttribute), true).Length > 0);
+        }
 
         public static Expression GetProperty(Expression le, string membername)
         {
@@ -291,7 +295,7 @@ namespace ExpressionEvaluator.Parser
 
                 type = le.Type;
                 instance = le;
-                isDynamic = (le.NodeType == ExpressionType.Dynamic) || type.IsDynamic();
+                isDynamic = IsDynamic(le);
 
                 if (!isDynamic)
                 {
