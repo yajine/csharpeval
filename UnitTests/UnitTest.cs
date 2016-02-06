@@ -63,9 +63,6 @@ namespace ExpressionEvaluator.Tests
             }
         }
 
-
-
-
         [TestMethod]
         public void UnderscoreVariables()
         {
@@ -86,14 +83,6 @@ namespace ExpressionEvaluator.Tests
             var c = new CompiledExpression<TestClass>(str) { TypeRegistry = t };
             var ret = c.Eval();
         }
-
-
-
-
-
-
-
-
 
         [TestMethod]
         public void MethodOverLoading()
@@ -288,14 +277,16 @@ namespace ExpressionEvaluator.Tests
             var t = new TypeRegistry();
             t.RegisterSymbol("p1", p1);
             var c = new CompiledExpression() { TypeRegistry = t };
-            c.StringToParse = "p1.Count()";
-            var actual1 = c.Eval();
-            //c.StringToParse = "p1.Count(x => x >= 5)";
-            //var actual2 = c.Eval();
+            //c.StringToParse = "p1.Count()";
+            //var actual1 = c.Eval();
+            //Assert.AreEqual(expected1, actual1);
+
+            c.StringToParse = "p1.Count(x => x >= 5)";
+            var actual2 = c.Eval();
+            Assert.AreEqual(expected2, actual2);
+
             //c.StringToParse = "p1.Where(x => x % 2 == 0)";
             //var actual3 = c.Eval();
-            Assert.AreEqual(expected1, actual1);
-            //Assert.AreEqual(expected2, actual2);
             //Assert.AreEqual(expected3, actual3);
         }
 

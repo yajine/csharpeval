@@ -93,6 +93,34 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
+        public void AddMultiple()
+        {
+            var str = "1 + 1 + 1";
+            var c = new CompiledExpression<int>(str);
+            var ret = c.Eval();
+            Assert.IsTrue(ret == 3);
+        }
+
+        [TestMethod]
+        public void AdditiveMixed1()
+        {
+            var str = "1 + 2 - 3";
+            var c = new CompiledExpression<int>(str);
+            var ret = c.Eval();
+            Assert.IsTrue(ret == 0);
+        }
+
+        [TestMethod]
+        public void AdditiveMixed2()
+        {
+            var str = "1 - 2 + 3";
+            var c = new CompiledExpression<int>(str);
+            var ret = c.Eval();
+            Assert.IsTrue(ret == 2);
+        }
+
+
+        [TestMethod]
         public void Subtract()
         {
             var str = "1 - 1";

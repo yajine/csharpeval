@@ -15,12 +15,12 @@ namespace ExpressionEvaluator
 
         public CompiledExpression()
         {
-            Parser = new AntlrParser { ReturnType = typeof(TResult) };
+            Parser = new ExpressionParser { ReturnType = typeof(TResult) };
         }
 
         public CompiledExpression(string expression)
         {
-            Parser = new AntlrParser(expression) { ReturnType = typeof(TResult) };
+            Parser = new ExpressionParser(expression) { ReturnType = typeof(TResult) };
         }
 
         public Func<TResult> Compile()

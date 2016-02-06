@@ -13,7 +13,7 @@ namespace ExpressionEvaluator
         public CompiledExpressionType ExpressionType { get; set; }
         public LambdaExpression LambdaExpression { get; set; }
 
-        protected AntlrParser Parser = null;
+        protected IParser Parser = null;
         public TypeRegistry TypeRegistry { get; set; }
 
         public Dictionary<string, Type> DynamicTypeLookup { get; set; }

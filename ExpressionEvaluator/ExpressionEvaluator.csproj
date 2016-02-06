@@ -55,6 +55,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Antlr3\Antlr3.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="Antlr4.Runtime">
+      <HintPath>..\Antlr4\Antlr4.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -71,6 +74,9 @@
     <Compile Include="IDynamicObjectProvider.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Parser\AntlrParser.cs" />
+    <Compile Include="Parser\ErrorListener.cs" />
+    <Compile Include="Parser\CSharpEvalVisitor.cs" />
+    <Compile Include="Parser\ExpressionParser.cs" />
     <Compile Include="Parser\Expressions\ApplicableFunctionMember.cs" />
     <Compile Include="Parser\Expressions\Argument.cs" />
     <Compile Include="Parser\Expressions\CandidatePoints.cs" />
@@ -101,6 +107,7 @@
     </Compile>
     <Compile Include="Parser\Expressions\InitializerValue.cs" />
     <Compile Include="Parser\Expressions\MemberInitializer.cs" />
+    <Compile Include="Parser\IAntlrParser.cs" />
     <Compile Include="Parser\MethodResolution.cs" />
     <Compile Include="Parser\NullLiteralType.cs" />
     <Compile Include="Parser\Expressions\ObjectOrCollectionInitializer.cs" />
@@ -114,6 +121,8 @@
     <Compile Include="TypeRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Parser\CSharp4Lexer.g4" />
+    <None Include="Parser\CSharp4PreProcessor.g4" />
     <None Include="endersoft.snk" />
     <None Include="ExpressionEvaluator.nuspec" />
     <Antlr3 Include="Parser\ExprEval.g3">
@@ -136,4 +145,28 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <None Include="Parser\CSharp4.g4" />
+    <Compile Include="Parser\CSharp4BaseListener.cs">
+      <DependentUpon>CSharp4.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Parser\CSharp4BaseVisitor.cs">
+      <DependentUpon>CSharp4.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Parser\CSharp4Lexer.cs">
+      <DependentUpon>CSharp4.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Parser\CSharp4Parser.cs">
+      <DependentUpon>CSharp4.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Parser\CSharp4Visitor.cs">
+      <DependentUpon>CSharp4.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Parser\CSharp4Listener.cs">
+      <DependentUpon>CSharp4.g4</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>java -cp "$(SolutionDir)ANTLR4\antlr-4.5.1-complete.jar" org.antlr.v4.Tool -Dlanguage=CSharp -visitor "$(ProjectDir)Parser\CSharp4.g4"</PreBuildEvent>
+  </PropertyGroup>
 </Project>

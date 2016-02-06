@@ -8,7 +8,7 @@ using Antlr.Runtime;
 
 namespace ExpressionEvaluator.Parser
 {
-    public class AntlrParser
+    public class AntlrParser : IParser
     {
         public string ExpressionString { get; set; }
         public Expression Expression { get; set; }
