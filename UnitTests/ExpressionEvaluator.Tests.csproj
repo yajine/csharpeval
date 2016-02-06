@@ -73,8 +73,10 @@
     <Compile Include="Domain\StaticFunctionCache.cs" />
     <Compile Include="Domain\TestClass.cs" />
     <Compile Include="DynamicTests.cs" />
+    <Compile Include="EnumTests.cs" />
     <Compile Include="OperatorTests.cs" />
     <Compile Include="ScopeTests.cs" />
+    <Compile Include="TestHelpers.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="LiteralParsingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

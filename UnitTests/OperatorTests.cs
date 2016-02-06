@@ -4,207 +4,122 @@ using UnitTestProject1.Domain;
 
 namespace ExpressionEvaluator.Tests
 {
-
-
     [TestClass]
     public class OperatorTests
     {
-        public enum Drinks : int
-        {
-            Beer = 1,
-            Soda = 2,
-            Water = 3,
-            Milk = 4
-        }
-        
-        [Flags]
-        public enum Food : int
-        {
-            Fruit = 0x1,
-            Grain = 0x2,
-            Meat = 0x4,
-            Dairy = 0x8
-        }
-
-        [TestMethod]
-        public void Assignment()
-        {
-            var str = "c.x = 1";
-            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
-            var cont = new Container();
-            c.TypeRegistry.RegisterSymbol("c", cont);
-            c.TypeRegistry.RegisterType("p", typeof(Math));
-            var ret = c.Eval();
-            Assert.AreEqual(ret, 1);
-            Assert.AreEqual(ret, cont.x);
-        }
-
 
         [TestMethod]
         public void TernaryOperator()
         {
-            var str = "3 == 2 ? 4 : 5 == 5 ? 3 : 2";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            var y = 3 == 2 ? 4 : 5 == 5 ? 3 : 2;
-            Assert.AreEqual(ret, 3);
-            Assert.AreEqual(ret, y);
+            TestHelpers.TestOperator("3 == 2 ? 4 : 5 == 5 ? 3 : 2", 3 == 2 ? 4 : 5 == 5 ? 3 : 2);
         }
 
         [TestMethod]
         public void OperatorPrecedence()
         {
-            var str = "1 + 2 * 3";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            var y = 1 + 2 * 3;
-            Assert.AreEqual(ret, 7);
-            Assert.AreEqual(ret, y);
+            TestHelpers.TestOperator("1 + 2 * 3", 1 + 2 * 3);
         }
 
         [TestMethod]
         public void BracketGrouping()
         {
-            var str = "(1 + 2) * 3";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            var y = (1 + 2) * 3;
-            Assert.AreEqual(ret, 9);
-            Assert.AreEqual(ret, y);
+            TestHelpers.TestOperator("((1 + (3 - 1)) * (12 / 4))", ((1 + (3 - 1)) * (12 / 4)));
         }
 
         [TestMethod]
         public void AddImplicitIntegersReturnsInteger()
         {
-            var str = "1 + 1";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret.GetType() == typeof(System.Int32));
-            Assert.IsTrue(Convert.ToInt32(ret) == 2);
+            TestHelpers.TestOperator("1 + 1", 1 + 1, typeof(System.Int32));
         }
 
         [TestMethod]
         public void Add()
         {
-            var str = "1 + 1";
-            var c = new CompiledExpression<int>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret == 2);
+            TestHelpers.TestOperator("1 + 1", 1 + 1);
         }
 
         [TestMethod]
         public void AddMultiple()
         {
-            var str = "1 + 1 + 1";
-            var c = new CompiledExpression<int>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret == 3);
+            TestHelpers.TestOperator("1 + 1 + 1", 1 + 1 + 1);
         }
 
         [TestMethod]
         public void AdditiveMixed1()
         {
-            var str = "1 + 2 - 3";
-            var c = new CompiledExpression<int>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret == 0);
+            TestHelpers.TestOperator("1 + 2 - 3", 1 + 2 - 3);
         }
 
         [TestMethod]
         public void AdditiveMixed2()
         {
-            var str = "1 - 2 + 3";
-            var c = new CompiledExpression<int>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret == 2);
+            TestHelpers.TestOperator("1 - 2 + 3", 1 - 2 + 3);
         }
-
 
         [TestMethod]
         public void Subtract()
         {
-            var str = "1 - 1";
-            var c = new CompiledExpression<int>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(Convert.ToInt32(ret) == 0);
+            TestHelpers.TestOperator("1 - 1", 1 - 1);
         }
 
+        [TestMethod]
+        public void Multiply()
+        {
+            TestHelpers.TestOperator("4 * 3", 4 * 3);
+        }
+
+        [TestMethod]
+        public void Divide()
+        {
+            TestHelpers.TestOperator("6 / 3", 6 / 3);
+        }
+
+        [TestMethod]
+        public void Modulo()
+        {
+            TestHelpers.TestOperator("9 % 2", 9 % 2);
+        }
+
+        [TestMethod]
+        public void Equal()
+        {
+            TestHelpers.TestOperator("1 == 1", 1 == 1);
+        }
+
+        [TestMethod]
+        public void NotEqual()
+        {
+            TestHelpers.TestOperator("1 != 2", 1 != 2);
+        }
 
         [TestMethod]
         public void UnaryNegation()
         {
-            var x = -1 - 10;
-            var str = "-1 - 10";
-            var c = new CompiledExpression<int>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(Convert.ToInt32(ret) == x);
+            TestHelpers.TestOperator("-1", -1);
         }
 
         [TestMethod]
         public void And()
         {
-            var str = "true && false";
-            var c = new CompiledExpression<bool>(str);
-            var ret = c.Eval();
-            Assert.IsFalse(ret);
+            TestHelpers.TestOperator("true && false", true && false);
         }
 
         [TestMethod]
         public void Or()
         {
-            var str = "true || false";
-            var c = new CompiledExpression<bool>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret);
+            TestHelpers.TestOperator("true || false", true || false);
         }
 
         [TestMethod]
         public void Xor()
         {
-            var str = "false ^ true";
-            var c = new CompiledExpression<bool>(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret);
+            TestHelpers.TestOperator("false ^ true", false ^ true);
         }
 
         [TestMethod]
         public void Not()
         {
-            var str = "!true";
-            var c = new CompiledExpression<bool>(str);
-            var ret = c.Eval();
-            Assert.IsFalse(ret);
-        }
-
-        private void TestExpression(string expr, object expected, Type expectedType = null, Type expectedException = null, TypeRegistry typeRegistry = null, Func<CompiledExpression, object> compiler = null)
-        {
-            try
-            {
-                var c = new CompiledExpression(expr) { TypeRegistry = typeRegistry };
-                object actual = null;
-                actual = compiler == null ? c.Eval() : compiler(c);
-                if (expectedException != null)
-                {
-                    Assert.Fail("Expected Exception of type {0}", expectedException.Name);
-                }
-                Assert.AreEqual(expected, actual);
-                if (expectedType != null)
-                {
-                    Assert.AreEqual(expectedType, actual.GetType());
-                }
-            }
-            catch (Exception e)
-            {
-                if (expectedException != null && e.GetType() != typeof(AssertFailedException))
-                {
-                    Assert.AreEqual(expectedException, e.GetType());
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            TestHelpers.TestOperator("!true", !true);
         }
 
         [TestMethod]
@@ -212,25 +127,25 @@ namespace ExpressionEvaluator.Tests
         {
             var t = new TypeRegistry();
 
-            TestExpression("1.5m + 2", 1.5m + 2, typeof(decimal));
-            TestExpression("1.5m - 2", 1.5m - 2, typeof(decimal));
-            TestExpression("2 * 1.5m", 2 * 1.5m, typeof(decimal));
-            TestExpression("1.5m / 2", 1.5m / 2, typeof(decimal));
-            TestExpression("15m % 2", 15m % 2, typeof(decimal));
-            TestExpression("1.5m * 2", 1.5m * 2, typeof(decimal));
-            TestExpression("1.5m / 2", 1.5m / 2, typeof(decimal));
-            TestExpression("1.5m + 2f", null, null, typeof(InvalidOperationException));
-            TestExpression("1.5d - 2m", null, null, typeof(InvalidOperationException));
+            TestHelpers.TestOperator("1.5m + 2", 1.5m + 2, typeof(decimal));
+            TestHelpers.TestOperator("1.5m - 2", 1.5m - 2, typeof(decimal));
+            TestHelpers.TestOperator("2 * 1.5m", 2 * 1.5m, typeof(decimal));
+            TestHelpers.TestOperator("1.5m / 2", 1.5m / 2, typeof(decimal));
+            TestHelpers.TestOperator("15m % 2", 15m % 2, typeof(decimal));
+            TestHelpers.TestOperator("1.5m * 2", 1.5m * 2, typeof(decimal));
+            TestHelpers.TestOperator("1.5m / 2", 1.5m / 2, typeof(decimal));
+            TestHelpers.TestOperator("1.5m + 2f", null, null, typeof(InvalidOperationException));
+            TestHelpers.TestOperator("1.5d - 2m", null, null, typeof(InvalidOperationException));
 
-            TestExpression("64L & 2", 64L & 2, typeof(long));
-            TestExpression("64L | 2", 64L | 2, typeof(long));
-            TestExpression("64L ^ 2", 64L ^ 2, typeof(long));
+            TestHelpers.TestOperator("64L & 2", 64L & 2, typeof(long));
+            TestHelpers.TestOperator("64L | 2", 64L | 2, typeof(long));
+            TestHelpers.TestOperator("64L ^ 2", 64L ^ 2, typeof(long));
 
-            TestExpression("64 & 2L", 64 & 2L, typeof(long));
-            TestExpression("64 | 2L", 64 | 2L, typeof(long));
-            TestExpression("64 ^ 2L", 64 ^ 2L, typeof(long));
+            TestHelpers.TestOperator("64 & 2L", 64 & 2L, typeof(long));
+            TestHelpers.TestOperator("64 | 2L", 64 | 2L, typeof(long));
+            TestHelpers.TestOperator("64 ^ 2L", 64 ^ 2L, typeof(long));
 
-            TestExpression("1.5d + 2f", 1.5d + 2f, typeof(double));
+            TestHelpers.TestOperator("1.5d + 2f", 1.5d + 2f, typeof(double));
 
             ulong ulongValue = 64ul;
             int intValue = 2;
@@ -254,81 +169,78 @@ namespace ExpressionEvaluator.Tests
             t.Add("ulongValueC", ulongValueC);
             t.Add("intValueC", intValueC);
             // This should pass since these are constants
-            TestExpression("64UL - 2", 64UL - 2, typeof(ulong));
+            TestHelpers.TestOperator("64UL - 2", 64UL - 2, typeof(ulong));
             // This should pass since both of them are constants
-            TestExpression("ulongValue - 2", ulongValue - 2, typeof(ulong), null, t);
+            TestHelpers.TestOperator("ulongValue - 2", ulongValue - 2, typeof(ulong), null, t);
             // This should pass, since we still passing constants 
-            TestExpression("ulongValueC - intValueC", ulongValueC - intValueC, null, null, t);
+            TestHelpers.TestOperator("ulongValueC - intValueC", ulongValueC - intValueC, null, null, t);
             // WARNING! even though we registered variables into the typeregistry, the typeregistry 
             // will expose them to the compiler as CONSTANTS and implicit conversion treats them as such!
-            TestExpression("ulongValue - intValue", 64ul - 2, null, null, t);
+            TestHelpers.TestOperator("ulongValue - intValue", 64ul - 2, null, null, t);
             // This should fail as we compiled the symbols as parameters so implicit conversion works
             // on the actual values!!!
-            TestExpression("ulongValue - intValue", null, null, typeof(InvalidOperationException), t, expression => expression.Compile<Func<ulong, int, object>>("ulongValue", "intValue")(ulongValue, intValue));
+            TestHelpers.TestOperator("ulongValue - intValue", null, null, typeof(InvalidOperationException), t, expression => expression.Compile<Func<ulong, int, object>>("ulongValue", "intValue")(ulongValue, intValue));
 
-            TestExpression("64UL + 2L", 64UL + 2L, typeof(ulong));
-            TestExpression("64UL + -2L", null /* 64UL + -2L*/, null, typeof(InvalidOperationException));
+            TestHelpers.TestOperator("64UL + 2L", 64UL + 2L, typeof(ulong));
+            TestHelpers.TestOperator("64UL + -2L", null /* 64UL + -2L*/, null, typeof(InvalidOperationException));
 
             var results = shortValue + sbyteValue;
             // expect type int
-            TestExpression("a + b", results, typeof(int), null, null, expression => expression.Compile<Func<short, sbyte, int>>("a", "b")(shortValue, sbyteValue));
+            TestHelpers.TestOperator("a + b", results, typeof(int), null, null, expression => expression.Compile<Func<short, sbyte, int>>("a", "b")(shortValue, sbyteValue));
 
-            //TestExpression("1.5m / 2", 1.5m / 2, typeof(decimal));
-            //TestExpression("1.5m / 2", 1.5m / 2, typeof(decimal));
-            //TestExpression("1.5m * 2", 1.5m / 2);
-            //TestExpression("30d % 2", 1.5m / 2);
-            //TestExpression("1.5m / 2", 1.5m / 2);
+            //TestHelpers.TestExpression("1.5m / 2", 1.5m / 2, typeof(decimal));
+            //TestHelpers.TestExpression("1.5m / 2", 1.5m / 2, typeof(decimal));
+            //TestHelpers.TestExpression("1.5m * 2", 1.5m / 2);
+            //TestHelpers.TestExpression("30d % 2", 1.5m / 2);
+            //TestHelpers.TestExpression("1.5m / 2", 1.5m / 2);
 
         }
-
+        [TestMethod]
+        public void Assignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 0, "x = 1", 1);
+        }
 
         [TestMethod]
-        public void AssignmentOperators()
+        public void AddAssignment()
         {
-            var classA = new ClassA();
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 1, "x += 9", 10);
+        }
 
-            var exp = new CompiledExpression();
-            Func<ClassA, object> func;
+        [TestMethod]
+        public void SubtractAssignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 10, "x -= 4", 6);
+        }
 
-            exp.StringToParse = "x = 1";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(1, classA.x);
+        [TestMethod]
+        public void MultiplyAssignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 6, "x *= 5", 30);
+        }
 
-            exp.StringToParse = "x += 9";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(10, classA.x);
+        [TestMethod]
+        public void DivideAssignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 30, "x /= 2", 15);
+        }
 
-            exp.StringToParse = "x -= 4";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(6, classA.x);
+        [TestMethod]
+        public void ModuloAssignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 15, "x %= 13", 2);
+        }
 
-            exp.StringToParse = "x *= 5";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(30, classA.x);
+        [TestMethod]
+        public void LeftShiftAssignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 2, "x <<= 4", 32);
+        }
 
-            exp.StringToParse = "x /= 2";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(15, classA.x);
-
-            exp.StringToParse = "x %= 13";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(2, classA.x);
-
-            exp.StringToParse = "x <<= 4";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(32, classA.x);
-
-            exp.StringToParse = "x >>= 1";
-            func = exp.ScopeCompile<ClassA>();
-            func(classA);
-            Assert.AreEqual(16, classA.x);
+        [TestMethod]
+        public void RightShiftAssignment()
+        {
+            TestHelpers.TestAssignment<ClassA, int>(scope => scope.x, scope => scope.x = 32, "x >>= 1", 16);
         }
 
 
@@ -355,112 +267,6 @@ namespace ExpressionEvaluator.Tests
             Assert.IsFalse(target.Compile<Func<bool>>()());
             target.StringToParse = "x == \"3\"";
             Assert.IsTrue(target.Compile<Func<bool>>()());
-        }
-
-        [TestMethod]
-        public void BinaryOpsWithEnumFlagsAttribute()
-        {
-            const Food all = Food.Fruit | Food.Grain | Food.Meat | Food.Dairy;
-            const Food some = Food.Meat | Food.Dairy;
-
-            var expected = (all & some) == some;
-
-            var registry = new TypeRegistry();
-
-            registry.RegisterSymbol(@"all", all);
-            registry.RegisterSymbol(@"some", some);
-
-            var ce = new CompiledExpression<bool>(@"(all & some) == some")
-            {
-                TypeRegistry = registry
-            };
-
-            var actual = ce.Eval();
-
-            Assert.AreEqual(expected, actual);
-        }
-
-        [TestMethod]
-        public void BinaryOpsWithEnumFlagsAttributeToString()
-        {
-            const Food all = Food.Fruit | Food.Grain | Food.Meat | Food.Dairy;
-
-            var expected = all.ToString();
-
-            var registry = new TypeRegistry();
-
-            registry.RegisterSymbol(@"all", all);
-
-            var ce = new CompiledExpression<string>(@"all.ToString()")
-            {
-                TypeRegistry = registry
-            };
-
-            var actual = ce.Eval();
-
-            Assert.AreEqual(expected, actual);
-        }
-
-        [TestMethod]
-        public void BinaryOpsWithEnumFlagsAttributeLiterals()
-        {
-            var expected = Food.Fruit | Food.Grain | Food.Meat | Food.Dairy;
-
-            var registry = new TypeRegistry();
-
-            registry.RegisterType(@"Food", typeof(Food));
-
-            var ce = new CompiledExpression<Food>(@"Food.Fruit | Food.Grain | Food.Meat | Food.Dairy")
-            {
-                TypeRegistry = registry
-            };
-
-            var actual = ce.Eval();
-
-            Assert.AreEqual(expected, actual);
-        }
-
-
-        [TestMethod]
-        public void BinaryOpsWithEnum()
-        {
-            const Drinks all = Drinks.Beer | Drinks.Soda | Drinks.Water | Drinks.Milk;
-            const Drinks some = Drinks.Beer | Drinks.Soda;
-
-            var expected = (all & some) == some;
-
-            var registry = new TypeRegistry();
-
-            registry.RegisterSymbol(@"all", all);
-            registry.RegisterSymbol(@"some", some);
-
-            var ce = new CompiledExpression<bool>(@"(all & some) == some")
-            {
-                TypeRegistry = registry
-            };
-
-            var actual = ce.Eval();
-
-            Assert.AreEqual(expected, actual);
-        }
-
-        [TestMethod]
-        public void BinaryOpsWithEnumLiterals()
-        {
-            var expected = Drinks.Beer | Drinks.Soda | Drinks.Water | Drinks.Milk;
-
-            var registry = new TypeRegistry();
-
-            registry.RegisterType(@"Drinks", typeof(Drinks));
-
-            var ce = new CompiledExpression<Drinks>(@"Drinks.Beer | Drinks.Soda | Drinks.Water | Drinks.Milk")
-            {
-                TypeRegistry = registry
-            };
-
-            var actual = ce.Eval();
-
-            Assert.AreEqual(expected, actual);
         }
 
         struct TypeWithOverloadedBinaryOperators
@@ -498,5 +304,7 @@ namespace ExpressionEvaluator.Tests
                 return _value.GetHashCode();
             }
         }
+
+
     }
 }
