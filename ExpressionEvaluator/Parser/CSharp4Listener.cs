@@ -1217,15 +1217,17 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitAssignment([NotNull] CSharp4Parser.AssignmentContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.assignment_operator"/>.
+	/// Enter a parse tree produced by the <c>ConditionalAndExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context);
+	void EnterConditionalAndExpression([NotNull] CSharp4Parser.ConditionalAndExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.assignment_operator"/>.
+	/// Exit a parse tree produced by the <c>ConditionalAndExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context);
+	void ExitConditionalAndExpression([NotNull] CSharp4Parser.ConditionalAndExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>ParenExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -1251,17 +1253,29 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitAssignmentExpression([NotNull] CSharp4Parser.AssignmentExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>RelationalExpression</c>
+	/// Enter a parse tree produced by the <c>OrExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context);
+	void EnterOrExpression([NotNull] CSharp4Parser.OrExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>RelationalExpression</c>
+	/// Exit a parse tree produced by the <c>OrExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context);
+	void ExitOrExpression([NotNull] CSharp4Parser.OrExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>AndExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterAndExpression([NotNull] CSharp4Parser.AndExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>AndExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitAndExpression([NotNull] CSharp4Parser.AndExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>ShiftExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -1275,29 +1289,17 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitShiftExpression([NotNull] CSharp4Parser.ShiftExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>EqualityExpression</c>
+	/// Enter a parse tree produced by the <c>LambdaExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context);
+	void EnterLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>EqualityExpression</c>
+	/// Exit a parse tree produced by the <c>LambdaExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context);
-	/// <summary>
-	/// Enter a parse tree produced by the <c>BitwiseExpression</c>
-	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterBitwiseExpression([NotNull] CSharp4Parser.BitwiseExpressionContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>BitwiseExpression</c>
-	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitBitwiseExpression([NotNull] CSharp4Parser.BitwiseExpressionContext context);
+	void ExitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>NonAssignmentExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -1311,17 +1313,53 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitNonAssignmentExpression([NotNull] CSharp4Parser.NonAssignmentExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>UnaryExpression</c>
+	/// Enter a parse tree produced by the <c>ConditionalExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context);
+	void EnterConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>UnaryExpression</c>
+	/// Exit a parse tree produced by the <c>ConditionalExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context);
+	void ExitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ConditionalOrExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterConditionalOrExpression([NotNull] CSharp4Parser.ConditionalOrExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ConditionalOrExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitConditionalOrExpression([NotNull] CSharp4Parser.ConditionalOrExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>RelationalExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>RelationalExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>EqualityExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EqualityExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>AdditiveExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -1335,17 +1373,17 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitAdditiveExpression([NotNull] CSharp4Parser.AdditiveExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ConditionalExpression</c>
+	/// Enter a parse tree produced by the <c>XorExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context);
+	void EnterXorExpression([NotNull] CSharp4Parser.XorExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>ConditionalExpression</c>
+	/// Exit a parse tree produced by the <c>XorExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context);
+	void ExitXorExpression([NotNull] CSharp4Parser.XorExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>MultiplicativeExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -1359,29 +1397,17 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitMultiplicativeExpression([NotNull] CSharp4Parser.MultiplicativeExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ShortCircuitExpression</c>
+	/// Enter a parse tree produced by the <c>NullCoalescingExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterShortCircuitExpression([NotNull] CSharp4Parser.ShortCircuitExpressionContext context);
+	void EnterNullCoalescingExpression([NotNull] CSharp4Parser.NullCoalescingExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>ShortCircuitExpression</c>
+	/// Exit a parse tree produced by the <c>NullCoalescingExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitShortCircuitExpression([NotNull] CSharp4Parser.ShortCircuitExpressionContext context);
-	/// <summary>
-	/// Enter a parse tree produced by the <c>LambdaExpression</c>
-	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>LambdaExpression</c>
-	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context);
+	void ExitNullCoalescingExpression([NotNull] CSharp4Parser.NullCoalescingExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>QueryExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
@@ -1394,6 +1420,18 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitQueryExpression([NotNull] CSharp4Parser.QueryExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>UnaryExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>UnaryExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.constant_expression"/>.
 	/// </summary>

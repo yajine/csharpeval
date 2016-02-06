@@ -98,49 +98,30 @@ namespace ExpressionEvaluator.Parser
         {
             var le = Visit(context.unary_expression());
             var re = Visit(context.expression());
-            if (context.assignment_operator().ASSIGNMENT() != null)
+            switch (context.op.Type)
             {
-                return ExpressionHelper.Assign(le, re);
-            }
-            if (context.assignment_operator().OP_ADD_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AddAssign);
-            }
-            if (context.assignment_operator().OP_AND_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AndAssign);
-            }
-            if (context.assignment_operator().OP_DIV_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.DivideAssign);
-            }
-            if (context.assignment_operator().OP_LEFT_SHIFT_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.LeftShiftAssign);
-            }
-            if (context.assignment_operator().OP_MOD_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ModuloAssign);
-            }
-            if (context.assignment_operator().OP_MULT_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.MultiplyAssign);
-            }
-            if (context.assignment_operator().OP_OR_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.OrAssign);
-            }
-            if (context.assignment_operator().OP_SUB_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.SubtractAssign);
-            }
-            if (context.assignment_operator().OP_RIGHT_SHIFT_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.RightShiftAssign);
-            }
-            if (context.assignment_operator().OP_XOR_ASSIGNMENT() != null)
-            {
-                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ExclusiveOrAssign);
+                case CSharp4Parser.ASSIGNMENT:
+                    return ExpressionHelper.Assign(le, re);
+                case CSharp4Parser.OP_ADD_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AddAssign);
+                case CSharp4Parser.OP_AND_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AndAssign);
+                case CSharp4Parser.OP_DIV_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.DivideAssign);
+                case CSharp4Parser.OP_LEFT_SHIFT_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.LeftShiftAssign);
+                case CSharp4Parser.OP_MOD_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ModuloAssign);
+                case CSharp4Parser.OP_MULT_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.MultiplyAssign);
+                case CSharp4Parser.OP_OR_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.OrAssign);
+                case CSharp4Parser.OP_SUB_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.SubtractAssign);
+                case CSharp4Parser.OP_RIGHT_SHIFT_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.RightShiftAssign);
+                case CSharp4Parser.OP_XOR_ASSIGNMENT:
+                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ExclusiveOrAssign);
             }
             throw new InvalidOperationException();
         }
@@ -268,35 +249,70 @@ namespace ExpressionEvaluator.Parser
             throw new InvalidOperationException();
         }
 
-        public override Expression VisitBitwiseExpression(CSharp4Parser.BitwiseExpressionContext context)
+        public override Expression VisitAndExpression(CSharp4Parser.AndExpressionContext context)
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            switch (context.op.Type)
-            {
-                case CSharp4Parser.AMP:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.And);
-                case CSharp4Parser.BITWISE_OR:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
-                case CSharp4Parser.CARET:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.ExclusiveOr);
-            }
-            throw new InvalidOperationException();
+            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.And);
         }
 
-        public override Expression VisitShortCircuitExpression(CSharp4Parser.ShortCircuitExpressionContext context)
+        public override Expression VisitXorExpression(CSharp4Parser.XorExpressionContext context)
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            switch (context.op.Type)
-            {
-                case CSharp4Parser.OP_AND:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.AndAlso);
-                case CSharp4Parser.OP_OR:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
-            }
-            throw new InvalidOperationException();
+            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.ExclusiveOr);
         }
+
+        public override Expression VisitOrExpression(CSharp4Parser.OrExpressionContext context)
+        {
+            var lex = Visit(context.expression(0));
+            var rex = Visit(context.expression(1));
+            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
+        }
+
+        public override Expression VisitConditionalAndExpression(CSharp4Parser.ConditionalAndExpressionContext context)
+        {
+            var lex = Visit(context.expression(0));
+            var rex = Visit(context.expression(1));
+            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.AndAlso);
+        }
+
+        public override Expression VisitConditionalOrExpression(CSharp4Parser.ConditionalOrExpressionContext context)
+        {
+            var lex = Visit(context.expression(0));
+            var rex = Visit(context.expression(1));
+            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
+        }
+
+        //public override Expression VisitBitwiseExpression(CSharp4Parser.BitwiseExpressionContext context)
+        //{
+        //var lex = Visit(context.expression(0));
+        //var rex = Visit(context.expression(1));
+        //switch (context.op.Type)
+        //{
+        //    case CSharp4Parser.AMP:
+        //        return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.And);
+        //    case CSharp4Parser.BITWISE_OR:
+        //        return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
+        //    case CSharp4Parser.CARET:
+        //        return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.ExclusiveOr);
+        //}
+        //throw new InvalidOperationException();
+        //}
+
+        //public override Expression VisitShortCircuitExpression(CSharp4Parser.ShortCircuitExpressionContext context)
+        //{
+        //    var lex = Visit(context.expression(0));
+        //    var rex = Visit(context.expression(1));
+        //    switch (context.op.Type)
+        //    {
+        //        case CSharp4Parser.OP_AND:
+        //            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.AndAlso);
+        //        case CSharp4Parser.OP_OR:
+        //            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
+        //    }
+        //    throw new InvalidOperationException();
+        //}
 
         public override Expression VisitConditionalExpression(CSharp4Parser.ConditionalExpressionContext context)
         {

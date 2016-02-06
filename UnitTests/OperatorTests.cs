@@ -9,16 +9,42 @@ namespace ExpressionEvaluator.Tests
     {
 
         [TestMethod]
-        public void TernaryOperator()
+        public void Conditional()
         {
+            TestHelpers.TestOperator("3 == 2 ? 4 : 5", 3 == 2 ? 4 : 5);
+        }
+
+        [TestMethod]
+        public void ConditionalRightAssociativity()
+        {
+            // Conditional operator is right-associative,  so 3 == 2 ? 4 : 5 == 5 ? 3 : 2  is equivalent to 3 == 2 ? 4 : (5 == 5 ? 3 : 2), 
+            // otherwise, having (3 == 2 ? 4 : 5 == 5) ? 3 : 2 would be invalid, since the true part (4) and the false part (5 == 5) are of different types
             TestHelpers.TestOperator("3 == 2 ? 4 : 5 == 5 ? 3 : 2", 3 == 2 ? 4 : 5 == 5 ? 3 : 2);
         }
 
         [TestMethod]
-        public void OperatorPrecedence()
+        public void OperatorPrecedenceAddMultiply()
         {
             TestHelpers.TestOperator("1 + 2 * 3", 1 + 2 * 3);
         }
+
+        [TestMethod]
+        public void OperatorPrecedenceMultiplyAdd()
+        {
+            TestHelpers.TestOperator("1 * 2 + 3", 1 * 2 + 3);
+        }
+
+        [TestMethod]
+        public void OperatorPrecedenceSubtractDivide()
+        {
+            TestHelpers.TestOperator("5 + 6 / 3", 5 + 6 / 3);
+        }
+
+        public void OperatorPrecedenceDivideSubtract()
+        {
+            TestHelpers.TestOperator("10 / 2 - 3", 10 / 2 - 3);
+        }
+
 
         [TestMethod]
         public void BracketGrouping()

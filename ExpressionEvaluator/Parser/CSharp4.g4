@@ -760,41 +760,44 @@ query_continuation
 	;
 /** starts with unary_expression */
 assignment 
-	: unary_expression assignment_operator expression
-	;
-assignment_operator 
-	: ASSIGNMENT
-	| OP_ADD_ASSIGNMENT
-	| OP_SUB_ASSIGNMENT
-	| OP_MULT_ASSIGNMENT
-	| OP_DIV_ASSIGNMENT
-	| OP_MOD_ASSIGNMENT
-	| OP_AND_ASSIGNMENT
-	| OP_OR_ASSIGNMENT
-	| OP_XOR_ASSIGNMENT
-	| OP_LEFT_SHIFT_ASSIGNMENT
-	| OP_RIGHT_SHIFT_ASSIGNMENT
-	| right_shift_assignment
+	: unary_expression 
+		op=(ASSIGNMENT
+		| OP_ADD_ASSIGNMENT
+		| OP_SUB_ASSIGNMENT
+		| OP_MULT_ASSIGNMENT
+		| OP_DIV_ASSIGNMENT
+		| OP_MOD_ASSIGNMENT
+		| OP_AND_ASSIGNMENT
+		| OP_OR_ASSIGNMENT
+		| OP_XOR_ASSIGNMENT
+		| OP_LEFT_SHIFT_ASSIGNMENT
+		| OP_RIGHT_SHIFT_ASSIGNMENT)
+		expression
 	;
 
+/* ORDERED BY PRECEDENCE */
 expression 
-	: assignment													#AssignmentExpression
+	: OPEN_PARENS expression CLOSE_PARENS							#ParenExpression
 	| non_assignment_expression										#NonAssignmentExpression
-	| expression INTERR expression COLON expression					#ConditionalExpression 
 	| expression op=(STAR|DIV|PERCENT) expression					#MultiplicativeExpression
 	| expression op=(PLUS|MINUS) expression							#AdditiveExpression
 	| expression op=(OP_LEFT_SHIFT|OP_RIGHT_SHIFT) expression		#ShiftExpression
 	| expression op=(LT|GT|OP_LE|OP_GE) expression					#RelationalExpression
 	| expression op=(OP_EQ|OP_NE) expression						#EqualityExpression
-	| expression op=(BITWISE_OR|CARET|AMP) expression				#BitwiseExpression
-    | expression op=(OP_OR|OP_AND) expression						#ShortCircuitExpression
-	| OPEN_PARENS expression CLOSE_PARENS							#ParenExpression
-	| unary_expression												#UnaryExpression
+	| expression AMP expression										#AndExpression
+	| expression CARET expression									#XorExpression
+	| expression BITWISE_OR expression								#OrExpression
+    | expression OP_AND expression									#ConditionalAndExpression
+    | expression OP_OR expression									#ConditionalOrExpression
+	| <assoc=right> expression OP_COALESCING expression				#NullCoalescingExpression
+	| <assoc=right> expression INTERR expression COLON expression	#ConditionalExpression 
+	| <assoc=right> assignment										#AssignmentExpression
+	| lambda_expression												#LambdaExpression
 	;
 
 non_assignment_expression
-	: lambda_expression									#LambdaExpression
-	| query_expression									#QueryExpression
+	: query_expression												#QueryExpression
+	| unary_expression												#UnaryExpression
 	;
 
 constant_expression 

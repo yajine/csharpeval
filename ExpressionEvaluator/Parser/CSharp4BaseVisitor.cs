@@ -1202,7 +1202,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitAssignment([NotNull] CSharp4Parser.AssignmentContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.assignment_operator"/>.
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.ConditionalAndExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1210,7 +1210,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context) { return VisitChildren(context); }
+	public virtual Result VisitConditionalAndExpression([NotNull] CSharp4Parser.ConditionalAndExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.ParenExpression"/>.
 	/// <para>
@@ -1232,7 +1232,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitAssignmentExpression([NotNull] CSharp4Parser.AssignmentExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.RelationalExpression"/>.
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.OrExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1240,7 +1240,17 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context) { return VisitChildren(context); }
+	public virtual Result VisitOrExpression([NotNull] CSharp4Parser.OrExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.AndExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitAndExpression([NotNull] CSharp4Parser.AndExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.ShiftExpression"/>.
 	/// <para>
@@ -1252,7 +1262,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitShiftExpression([NotNull] CSharp4Parser.ShiftExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.EqualityExpression"/>.
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.LambdaExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1260,17 +1270,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context) { return VisitChildren(context); }
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.BitwiseExpression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitBitwiseExpression([NotNull] CSharp4Parser.BitwiseExpressionContext context) { return VisitChildren(context); }
+	public virtual Result VisitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.NonAssignmentExpression"/>.
 	/// <para>
@@ -1282,7 +1282,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitNonAssignmentExpression([NotNull] CSharp4Parser.NonAssignmentExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.UnaryExpression"/>.
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.ConditionalExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1290,7 +1290,37 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context) { return VisitChildren(context); }
+	public virtual Result VisitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.ConditionalOrExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitConditionalOrExpression([NotNull] CSharp4Parser.ConditionalOrExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.RelationalExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.EqualityExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.AdditiveExpression"/>.
 	/// <para>
@@ -1302,7 +1332,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitAdditiveExpression([NotNull] CSharp4Parser.AdditiveExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.ConditionalExpression"/>.
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.XorExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1310,7 +1340,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context) { return VisitChildren(context); }
+	public virtual Result VisitXorExpression([NotNull] CSharp4Parser.XorExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.MultiplicativeExpression"/>.
 	/// <para>
@@ -1322,7 +1352,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitMultiplicativeExpression([NotNull] CSharp4Parser.MultiplicativeExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.ShortCircuitExpression"/>.
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.NullCoalescingExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1330,17 +1360,7 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitShortCircuitExpression([NotNull] CSharp4Parser.ShortCircuitExpressionContext context) { return VisitChildren(context); }
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.LambdaExpression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context) { return VisitChildren(context); }
+	public virtual Result VisitNullCoalescingExpression([NotNull] CSharp4Parser.NullCoalescingExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.QueryExpression"/>.
 	/// <para>
@@ -1351,6 +1371,16 @@ public partial class CSharp4BaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitQueryExpression([NotNull] CSharp4Parser.QueryExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.UnaryExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.constant_expression"/>.
 	/// <para>

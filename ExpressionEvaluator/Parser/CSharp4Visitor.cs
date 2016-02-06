@@ -741,11 +741,12 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssignment([NotNull] CSharp4Parser.AssignmentContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.assignment_operator"/>.
+	/// Visit a parse tree produced by the <c>ConditionalAndExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context);
+	Result VisitConditionalAndExpression([NotNull] CSharp4Parser.ConditionalAndExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>ParenExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -761,12 +762,19 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssignmentExpression([NotNull] CSharp4Parser.AssignmentExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>RelationalExpression</c>
+	/// Visit a parse tree produced by the <c>OrExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context);
+	Result VisitOrExpression([NotNull] CSharp4Parser.OrExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>AndExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAndExpression([NotNull] CSharp4Parser.AndExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>ShiftExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -775,19 +783,12 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitShiftExpression([NotNull] CSharp4Parser.ShiftExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>EqualityExpression</c>
+	/// Visit a parse tree produced by the <c>LambdaExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>BitwiseExpression</c>
-	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBitwiseExpression([NotNull] CSharp4Parser.BitwiseExpressionContext context);
+	Result VisitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>NonAssignmentExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -796,12 +797,33 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNonAssignmentExpression([NotNull] CSharp4Parser.NonAssignmentExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>UnaryExpression</c>
+	/// Visit a parse tree produced by the <c>ConditionalExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context);
+	Result VisitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>ConditionalOrExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitConditionalOrExpression([NotNull] CSharp4Parser.ConditionalOrExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>RelationalExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>EqualityExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>AdditiveExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -810,12 +832,12 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAdditiveExpression([NotNull] CSharp4Parser.AdditiveExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>ConditionalExpression</c>
+	/// Visit a parse tree produced by the <c>XorExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context);
+	Result VisitXorExpression([NotNull] CSharp4Parser.XorExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>MultiplicativeExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -824,19 +846,12 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitMultiplicativeExpression([NotNull] CSharp4Parser.MultiplicativeExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>ShortCircuitExpression</c>
+	/// Visit a parse tree produced by the <c>NullCoalescingExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitShortCircuitExpression([NotNull] CSharp4Parser.ShortCircuitExpressionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>LambdaExpression</c>
-	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context);
+	Result VisitNullCoalescingExpression([NotNull] CSharp4Parser.NullCoalescingExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>QueryExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
@@ -844,6 +859,13 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitQueryExpression([NotNull] CSharp4Parser.QueryExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>UnaryExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.non_assignment_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.constant_expression"/>.
 	/// </summary>

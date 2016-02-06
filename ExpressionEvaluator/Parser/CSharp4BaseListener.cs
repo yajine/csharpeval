@@ -1437,17 +1437,17 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAssignment([NotNull] CSharp4Parser.AssignmentContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.assignment_operator"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.ConditionalAndExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context) { }
+	public virtual void EnterConditionalAndExpression([NotNull] CSharp4Parser.ConditionalAndExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.assignment_operator"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.ConditionalAndExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context) { }
+	public virtual void ExitConditionalAndExpression([NotNull] CSharp4Parser.ConditionalAndExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.ParenExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1473,17 +1473,29 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAssignmentExpression([NotNull] CSharp4Parser.AssignmentExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.RelationalExpression"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.OrExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context) { }
+	public virtual void EnterOrExpression([NotNull] CSharp4Parser.OrExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.RelationalExpression"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.OrExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context) { }
+	public virtual void ExitOrExpression([NotNull] CSharp4Parser.OrExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.AndExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterAndExpression([NotNull] CSharp4Parser.AndExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.AndExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitAndExpression([NotNull] CSharp4Parser.AndExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.ShiftExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1497,29 +1509,17 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitShiftExpression([NotNull] CSharp4Parser.ShiftExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.EqualityExpression"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.LambdaExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context) { }
+	public virtual void EnterLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.EqualityExpression"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.LambdaExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.BitwiseExpression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterBitwiseExpression([NotNull] CSharp4Parser.BitwiseExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.BitwiseExpression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitBitwiseExpression([NotNull] CSharp4Parser.BitwiseExpressionContext context) { }
+	public virtual void ExitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.NonAssignmentExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1533,17 +1533,53 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitNonAssignmentExpression([NotNull] CSharp4Parser.NonAssignmentExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.UnaryExpression"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.ConditionalExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context) { }
+	public virtual void EnterConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.UnaryExpression"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.ConditionalExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context) { }
+	public virtual void ExitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.ConditionalOrExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterConditionalOrExpression([NotNull] CSharp4Parser.ConditionalOrExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.ConditionalOrExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitConditionalOrExpression([NotNull] CSharp4Parser.ConditionalOrExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.RelationalExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.RelationalExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitRelationalExpression([NotNull] CSharp4Parser.RelationalExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.EqualityExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.EqualityExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitEqualityExpression([NotNull] CSharp4Parser.EqualityExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.AdditiveExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1557,17 +1593,17 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAdditiveExpression([NotNull] CSharp4Parser.AdditiveExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.ConditionalExpression"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.XorExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context) { }
+	public virtual void EnterXorExpression([NotNull] CSharp4Parser.XorExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.ConditionalExpression"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.XorExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitConditionalExpression([NotNull] CSharp4Parser.ConditionalExpressionContext context) { }
+	public virtual void ExitXorExpression([NotNull] CSharp4Parser.XorExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.MultiplicativeExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1581,29 +1617,17 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitMultiplicativeExpression([NotNull] CSharp4Parser.MultiplicativeExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.ShortCircuitExpression"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.NullCoalescingExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterShortCircuitExpression([NotNull] CSharp4Parser.ShortCircuitExpressionContext context) { }
+	public virtual void EnterNullCoalescingExpression([NotNull] CSharp4Parser.NullCoalescingExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.ShortCircuitExpression"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.NullCoalescingExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitShortCircuitExpression([NotNull] CSharp4Parser.ShortCircuitExpressionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.LambdaExpression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.LambdaExpression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitLambdaExpression([NotNull] CSharp4Parser.LambdaExpressionContext context) { }
+	public virtual void ExitNullCoalescingExpression([NotNull] CSharp4Parser.NullCoalescingExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.QueryExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1616,6 +1640,18 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitQueryExpression([NotNull] CSharp4Parser.QueryExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.UnaryExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.UnaryExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitUnaryExpression([NotNull] CSharp4Parser.UnaryExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.constant_expression"/>.
 	/// <para>The default implementation does nothing.</para>
