@@ -378,11 +378,68 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitDefault_value_expression([NotNull] CSharp4Parser.Default_value_expressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.unary_expression"/>.
+	/// Visit a parse tree produced by the <c>CastExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitUnary_expression([NotNull] CSharp4Parser.Unary_expressionContext context);
+	Result VisitCastExpression([NotNull] CSharp4Parser.CastExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>PrimaryExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPrimaryExpression([NotNull] CSharp4Parser.PrimaryExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>PlusExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPlusExpression([NotNull] CSharp4Parser.PlusExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>NegateExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNegateExpression([NotNull] CSharp4Parser.NegateExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>NotExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNotExpression([NotNull] CSharp4Parser.NotExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>ComplementExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitComplementExpression([NotNull] CSharp4Parser.ComplementExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>PreIncrementExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPreIncrementExpression([NotNull] CSharp4Parser.PreIncrementExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>PreDecrementExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPreDecrementExpression([NotNull] CSharp4Parser.PreDecrementExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>UnaryExpressionUnsafe</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUnaryExpressionUnsafe([NotNull] CSharp4Parser.UnaryExpressionUnsafeContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.scan_for_cast_generic_precedence"/>.
 	/// </summary>
@@ -689,6 +746,13 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>ParenExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitParenExpression([NotNull] CSharp4Parser.ParenExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>AssignmentExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.expression"/>.
@@ -2528,6 +2592,12 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitMember_access2([NotNull] CSharp4Parser.Member_access2Context context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.scope_member_access"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitScope_member_access([NotNull] CSharp4Parser.Scope_member_accessContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.method_invocation2"/>.
 	/// </summary>

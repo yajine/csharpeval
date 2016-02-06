@@ -729,17 +729,113 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitDefault_value_expression([NotNull] CSharp4Parser.Default_value_expressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.unary_expression"/>.
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.CastExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterUnary_expression([NotNull] CSharp4Parser.Unary_expressionContext context) { }
+	public virtual void EnterCastExpression([NotNull] CSharp4Parser.CastExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.unary_expression"/>.
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.CastExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitUnary_expression([NotNull] CSharp4Parser.Unary_expressionContext context) { }
+	public virtual void ExitCastExpression([NotNull] CSharp4Parser.CastExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.PrimaryExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterPrimaryExpression([NotNull] CSharp4Parser.PrimaryExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.PrimaryExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitPrimaryExpression([NotNull] CSharp4Parser.PrimaryExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.PlusExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterPlusExpression([NotNull] CSharp4Parser.PlusExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.PlusExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitPlusExpression([NotNull] CSharp4Parser.PlusExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.NegateExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterNegateExpression([NotNull] CSharp4Parser.NegateExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.NegateExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitNegateExpression([NotNull] CSharp4Parser.NegateExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.NotExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterNotExpression([NotNull] CSharp4Parser.NotExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.NotExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitNotExpression([NotNull] CSharp4Parser.NotExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.ComplementExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterComplementExpression([NotNull] CSharp4Parser.ComplementExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.ComplementExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitComplementExpression([NotNull] CSharp4Parser.ComplementExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.PreIncrementExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterPreIncrementExpression([NotNull] CSharp4Parser.PreIncrementExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.PreIncrementExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitPreIncrementExpression([NotNull] CSharp4Parser.PreIncrementExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.PreDecrementExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterPreDecrementExpression([NotNull] CSharp4Parser.PreDecrementExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.PreDecrementExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitPreDecrementExpression([NotNull] CSharp4Parser.PreDecrementExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.UnaryExpressionUnsafe"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterUnaryExpressionUnsafe([NotNull] CSharp4Parser.UnaryExpressionUnsafeContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.UnaryExpressionUnsafe"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitUnaryExpressionUnsafe([NotNull] CSharp4Parser.UnaryExpressionUnsafeContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.scan_for_cast_generic_precedence"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1352,6 +1448,18 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAssignment_operator([NotNull] CSharp4Parser.Assignment_operatorContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.ParenExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterParenExpression([NotNull] CSharp4Parser.ParenExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.ParenExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitParenExpression([NotNull] CSharp4Parser.ParenExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.AssignmentExpression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -5000,6 +5108,18 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitMember_access2([NotNull] CSharp4Parser.Member_access2Context context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.scope_member_access"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterScope_member_access([NotNull] CSharp4Parser.Scope_member_accessContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.scope_member_access"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitScope_member_access([NotNull] CSharp4Parser.Scope_member_accessContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.method_invocation2"/>.
 	/// <para>The default implementation does nothing.</para>

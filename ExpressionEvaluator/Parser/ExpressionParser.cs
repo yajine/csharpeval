@@ -44,8 +44,17 @@ namespace ExpressionEvaluator.Parser
                 //var walker = new ParseTreeWalker();
                 //walker.Walk(listener, tree);
                 //var exp = listener.Result;
+                if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
+
                 var visitor = new CSharpEvalVisitor();
-                return visitor.Visit(tree);
+                if (ExternalParameters != null)
+                {
+                    visitor.ParameterList.Add(ExternalParameters);
+                }
+
+                visitor.TypeRegistry = TypeRegistry;
+                visitor.Scope = scope;
+                return Expression = visitor.Visit(tree);
                 //return Expression.Lambda<Action<CalculatorContext>>(exp, pcontext).Compile();
             }
         }

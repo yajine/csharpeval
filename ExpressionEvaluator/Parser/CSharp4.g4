@@ -517,15 +517,15 @@ unary_expression
 	;
 */
 unary_expression 
-	: cast_expression
-	| primary_expression
-	| PLUS unary_expression
-	| MINUS unary_expression
-	| BANG unary_expression
-	| TILDE unary_expression
-	| pre_increment_expression
-	| pre_decrement_expression
-	| unary_expression_unsafe
+	: cast_expression			#CastExpression
+	| primary_expression		#PrimaryExpression
+	| PLUS unary_expression		#PlusExpression
+	| MINUS unary_expression	#NegateExpression
+	| BANG unary_expression		#NotExpression
+	| TILDE unary_expression	#ComplementExpression
+	| pre_increment_expression	#PreIncrementExpression
+	| pre_decrement_expression	#PreDecrementExpression
+	| unary_expression_unsafe	#UnaryExpressionUnsafe
 	;
 // The sequence of tokens is correct grammar for a type, and the token immediately
 // following the closing parentheses is the token TILDE, the token BANG, the token OPEN_PARENS,
@@ -773,20 +773,23 @@ assignment_operator
 	| OP_OR_ASSIGNMENT
 	| OP_XOR_ASSIGNMENT
 	| OP_LEFT_SHIFT_ASSIGNMENT
+	| OP_RIGHT_SHIFT_ASSIGNMENT
 	| right_shift_assignment
 	;
+
 expression 
-	: assignment					#AssignmentExpression
-	| non_assignment_expression		#NonAssignmentExpression
-	| expression INTERR expression COLON expression		#ConditionalExpression
-	| expression op=(STAR|DIV|PERCENT) expression		#MultiplicativeExpression
-	| expression op=(PLUS|MINUS) expression					#AdditiveExpression
+	: assignment													#AssignmentExpression
+	| non_assignment_expression										#NonAssignmentExpression
+	| expression INTERR expression COLON expression					#ConditionalExpression 
+	| expression op=(STAR|DIV|PERCENT) expression					#MultiplicativeExpression
+	| expression op=(PLUS|MINUS) expression							#AdditiveExpression
 	| expression op=(OP_LEFT_SHIFT|OP_RIGHT_SHIFT) expression		#ShiftExpression
-	| expression op=(LT|GT|OP_LE|OP_GE) expression			#RelationalExpression
-	| expression op=(OP_EQ|OP_NE) expression			#EqualityExpression
-	| expression op=(BITWISE_OR|CARET|AMP) expression	   #BitwiseExpression
-    | expression op=(OP_OR|OP_AND) expression			    #ShortCircuitExpression
-	| unary_expression									#UnaryExpression
+	| expression op=(LT|GT|OP_LE|OP_GE) expression					#RelationalExpression
+	| expression op=(OP_EQ|OP_NE) expression						#EqualityExpression
+	| expression op=(BITWISE_OR|CARET|AMP) expression				#BitwiseExpression
+    | expression op=(OP_OR|OP_AND) expression						#ShortCircuitExpression
+	| OPEN_PARENS expression CLOSE_PARENS							#ParenExpression
+	| unary_expression												#UnaryExpression
 	;
 
 non_assignment_expression
@@ -2380,6 +2383,10 @@ interface_indexer_declaration2
 member_access2
   : DOT identifier type_argument_list_opt
   ;
+scope_member_access
+  : identifier type_argument_list_opt
+  ;
+
 method_invocation2
   : OPEN_PARENS argument_list? CLOSE_PARENS
   ;

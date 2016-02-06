@@ -5,28 +5,196 @@ namespace ExpressionEvaluator.Parser
 {
     public class CSharpEvalVisitor : CSharp4BaseVisitor<Expression>
     {
+        public TypeRegistry TypeRegistry { get; set; }
+        public Expression Scope { get; set; }
+
+        public override Expression VisitSimple_name(CSharp4Parser.Simple_nameContext context)
+        {
+            return Visit(context.identifier());
+        }
+
+        public ParameterList ParameterList = new ParameterList();
+
+
+        private Expression GetIdentifier(string identifier)
+        {
+            ParameterExpression parameter;
+
+            if (ParameterList.TryGetValue(identifier, out parameter))
+            {
+                return parameter;
+            }
+
+            object result = null;
+
+            if (TypeRegistry.TryGetValue(identifier, out result))
+            {
+                if (result.GetType() == typeof(ValueType))
+                {
+                    var typeValue = (ValueType)result;
+                    return Expression.Constant(typeValue.Value, typeValue.Type);
+                }
+                if (result.GetType() == typeof(DelegateType))
+                {
+                    var typeValue = (DelegateType)result;
+                    return Expression.Constant(typeValue.Value(), typeValue.Type);
+                }
+                if (result.GetType() == typeof(DelegateType<>))
+                {
+                    var typeValue = (DelegateType)result;
+                    return Expression.Constant(typeValue.Value(), typeValue.Type);
+                }
+                return Expression.Constant(result);
+            }
+
+            return null;
+
+            // throw new UnknownIdentifierException(identifier);
+        }
+
+        public Type GetType(string type)
+        {
+            object _type;
+
+            if (TypeRegistry.TryGetValue(type, out _type))
+            {
+                return (Type)_type;
+            }
+            return Type.GetType(type);
+        }
+
+
+        public override Expression VisitIdentifier(CSharp4Parser.IdentifierContext context)
+        {
+            var identifier_text = context.IDENTIFIER().GetText();
+
+            var value = GetIdentifier(identifier_text);
+
+            if (value == null)
+            {
+                if (Scope != null)
+                {
+                    value = ExpressionHelper.GetProperty(Scope, identifier_text);
+                }
+            }
+
+            return value;
+        }
+
+        public override Expression VisitScope_member_access(CSharp4Parser.Scope_member_accessContext context)
+        {
+            var memberName = context.identifier().GetText();
+            var value = ExpressionHelper.GetProperty(Scope, memberName);
+
+            if (value == null)
+            {
+                throw new Exception(string.Format("Cannot resolve symbol \"{0}\"", memberName));
+            }
+
+            return value;
+        }
+
+        public override Expression VisitAssignment(CSharp4Parser.AssignmentContext context)
+        {
+            var le = Visit(context.unary_expression());
+            var re = Visit(context.expression());
+            if (context.assignment_operator().ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.Assign(le, re);
+            }
+            if (context.assignment_operator().OP_ADD_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AddAssign);
+            }
+            if (context.assignment_operator().OP_AND_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AndAssign);
+            }
+            if (context.assignment_operator().OP_DIV_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.DivideAssign);
+            }
+            if (context.assignment_operator().OP_LEFT_SHIFT_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.LeftShiftAssign);
+            }
+            if (context.assignment_operator().OP_MOD_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ModuloAssign);
+            }
+            if (context.assignment_operator().OP_MULT_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.MultiplyAssign);
+            }
+            if (context.assignment_operator().OP_OR_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.OrAssign);
+            }
+            if (context.assignment_operator().OP_SUB_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.SubtractAssign);
+            }
+            if (context.assignment_operator().OP_RIGHT_SHIFT_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.RightShiftAssign);
+            }
+            if (context.assignment_operator().OP_XOR_ASSIGNMENT() != null)
+            {
+                return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ExclusiveOrAssign);
+            }
+            throw new InvalidOperationException();
+        }
+
         public override Expression VisitPrimary_expression(CSharp4Parser.Primary_expressionContext context)
         {
-            return base.VisitPrimary_expression(context);
-        }
+            var value = Visit(context.pe);
 
-        public override Expression VisitPrimary_expression_start(CSharp4Parser.Primary_expression_startContext context)
-        {
-            return base.VisitPrimary_expression_start(context);
-        }
+            // Expression evaluator customization:		
 
-        public override Expression VisitUnary_expression(CSharp4Parser.Unary_expressionContext context)
-        {
-            return base.VisitUnary_expression(context);
-        }
+            //	$value = Scope;
 
+            //                      var text = $primary_expression_start.text;
+
+            //                      var method1 = new TypeOrGeneric() { Identifier = "getVar" };
+            //                      var args1 = new List<Argument>() { new Argument() { Expression = Expression.Constant(text, typeof(string)) } };
+
+            //                      if (DynamicTypeLookup != null && DynamicTypeLookup.ContainsKey(text))
+            //                      {
+            //                          var type1 = DynamicTypeLookup[text];
+            //		$value = Expression.Convert(ExpressionHelper.GetMethod($value, method1, args1, false), type1);
+            //                      }
+            //                      else
+            //                      {		
+            //		$value = ExpressionHelper.GetMethod($value, method1, args1, false);
+            //                      }
+
+            //                      if ($value == null)
+            //	{
+            //                          throw new ExpressionParseException(string.Format("Cannot resolve symbol \"{0}\"", input.LT(-1).Text), input);
+            //                      }
+
+            //                  }
+
+            if (context.member_access2(0) != null)
+            {
+                var identifier = context.member_access2(0).identifier().GetText();
+                value = ExpressionHelper.GetProperty(value, identifier);
+            }
+
+            return value;
+        }
 
         public override Expression VisitLiteral(CSharp4Parser.LiteralContext context)
         {
             if (context.INTEGER_LITERAL() != null)
             {
                 // TODO: Parse Hex literals as well
-                return ExpressionHelper.ParseIntLiteral(context.INTEGER_LITERAL().GetText());
+                var int_literal_text = context.INTEGER_LITERAL().GetText();
+                if (int_literal_text.StartsWith("0x") || int_literal_text.StartsWith("0X"))
+                {
+                    return ExpressionHelper.ParseHexLiteral(int_literal_text);
+                }
+                return ExpressionHelper.ParseIntLiteral(int_literal_text);
             }
             if (context.boolean_literal() != null)
             {
@@ -169,5 +337,24 @@ namespace ExpressionEvaluator.Parser
             throw new InvalidOperationException();
         }
 
+        public override Expression VisitNegateExpression(CSharp4Parser.NegateExpressionContext context)
+        {
+            return Expression.Negate(Visit(context.unary_expression()));
+        }
+
+        public override Expression VisitNotExpression(CSharp4Parser.NotExpressionContext context)
+        {
+            return Expression.Not(Visit(context.unary_expression()));
+        }
+
+        public override Expression VisitComplementExpression(CSharp4Parser.ComplementExpressionContext context)
+        {
+            return Expression.OnesComplement(Visit(context.unary_expression()));
+        }
+
+        public override Expression VisitParenExpression(CSharp4Parser.ParenExpressionContext context)
+        {
+            return Visit(context.expression());
+        }
     }
 }
