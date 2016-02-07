@@ -14,6 +14,7 @@ namespace ExpressionEvaluator.Parser
         object Global { get; set; }
         Type ReturnType { get; set; }
         TypeRegistry TypeRegistry { get; set; }
+        CompilationContext Context { get; set; }
 
         Expression Parse(Expression scope, bool isCall = false);
     }

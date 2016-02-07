@@ -7,10 +7,19 @@ using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
+    public class MethodInvocationContext
+    {
+        public bool IsExtensionMethod { get; set; }
+        public Expression ThisParameter { get; set; }
+        public TypeOrGeneric Method { get; set; }
+        public IEnumerable<MethodInfo> MethodCandidates { get; set; }
+    }
+
     public class CSharpEvalVisitor : CSharp4BaseVisitor<Expression>
     {
         public TypeRegistry TypeRegistry { get; set; }
         public Expression Scope { get; set; }
+        public CompilationContext CompilationContext { get; set; }
 
         public override Expression VisitSimple_name(CSharp4Parser.Simple_nameContext context)
         {
@@ -85,11 +94,16 @@ namespace ExpressionEvaluator.Parser
                         var candidates = MethodResolution.GetCandidateMembers(Scope.Type, identifier_text);
                         if (candidates != null)
                         {
-                            methodInvocationContextStack.Push(new Tuple<TypeOrGeneric, IEnumerable<MethodInfo>>(new TypeOrGeneric()
+                            methodInvocationContextStack.Push(new MethodInvocationContext()
                             {
-                                Identifier = identifier_text,
-                                // TODO: Type Arguments...
-                            }, candidates));
+                                Method = new TypeOrGeneric()
+                                {
+                                    Identifier = identifier_text,
+                                    // TODO: Type Arguments...
+                                },
+                                MethodCandidates = candidates
+                            });
+
                             value = Scope;
                         }
                     }
@@ -144,7 +158,9 @@ namespace ExpressionEvaluator.Parser
             throw new InvalidOperationException();
         }
 
-        Stack<Tuple<TypeOrGeneric, IEnumerable<MethodInfo>>> methodInvocationContextStack = new Stack<Tuple<TypeOrGeneric, IEnumerable<MethodInfo>>>();
+
+
+        Stack<MethodInvocationContext> methodInvocationContextStack = new Stack<MethodInvocationContext>();
 
         public override Expression VisitPrimary_expression(CSharp4Parser.Primary_expressionContext context)
         {
@@ -179,19 +195,56 @@ namespace ExpressionEvaluator.Parser
                 if (part_context.member_access2() != null)
                 {
                     var identifier = part_context.member_access2().identifier().GetText();
-                    var methodCandidates = MethodResolution.GetCandidateMembers(value.Type, identifier);
+                    List<MethodInfo> methodCandidates = MethodResolution.GetCandidateMembers(value.Type, identifier);
+                    var isExtensionMethod = false;
+                    Expression thisParameter = null;
+                    if (!methodCandidates.Any())
+                    {
+                        //var extensionmethodArgs = new List<Argument>() { new Argument() { Expression = instance } };
+                        //extensionmethodArgs.AddRange(args);
 
-                    if (methodCandidates == null)
+                        foreach (var @namespace in CompilationContext.Namespaces)
+                        {
+                            foreach (var assembly in CompilationContext.Assemblies)
+                            {
+                                var q = from t in assembly.GetTypes()
+                                        where t.IsClass && t.Namespace == @namespace
+                                        select t;
+                                foreach (var t in q)
+                                {
+                                    var extensionMethodCandidates = MethodResolution.GetCandidateMembers(t, identifier);
+                                    if (extensionMethodCandidates.Any())
+                                    {
+                                        thisParameter = value;
+                                        isExtensionMethod = true;
+                                        methodCandidates.AddRange(extensionMethodCandidates);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    if (!methodCandidates.Any())
                     {
                         value = ExpressionHelper.GetProperty(value, identifier);
                     }
                     else
                     {
-                        methodInvocationContextStack.Push(new Tuple<TypeOrGeneric, IEnumerable<MethodInfo>>(new TypeOrGeneric()
+                        methodInvocationContextStack.Push(new MethodInvocationContext()
                         {
-                            Identifier = identifier,
-                            // TODO: Type Arguments...
-                        }, methodCandidates));
+                            Method = new TypeOrGeneric()
+                            {
+                                Identifier = identifier,
+                                // TODO: Type Arguments...
+                            }
+                            ,
+                            MethodCandidates = methodCandidates
+                            ,
+                            IsExtensionMethod = isExtensionMethod
+                            ,
+                            ThisParameter = thisParameter
+                        });
                     }
                 }
 
@@ -201,6 +254,32 @@ namespace ExpressionEvaluator.Parser
                     var args = new List<Argument>();
                     var i = 0;
 
+                    var methodInvocationContext = methodInvocationContextStack.Pop();
+
+                    if (methodInvocationContext.IsExtensionMethod)
+                    {
+                        args.Add(new Argument() { Expression = methodInvocationContext.ThisParameter });
+
+                        //var methods = methodInvocationContext.MethodCandidates.Where(x => x.GetParameters().Length == 2);
+
+                        //var thisType = methodInvocationContext.ThisParameter.Type;
+                        //var isGeneric = thisType.IsGenericType;
+                        //if (isGeneric)
+                        //{
+                        //    var genericArgs = thisType.GetGenericArguments();
+                        //    var genericTypeDef = thisType.GetGenericTypeDefinition();
+                        //    foreach (var methodInfo in methods)
+                        //    {
+                        //        var methodThisParameter = methodInfo.GetParameters()[0];
+                        //        if (methodThisParameter.ParameterType.IsGenericType)
+                        //        {
+                        //            var a = methodThisParameter.ParameterType.GetGenericTypeDefinition().IsAssignableFrom(genericTypeDef);
+                        //            var b = genericTypeDef.IsAssignableFrom(methodThisParameter.ParameterType.GetGenericTypeDefinition());
+                        //        }
+                        //    }
+                        //}
+                    }
+
                     if (method_invocation_context.argument_list() != null)
                     {
                         foreach (var argument_context in method_invocation_context.argument_list().argument())
@@ -209,9 +288,8 @@ namespace ExpressionEvaluator.Parser
                         }
                     }
 
-                    var methodInvocationContext = methodInvocationContextStack.Pop();
-                    var applicableMembers = MethodResolution.GetApplicableMembers(methodInvocationContext.Item2, args).ToList();
-                    value = ExpressionHelper.ResolveApplicableMembers(value.Type, value, applicableMembers, methodInvocationContext.Item1, args);
+                    var applicableMembers = MethodResolution.GetApplicableMembers(methodInvocationContext.MethodCandidates, args).ToList();
+                    value = ExpressionHelper.ResolveApplicableMembers(value.Type, value, applicableMembers, methodInvocationContext.Method, args);
                 }
             }
 
@@ -300,27 +378,11 @@ namespace ExpressionEvaluator.Parser
         {
             var parameters = new List<LambdaParameter>();
 
-            var methodContext = methodInvocationContextStack.Peek();
-
-            if (context.anonymous_function_signature().implicit_anonymous_function_parameter() != null)
-            {
-                var identfier_text = context.anonymous_function_signature().implicit_anonymous_function_parameter().identifier().GetText();
-                var method = methodContext.Item2.Where(x => x.GetParameters().Length == 2);
-
-                parameters.Add(new LambdaParameter()
-                {
-                    Identifier = identfier_text,
-                    Expression = Expression.Parameter(typeof(object), identfier_text)
-                });
-            }
-
             var implicit_anonymous_function_parameter_list_context = context.anonymous_function_signature().implicit_anonymous_function_parameter_list();
 
             if (implicit_anonymous_function_parameter_list_context != null)
             {
                 var implicit_anonymous_function_parameter_contexts = implicit_anonymous_function_parameter_list_context.implicit_anonymous_function_parameter();
-
-                var methods = methodContext.Item2.Where(x => x.GetParameters().Length == implicit_anonymous_function_parameter_contexts.Length + 1) ;
 
                 foreach (var implicit_anonymous_function_parameter_context in implicit_anonymous_function_parameter_contexts)
                 {

@@ -27,6 +27,8 @@ namespace ExpressionEvaluator.Parser
         public object Global { get; set; }
         public Type ReturnType { get; set; }
         public TypeRegistry TypeRegistry { get; set; }
+        public CompilationContext Context { get; set; }
+
         public Expression Parse(Expression scope, bool isCall = false)
         {
             byte[] byteArray = Encoding.UTF8.GetBytes(ExpressionString);
@@ -47,13 +49,13 @@ namespace ExpressionEvaluator.Parser
                 if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
 
                 var visitor = new CSharpEvalVisitor();
+                visitor.CompilationContext = Context;
+                visitor.TypeRegistry = TypeRegistry;
+                visitor.Scope = scope;
                 if (ExternalParameters != null)
                 {
                     visitor.ParameterList.Add(ExternalParameters);
                 }
-
-                visitor.TypeRegistry = TypeRegistry;
-                visitor.Scope = scope;
                 return Expression = visitor.Visit(tree);
                 //return Expression.Lambda<Action<CalculatorContext>>(exp, pcontext).Compile();
             }

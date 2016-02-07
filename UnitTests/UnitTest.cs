@@ -309,15 +309,6 @@ namespace ExpressionEvaluator.Tests
             //Assert.AreEqual(expected1, actual1);
 
             c.StringToParse = "p1.Count(x => x >= 5)";
-            var actual2 = c.Eval();
-            Assert.AreEqual(expected2, actual2);
-
-            
-            //c.StringToParse = "p1.Count()";
-            //var actual1 = c.Eval();
-            //Assert.AreEqual(expected1, actual1);
-
-            c.StringToParse = "p1.Count(x => x >= 5)";
             var expected2 = p1.Count(x => x >= 5);
             var actual2 = c.Eval();
             Assert.AreEqual(expected2, actual2);
