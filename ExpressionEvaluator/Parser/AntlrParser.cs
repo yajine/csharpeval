@@ -17,6 +17,8 @@ namespace ExpressionEvaluator.Parser
         
         public Dictionary<string, Type> DynamicTypeLookup { get; set; }
 
+        public CompilationContext Context { get; set; }
+
         public AntlrParser()
         {
         }
@@ -35,7 +37,7 @@ namespace ExpressionEvaluator.Parser
             if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
 
 
-            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, DynamicTypeLookup = DynamicTypeLookup };
+            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, DynamicTypeLookup = DynamicTypeLookup, Context = Context };
             if (ExternalParameters != null)
             {
                 parser.ParameterList.Add(ExternalParameters);

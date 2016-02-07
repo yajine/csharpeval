@@ -138,8 +138,6 @@ namespace ExpressionEvaluator
             }
         }
 
-
-
     }
 
     /// <summary>

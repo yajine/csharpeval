@@ -164,11 +164,11 @@ if ($value == null)
 			if(DynamicTypeLookup != null && DynamicTypeLookup.ContainsKey(text))
 			{
 				var type1 = DynamicTypeLookup[text];
-				$value = Expression.Convert(ExpressionHelper.GetMethod($value, method1, args1, false), type1);
+				$value = Expression.Convert(ExpressionHelper.GetMethod($value, method1, args1, false, Context), type1);
 			} 
 			else
 			{		
-				$value = ExpressionHelper.GetMethod($value, method1, args1, false);
+				$value = ExpressionHelper.GetMethod($value, method1, args1, false, Context);
 			}
 
 			if($value == null)

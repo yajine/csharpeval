@@ -11,8 +11,11 @@ using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
+
     public partial class ExprEvalParser
     {
+        public CompilationContext Context { get; set; } 
+
         private CompilerState compilerState = new CompilerState();
 
         public Expression Scope { get; set; }
@@ -126,7 +129,7 @@ namespace ExpressionEvaluator.Parser
                 if (methodStack.Count > 0)
                 {
                     var method = methodStack.Pop();
-                    var newValue = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, false);
+                    var newValue = ExpressionHelper.GetMethod(value, method, ((Arguments)primary_expression_part2).Values, false, Context);
                     if (newValue == null && throwsException)
                     {
                         throw new ExpressionParseException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", method.Identifier, value.Type.Name), input);

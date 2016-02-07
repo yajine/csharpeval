@@ -182,7 +182,7 @@ namespace ExpressionEvaluator.Parser
                             dynamicTypeLookup.Add((string)ce.Value, re.Type);
                         }
                     }
-                    return GetMethod(mc.Object, method1, args1.Select(x => new Argument() { Expression = x }), false);
+                    return GetMethod(mc.Object, method1, args1.Select(x => new Argument() { Expression = x }), false, null);
                 }
             }
 
@@ -421,8 +421,12 @@ namespace ExpressionEvaluator.Parser
             throw new Exception();
         }
 
-        public static Expression GetMethod(Expression le, TypeOrGeneric member, IEnumerable<Argument> args,
-                                           bool isCall = false)
+        public static Expression GetMethod(Expression le,
+            TypeOrGeneric member,
+            IEnumerable<Argument> args,
+            bool isCall,
+            CompilationContext context
+            )
         {
             Expression instance = null;
             Type type = null;
@@ -481,11 +485,24 @@ namespace ExpressionEvaluator.Parser
                     var extensionmethodArgs = new List<Argument>() { new Argument() { Expression = instance } };
                     extensionmethodArgs.AddRange(args);
 
-                    // Should try an Extension Method call here...
-                    method = MethodInvokeExpression(typeof(Enumerable), null, member, extensionmethodArgs);
+                    foreach (var @namespace in context.Namespaces)
+                    {
+                        foreach (var assembly in context.Assemblies)
+                        {
+                            var q = from t in assembly.GetTypes()
+                                    where t.IsClass && t.Namespace == @namespace
+                                    select t;
+                            foreach (var t in q)
+                            {
+                                // Should try an Extension Method call here...
+                                method = MethodInvokeExpression(t, null, member, extensionmethodArgs);
+                                if (method != null)
+                                    return method;
+                            }
+                        }
+                    }
                 }
 
-                return method;
             }
 
             return null;
@@ -1354,7 +1371,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ForEach(LabelTarget exitLabel, LabelTarget continueLabel, ParameterExpression parameter, Expression iterator, Expression body)
         {
-            var enumerator = GetMethod(iterator, new TypeOrGeneric() { Identifier = "GetEnumerator" }, new List<Argument>());
+            var enumerator = GetMethod(iterator, new TypeOrGeneric() { Identifier = "GetEnumerator" }, new List<Argument>(), false, null);
 
             var enumParam = Expression.Variable(enumerator.Type);
             var assign = Expression.Assign(enumParam, enumerator);
@@ -1363,7 +1380,7 @@ namespace ExpressionEvaluator.Parser
             localVar.Variables.Add(enumParam);
             localVar.Initializers.Add(assign);
 
-            var condition = GetMethod(enumParam, new TypeOrGeneric() { Identifier = "MoveNext" }, new List<Argument>());
+            var condition = GetMethod(enumParam, new TypeOrGeneric() { Identifier = "MoveNext" }, new List<Argument>(), false, null);
 
             var expressions = new List<Expression>();
             var variables = new List<ParameterExpression>();
