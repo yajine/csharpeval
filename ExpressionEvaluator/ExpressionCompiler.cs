@@ -17,6 +17,7 @@ namespace ExpressionEvaluator
         public TypeRegistry TypeRegistry { get; set; }
 
         public Dictionary<string, Type> DynamicTypeLookup { get; set; }
+        public CompilationContext Context { get; set; }
 
         protected string Pstr = null;
 
@@ -36,6 +37,7 @@ namespace ExpressionEvaluator
             Parser.TypeRegistry = TypeRegistry;
             Parser.ExpressionType = ExpressionType;
             Parser.DynamicTypeLookup = DynamicTypeLookup;
+            Parser.Context = Context;
             return Expression = Parser.Parse(scopeParam, isCall);
         }
 

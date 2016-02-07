@@ -71,6 +71,7 @@
     <Compile Include="IDynamicObjectProvider.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Parser\AntlrParser.cs" />
+    <Compile Include="Parser\CompilationContext.cs" />
     <Compile Include="Parser\Expressions\ApplicableFunctionMember.cs" />
     <Compile Include="Parser\Expressions\Argument.cs" />
     <Compile Include="Parser\Expressions\CandidatePoints.cs" />

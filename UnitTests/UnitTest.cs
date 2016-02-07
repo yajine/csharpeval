@@ -4,6 +4,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using ExpressionEvaluator.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -283,20 +284,35 @@ namespace ExpressionEvaluator.Tests
         {
             IEnumerable<int> p1 = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
             var expected1 = p1.Count();
-            var expected2 = p1.Count(x => x >= 5);
-            var expected3 = p1.Where(x => x % 2 == 0);
             var t = new TypeRegistry();
+            var context = new CompilationContext();
+
+            var dom = AppDomain.CreateDomain("");
+            var syscore = dom.Load(new AssemblyName("System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=B77A5C561934E089"));
+
+            //var syscore = Assembly.Load("System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=B77A5C561934E089");
+            //var syscore = Assembly.GetAssembly(typeof(System.Linq.Enumerable));
+            context.Assemblies.Add(syscore);
+            context.Namespaces.Add("System.Linq");
+
             t.RegisterSymbol("p1", p1);
-            var c = new CompiledExpression() { TypeRegistry = t };
-            c.StringToParse = "p1.Count()";
-            var actual1 = c.Eval();
-            //c.StringToParse = "p1.Count(x => x >= 5)";
-            //var actual2 = c.Eval();
+            var c = new CompiledExpression() { TypeRegistry = t, Context = context};
+            
+            //c.StringToParse = "p1.Count()";
+            //var actual1 = c.Eval();
+            //Assert.AreEqual(expected1, actual1);
+
+            c.StringToParse = "p1.Count(x => x >= 5)";
+            var expected2 = p1.Count(x => x >= 5);
+            var actual2 = c.Eval();
+            Assert.AreEqual(expected2, actual2);
+
             //c.StringToParse = "p1.Where(x => x % 2 == 0)";
+            //var expected3 = p1.Where(x => x % 2 == 0);
             //var actual3 = c.Eval();
-            Assert.AreEqual(expected1, actual1);
-            //Assert.AreEqual(expected2, actual2);
             //Assert.AreEqual(expected3, actual3);
+
+            AppDomain.Unload(dom);
         }
 
 
@@ -523,5 +539,19 @@ namespace ExpressionEvaluator.Tests
             s.TypeRegistry = t;
             Assert.AreEqual(1, s.Eval());
         }
+
+        [TestMethod]
+        public void Lambda()
+        {
+            // this one is working as expected!
+            const int key = 1;
+            TypeRegistry t = new TypeRegistry();
+            IList<int> dict = new List<int> { key };
+            t.RegisterSymbol("FooBar", dict);
+            CompiledExpression s = new CompiledExpression("FooBar[0]");
+            s.TypeRegistry = t;
+            Assert.AreEqual(1, s.Eval());
+        }
+
     }
 }
