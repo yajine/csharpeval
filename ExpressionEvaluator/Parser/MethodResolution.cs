@@ -786,9 +786,8 @@ namespace ExpressionEvaluator.Parser
         }
 
         // 7.5.3.1
-        public static IEnumerable<ApplicableFunctionMember> GetApplicableMembers(Type type, TypeOrGeneric M, IEnumerable<Argument> A)
+        public static IEnumerable<ApplicableFunctionMember> GetApplicableMembers(IEnumerable<MethodInfo> candidates, IEnumerable<Argument> A)
         {
-            var candidates = GetCandidateMembers(type, M.Identifier);
 
             // paramater matching && ref C# lang spec section 7.5.1.1
             var appMembers = new List<ApplicableFunctionMember>();
@@ -1033,12 +1032,9 @@ namespace ExpressionEvaluator.Parser
             // Find members that match on name
             var results = GetMethodInfos(type, membername);
 
-            if (type.IsInterface)
+            foreach (var iinterface in type.GetInterfaces())
             {
-                foreach (var iinterface in type.GetInterfaces())
-                {
-                    results.AddRange(GetMethodInfos(iinterface, membername));
-                }
+                results.AddRange(GetMethodInfos(iinterface, membername));
             }
 
             // Traverse through class hierarchy

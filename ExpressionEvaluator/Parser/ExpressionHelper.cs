@@ -497,9 +497,16 @@ namespace ExpressionEvaluator.Parser
         public static Expression MethodInvokeExpression(Type type, Expression instance, TypeOrGeneric member,
                                                    IEnumerable<Argument> args)
         {
-            var membername = member.Identifier;
+            var candidates = MethodResolution.GetCandidateMembers(type, member.Identifier);
+
+            var applicableMembers = MethodResolution.GetApplicableMembers(candidates, args).ToList();
+
+            return ResolveApplicableMembers(type, instance, applicableMembers, member, args);
+        }
+
+        public static Expression ResolveApplicableMembers(Type type, Expression instance, IEnumerable<ApplicableFunctionMember> applicableMembers, TypeOrGeneric member, IEnumerable<Argument> args)
+        {
             Type[] typeArgs = null;
-            var applicableMembers = MethodResolution.GetApplicableMembers(type, member, args).ToList();
             var genericMethods = applicableMembers.Where(x => x.Member.IsGenericMethod).ToList();
 
             Dictionary<ApplicableFunctionMember, List<TypeInferrence>> methodTypeInferences = new Dictionary<ApplicableFunctionMember, List<TypeInferrence>>();
@@ -616,6 +623,7 @@ namespace ExpressionEvaluator.Parser
 
 
             return null;
+
         }
 
         //private static Expression OldMethodHandler(Type type, Expression instance, TypeOrGeneric member,

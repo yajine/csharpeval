@@ -186,16 +186,18 @@ primary_expression
 	;
 */
 primary_expression 
-  : pe=primary_expression_start  bracket_expression* (
-        ( member_access2
-		    | method_invocation2
-		    | OP_INC
-		    | OP_DEC
-		    | OP_PTR identifier 
-		    )
-		    bracket_expression*
-		)*
+  : primary_expression_start  bracket_expression* primary_expression_part*
   ;
+
+primary_expression_part 
+  :  ( member_access2
+	  | method_invocation2
+	  | OP_INC
+	  | OP_DEC
+	  | OP_PTR identifier 
+  ) bracket_expression*
+  ;
+
 primary_expression_start
   : literal
   | simple_name

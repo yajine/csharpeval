@@ -299,6 +299,16 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitPrimary_expression([NotNull] CSharp4Parser.Primary_expressionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.primary_expression_part"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.primary_expression_part"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.primary_expression_start"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

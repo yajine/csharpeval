@@ -192,6 +192,12 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitPrimary_expression([NotNull] CSharp4Parser.Primary_expressionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="CSharp4Parser.primary_expression_part"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.primary_expression_start"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

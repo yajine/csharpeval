@@ -126,6 +126,24 @@ namespace ExpressionEvaluator.Tests
             Assert.AreEqual(controlScope.MethodCalled, testScope.MethodCalled);
         }
 
+        [TestMethod]
+        public void MethodOverLoading2()
+        {
+            var controlScope = new MethodOverloading();
+            var testScope = new MethodOverloading();
+
+            var exp = new CompiledExpression();
+            Func<MethodOverloading, object> func;
+
+            controlScope.sum(1.0d, 2.0d);
+
+            exp.StringToParse = "sum(1.0d, 2.0d)";
+            func = exp.ScopeCompile<MethodOverloading>();
+            func(testScope);
+            // expect sum(double, double) is called
+            Assert.AreEqual(controlScope.MethodCalled, testScope.MethodCalled);
+        }
+
 
         [TestMethod]
         public void MethodParamArray()

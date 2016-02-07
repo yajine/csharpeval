@@ -357,6 +357,18 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitPrimary_expression([NotNull] CSharp4Parser.Primary_expressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.primary_expression_part"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.primary_expression_part"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.primary_expression_start"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
