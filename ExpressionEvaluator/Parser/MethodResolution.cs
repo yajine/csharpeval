@@ -596,6 +596,16 @@ namespace ExpressionEvaluator.Parser
 
         }
 
+        // This is a hack, not in the specification(?), not fully implemented right now. need to check type parameters
+        private static bool HasDelegateConversion(Type T1, Type T2)
+        {
+            if (T1.IsDelegate() && T2.IsDelegate())
+            {
+                return true;
+            }
+            return false;
+        }
+
 
         public static bool HasImplicitConversion(Expression E, Type T1, Type T2)
         {
@@ -606,7 +616,8 @@ namespace ExpressionEvaluator.Parser
                 HasImplicitReferenceConversion(T1, T2) ||
                 HasImplicitBoxingConversions(E, T2) ||
                 HasImplicitConstantExpressionConversions(E, T2) ||
-                HasImplicitConversionInvolvingTypeParameters(T1, T2);
+                HasImplicitConversionInvolvingTypeParameters(T1, T2) || 
+                HasDelegateConversion(T1, T2);
         }
 
         //7.5.3.5 Better conversion target

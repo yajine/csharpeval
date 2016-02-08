@@ -7,27 +7,17 @@ using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
-    public class MethodInvocationContext
-    {
-        public bool IsExtensionMethod { get; set; }
-        public Expression ThisParameter { get; set; }
-        public TypeOrGeneric Method { get; set; }
-        public IEnumerable<MethodInfo> MethodCandidates { get; set; }
-    }
-
     public class CSharpEvalVisitor : CSharp4BaseVisitor<Expression>
     {
         public TypeRegistry TypeRegistry { get; set; }
         public Expression Scope { get; set; }
         public CompilationContext CompilationContext { get; set; }
+        public ParameterList ParameterList = new ParameterList();
 
         public override Expression VisitSimple_name(CSharp4Parser.Simple_nameContext context)
         {
             return Visit(context.identifier());
         }
-
-        public ParameterList ParameterList = new ParameterList();
-
 
         private Expression GetIdentifier(string identifier)
         {
@@ -58,6 +48,13 @@ namespace ExpressionEvaluator.Parser
                     return Expression.Constant(typeValue.Value(), typeValue.Type);
                 }
                 return Expression.Constant(result);
+            }
+
+            if (_lambdaContextStack.Count > 0)
+            {
+                var lambdaContext = _lambdaContextStack.Peek();
+                var p = lambdaContext.Parameters.FirstOrDefault(x => x.Identifier == identifier);
+                if (p != null) return p.Expression;
             }
 
             return null;
@@ -157,11 +154,12 @@ namespace ExpressionEvaluator.Parser
             }
             throw new InvalidOperationException();
         }
-
-
-
+        
         Stack<MethodInvocationContext> methodInvocationContextStack = new Stack<MethodInvocationContext>();
+        Stack<TypeInferenceBounds> typeInferenceBoundsStack = new Stack<TypeInferenceBounds>();
 
+        public ParameterInfo CurrentParameterInfo { get; set; }
+        
         public override Expression VisitPrimary_expression(CSharp4Parser.Primary_expressionContext context)
         {
             var value = Visit(context.primary_expression_start());
@@ -196,13 +194,12 @@ namespace ExpressionEvaluator.Parser
                 {
                     var identifier = part_context.member_access2().identifier().GetText();
                     List<MethodInfo> methodCandidates = MethodResolution.GetCandidateMembers(value.Type, identifier);
+
                     var isExtensionMethod = false;
                     Expression thisParameter = null;
+
                     if (!methodCandidates.Any())
                     {
-                        //var extensionmethodArgs = new List<Argument>() { new Argument() { Expression = instance } };
-                        //extensionmethodArgs.AddRange(args);
-
                         foreach (var @namespace in CompilationContext.Namespaces)
                         {
                             foreach (var assembly in CompilationContext.Assemblies)
@@ -238,12 +235,9 @@ namespace ExpressionEvaluator.Parser
                                 Identifier = identifier,
                                 // TODO: Type Arguments...
                             }
-                            ,
-                            MethodCandidates = methodCandidates
-                            ,
-                            IsExtensionMethod = isExtensionMethod
-                            ,
-                            ThisParameter = thisParameter
+                            , MethodCandidates = methodCandidates
+                            , IsExtensionMethod = isExtensionMethod
+                            , ThisParameter = thisParameter
                         });
                     }
                 }
@@ -251,45 +245,16 @@ namespace ExpressionEvaluator.Parser
                 if (part_context.method_invocation2() != null)
                 {
                     var method_invocation_context = part_context.method_invocation2();
-                    var args = new List<Argument>();
-                    var i = 0;
+                    var methodInvocationContext = methodInvocationContextStack.Peek();
+                    var argListContext = method_invocation_context.argument_list();
 
-                    var methodInvocationContext = methodInvocationContextStack.Pop();
-
-                    if (methodInvocationContext.IsExtensionMethod)
+                    if (argListContext != null)
                     {
-                        args.Add(new Argument() { Expression = methodInvocationContext.ThisParameter });
-
-                        //var methods = methodInvocationContext.MethodCandidates.Where(x => x.GetParameters().Length == 2);
-
-                        //var thisType = methodInvocationContext.ThisParameter.Type;
-                        //var isGeneric = thisType.IsGenericType;
-                        //if (isGeneric)
-                        //{
-                        //    var genericArgs = thisType.GetGenericArguments();
-                        //    var genericTypeDef = thisType.GetGenericTypeDefinition();
-                        //    foreach (var methodInfo in methods)
-                        //    {
-                        //        var methodThisParameter = methodInfo.GetParameters()[0];
-                        //        if (methodThisParameter.ParameterType.IsGenericType)
-                        //        {
-                        //            var a = methodThisParameter.ParameterType.GetGenericTypeDefinition().IsAssignableFrom(genericTypeDef);
-                        //            var b = genericTypeDef.IsAssignableFrom(methodThisParameter.ParameterType.GetGenericTypeDefinition());
-                        //        }
-                        //    }
-                        //}
+                        methodInvocationContext.ArgumentContext = argListContext.argument();
                     }
 
-                    if (method_invocation_context.argument_list() != null)
-                    {
-                        foreach (var argument_context in method_invocation_context.argument_list().argument())
-                        {
-                            args.Add(new Argument() { Expression = Visit(argument_context) });
-                        }
-                    }
-
-                    var applicableMembers = MethodResolution.GetApplicableMembers(methodInvocationContext.MethodCandidates, args).ToList();
-                    value = ExpressionHelper.ResolveApplicableMembers(value.Type, value, applicableMembers, methodInvocationContext.Method, args);
+                    methodInvocationContext.Visitor = this;
+                    value = methodInvocationContext.GetInvokeMethodExpression();
                 }
             }
 
@@ -332,8 +297,7 @@ namespace ExpressionEvaluator.Parser
             }
             throw new InvalidOperationException();
         }
-
-
+        
         public override Expression VisitShiftExpression(CSharp4Parser.ShiftExpressionContext context)
         {
             var lex = Visit(context.expression(0));
@@ -365,8 +329,7 @@ namespace ExpressionEvaluator.Parser
             }
             throw new InvalidOperationException();
         }
-
-
+        
         private class LambdaContext
         {
             public List<LambdaParameter> Parameters { get; set; }
@@ -379,31 +342,61 @@ namespace ExpressionEvaluator.Parser
             var parameters = new List<LambdaParameter>();
 
             var implicit_anonymous_function_parameter_list_context = context.anonymous_function_signature().implicit_anonymous_function_parameter_list();
+            var implicit_anonymous_function_parameter_context_1 = context.anonymous_function_signature().implicit_anonymous_function_parameter();
 
-            if (implicit_anonymous_function_parameter_list_context != null)
+            var argtypes = CurrentParameterInfo.ParameterType.GetGenericArguments();
+            int i = 0;
+            var argtype = argtypes[i];
+
+            var currentTypeInferenceBoundsList = methodInvocationContextStack.Peek().TypeInferenceBoundsList;
+
+            foreach (var bound in currentTypeInferenceBoundsList.FirstOrDefault(x => x.TypeArgument == argtype).Bounds)
             {
-                var implicit_anonymous_function_parameter_contexts = implicit_anonymous_function_parameter_list_context.implicit_anonymous_function_parameter();
-
-                foreach (var implicit_anonymous_function_parameter_context in implicit_anonymous_function_parameter_contexts)
+                if (implicit_anonymous_function_parameter_context_1 != null)
                 {
-                    var identfier_text = implicit_anonymous_function_parameter_context.identifier().GetText();
+                    var identfier_text = implicit_anonymous_function_parameter_context_1.identifier().GetText();
+
                     parameters.Add(new LambdaParameter()
                     {
                         Identifier = identfier_text,
-                        Expression = Expression.Parameter(typeof(object), identfier_text)
+                        Expression = Expression.Parameter(bound, identfier_text)
+                    });
+
+                    _lambdaContextStack.Push(new LambdaContext()
+                    {
+                        Parameters = parameters
                     });
                 }
-                _lambdaContextStack.Push(new LambdaContext()
-                {
-                    Parameters = parameters
-                });
+
+                //if (implicit_anonymous_function_parameter_list_context != null)
+                //{
+                //    var implicit_anonymous_function_parameter_contexts = implicit_anonymous_function_parameter_list_context.implicit_anonymous_function_parameter();
+
+                //    foreach (var implicit_anonymous_function_parameter_context in implicit_anonymous_function_parameter_contexts)
+                //    {
+                //        var identfier_text = implicit_anonymous_function_parameter_context.identifier().GetText();
+
+                //        parameters.Add(new LambdaParameter()
+                //        {
+                //            Identifier = identfier_text,
+                //            Expression = Expression.Parameter(bound, identfier_text)
+                //        });
+                //    }
+                //    _lambdaContextStack.Push(new LambdaContext()
+                //    {
+                //        Parameters = parameters
+                //    });
+                //}
+
+                var body = Visit(context.anonymous_function_body());
+
+                return Expression.Lambda(body, parameters.Select(x => x.Expression));
+
             }
-
-            var body = Visit(context.anonymous_function_body());
-
-            return Expression.Lambda(body, parameters.Select(x => x.Expression));
+            return null;
         }
 
+        #region Equality Operators
         public override Expression VisitEqualityExpression(CSharp4Parser.EqualityExpressionContext context)
         {
             var lex = Visit(context.expression(0));
@@ -417,7 +410,19 @@ namespace ExpressionEvaluator.Parser
             }
             throw new InvalidOperationException();
         }
+        #endregion
 
+        #region Conditional Operator
+        public override Expression VisitConditionalExpression(CSharp4Parser.ConditionalExpressionContext context)
+        {
+            var condition = Visit(context.expression(0));
+            var iftrue = Visit(context.expression(1));
+            var iffalse = Visit(context.expression(2));
+            return ExpressionHelper.Condition(condition, iftrue, iffalse);
+        }
+        #endregion
+
+        #region Bitwise Logical Operators
         public override Expression VisitAndExpression(CSharp4Parser.AndExpressionContext context)
         {
             var lex = Visit(context.expression(0));
@@ -438,7 +443,9 @@ namespace ExpressionEvaluator.Parser
             var rex = Visit(context.expression(1));
             return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
         }
+        #endregion
 
+        #region Conditional Logical Operators
         public override Expression VisitConditionalAndExpression(CSharp4Parser.ConditionalAndExpressionContext context)
         {
             var lex = Visit(context.expression(0));
@@ -452,44 +459,9 @@ namespace ExpressionEvaluator.Parser
             var rex = Visit(context.expression(1));
             return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
         }
+        #endregion
 
-        //public override Expression VisitBitwiseExpression(CSharp4Parser.BitwiseExpressionContext context)
-        //{
-        //var lex = Visit(context.expression(0));
-        //var rex = Visit(context.expression(1));
-        //switch (context.op.Type)
-        //{
-        //    case CSharp4Parser.AMP:
-        //        return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.And);
-        //    case CSharp4Parser.BITWISE_OR:
-        //        return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
-        //    case CSharp4Parser.CARET:
-        //        return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.ExclusiveOr);
-        //}
-        //throw new InvalidOperationException();
-        //}
-
-        //public override Expression VisitShortCircuitExpression(CSharp4Parser.ShortCircuitExpressionContext context)
-        //{
-        //    var lex = Visit(context.expression(0));
-        //    var rex = Visit(context.expression(1));
-        //    switch (context.op.Type)
-        //    {
-        //        case CSharp4Parser.OP_AND:
-        //            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.AndAlso);
-        //        case CSharp4Parser.OP_OR:
-        //            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
-        //    }
-        //    throw new InvalidOperationException();
-        //}
-
-        public override Expression VisitConditionalExpression(CSharp4Parser.ConditionalExpressionContext context)
-        {
-            var condition = Visit(context.expression(0));
-            var iftrue = Visit(context.expression(1));
-            var iffalse = Visit(context.expression(2));
-            return ExpressionHelper.Condition(condition, iftrue, iffalse);
-        }
+        #region Binary Operators
 
         public override Expression VisitMultiplicativeExpression(CSharp4Parser.MultiplicativeExpressionContext context)
         {
@@ -522,6 +494,10 @@ namespace ExpressionEvaluator.Parser
             throw new InvalidOperationException();
         }
 
+        #endregion
+
+        #region Unary Operators
+
         public override Expression VisitNegateExpression(CSharp4Parser.NegateExpressionContext context)
         {
             return Expression.Negate(Visit(context.unary_expression()));
@@ -536,6 +512,8 @@ namespace ExpressionEvaluator.Parser
         {
             return Expression.OnesComplement(Visit(context.unary_expression()));
         }
+
+        #endregion
 
         public override Expression VisitParenExpression(CSharp4Parser.ParenExpressionContext context)
         {

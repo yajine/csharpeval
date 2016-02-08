@@ -109,6 +109,7 @@
     <Compile Include="Parser\Expressions\InitializerValue.cs" />
     <Compile Include="Parser\Expressions\MemberInitializer.cs" />
     <Compile Include="Parser\IAntlrParser.cs" />
+    <Compile Include="Parser\MethodInvocationContext.cs" />
     <Compile Include="Parser\MethodResolution.cs" />
     <Compile Include="Parser\NullLiteralType.cs" />
     <Compile Include="Parser\Expressions\ObjectOrCollectionInitializer.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Parser\TypeConversion.cs" />
     <Compile Include="Parser\TypeExtensions.cs" />
     <Compile Include="Parser\Expressions\TypeVariable.cs" />
+    <Compile Include="Parser\TypeInferenceBounds.cs" />
     <Compile Include="Parser\UnknownMethodException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeRegistry.cs" />
