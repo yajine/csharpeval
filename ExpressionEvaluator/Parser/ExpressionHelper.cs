@@ -1002,8 +1002,13 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ParseStringLiteral(string token)
         {
-            token = token.Substring(1, token.Length - 2);
-            token = Unescape(token);
+            if (token[0] == '@')
+                token = token.Substring(2, token.Length - 3);
+            else
+            {
+                token = token.Substring(1, token.Length - 2);
+                token = Unescape(token);
+            }
             return Expression.Constant(token, typeof(string));
         }
 
