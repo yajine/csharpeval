@@ -168,5 +168,15 @@ namespace ExpressionEvaluator.Tests
             var ret = c.Eval();
             Assert.AreEqual(expected, ret, "Input: <{0}>", str);
         }
+
+        [TestMethod]
+        public void VerbatimStringLiteral()
+        {
+            var str = "@\"this is \\a test\"";
+            var expected = @"this is \a test";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            var ret = c.Eval();
+            Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+        }
     }
 }
