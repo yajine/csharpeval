@@ -52,39 +52,40 @@ namespace ExpressionEvaluator.Parser
         //}
         public object Eval(string expressionString)
         {
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes(expressionString));
-            var input = new ANTLRInputStream(ms);
-            var lexer = new ExprEvalLexer(input);
-            var tokens = new TokenRewriteStream(lexer);
-            if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
-            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = Scope, IsCall = IsCall, DynamicTypeLookup = DynamicTypeLookup };
+            return null;
+            //var ms = new MemoryStream(Encoding.UTF8.GetBytes(expressionString));
+            //var input = new ANTLRInputStream(ms);
+            //var lexer = new ExprEvalLexer(input);
+            //var tokens = new TokenRewriteStream(lexer);
+            //if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
+            //var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = Scope, IsCall = IsCall, DynamicTypeLookup = DynamicTypeLookup };
 
-            Expression expression = parser.single_expression();
+            //Expression expression = parser.single_expression();
 
-            if (expression == null)
-            {
-                var statement = parser.statement();
-                if (statement != null)
-                {
-                    expression = statement.Expression;
-                }
-                if (expression == null)
-                {
-                    var statements = parser.statement_list();
-                    expression = statements.ToBlock();
-                }
-            }
+            //if (expression == null)
+            //{
+            //    var statement = parser.statement();
+            //    if (statement != null)
+            //    {
+            //        expression = statement.Expression;
+            //    }
+            //    if (expression == null)
+            //    {
+            //        var statements = parser.statement_list();
+            //        expression = statements.ToBlock();
+            //    }
+            //}
 
-            if (Scope != null)
-            {
-                var func = Expression.Lambda<Func<object, object>>(Expression.Convert(expression, typeof(Object)), new ParameterExpression[] { (ParameterExpression)Scope }).Compile();
-                return func(Scope);
-            }
-            else
-            {
-                var func = Expression.Lambda<Func<object>>(Expression.Convert(expression, typeof(Object))).Compile();
-                return func();
-            }
+            //if (Scope != null)
+            //{
+            //    var func = Expression.Lambda<Func<object, object>>(Expression.Convert(expression, typeof(Object)), new ParameterExpression[] { (ParameterExpression)Scope }).Compile();
+            //    return func(Scope);
+            //}
+            //else
+            //{
+            //    var func = Expression.Lambda<Func<object>>(Expression.Convert(expression, typeof(Object))).Compile();
+            //    return func();
+            //}
 
         }
 
@@ -154,24 +155,24 @@ namespace ExpressionEvaluator.Parser
             return value;
         }
 
-        public override void ReportError(RecognitionException e)
-        {
-            base.ReportError(e);
-            string message;
-            if (e.GetType() == typeof(MismatchedTokenException))
-            {
-                var ex = (MismatchedTokenException)e;
-                message = string.Format("Mismatched token '{0}', expected {1}", e.Token.Text, ex.Expecting);
-            }
-            else
-            {
-                message = string.Format("Error parsing token '{0}'", e.Token.Text);
-            }
+        //public override void ReportError(RecognitionException e)
+        //{
+        //    base.ReportError(e);
+        //    string message;
+        //    if (e.GetType() == typeof(MismatchedTokenException))
+        //    {
+        //        var ex = (MismatchedTokenException)e;
+        //        message = string.Format("Mismatched token '{0}', expected {1}", e.Token.Text, ex.Expecting);
+        //    }
+        //    else
+        //    {
+        //        message = string.Format("Error parsing token '{0}'", e.Token.Text);
+        //    }
 
-            throw new ExpressionParseException(message, input);
+        //    throw new ExpressionParseException(message, input);
 
-            Console.WriteLine("Error in parser at line " + e.Line + ":" + e.CharPositionInLine);
-        }
+        //    Console.WriteLine("Error in parser at line " + e.Line + ":" + e.CharPositionInLine);
+        //}
 
         private Expression GetIdentifier(string identifier)
         {

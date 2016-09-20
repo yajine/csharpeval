@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using Antlr.Runtime;
+using Antlr4.Runtime;
 
 namespace ExpressionEvaluator.Parser
 {
@@ -31,32 +31,36 @@ namespace ExpressionEvaluator.Parser
         public Expression Parse(Expression scope, bool isCall = false)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(ExpressionString));
-            var input = new ANTLRInputStream(ms);
-            var lexer = new ExprEvalLexer(input);
-            var tokens = new TokenRewriteStream(lexer);
+            var input = new AntlrInputStream(ms);
+            var lexer = new CSharp4Lexer(input);
+            var tokens = new CommonTokenStream(lexer);
             if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
 
 
-            var parser = new ExprEvalParser(tokens) { TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, DynamicTypeLookup = DynamicTypeLookup, Context = Context };
+            var parser = new CSharp4Parser(tokens);
+            //{ TypeRegistry = TypeRegistry, Scope = scope, IsCall = isCall, DynamicTypeLookup = DynamicTypeLookup, Context = System.Runtime.Remoting.Contexts.Context };
             if (ExternalParameters != null)
             {
-                parser.ParameterList.Add(ExternalParameters);
+                //parser.ParameterList.Add(ExternalParameters);
             }
+
+            
+
             switch (ExpressionType)
             {
                 case CompiledExpressionType.Expression:
-                    Expression = parser.single_expression();
+                    var expression = parser.expression();
                     break;
                 case CompiledExpressionType.Statement:
                     var statement = parser.statement();
-                    if (statement != null)
-                    {
-                        Expression = statement.Expression;
-                    }
+                    //if (statement != null)
+                    //{
+                    //    Expression = statement.Expression;
+                    //}
                     break;
                 case CompiledExpressionType.StatementList:
                     var statements = parser.statement_list();
-                    Expression = statements.ToBlock();
+                    //Expression = statements.ToBlock();
                     break;
             }
             return Expression;
