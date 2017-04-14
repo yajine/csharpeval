@@ -1300,6 +1300,22 @@ namespace ExpressionEvaluator.Parser
             return Expression.Condition(condition, ifTrue, ifFalse);
         }
 
+        public static Expression New(Type t, ArgumentListExpression argumentList)
+        {
+            ConstructorInfo constructorInfo;
+
+            if (argumentList == null)
+            {
+                var p = t.GetConstructors();
+                constructorInfo = p.First(x => !x.GetParameters().Any());
+
+                return Expression.New(constructorInfo, null);
+            }
+            constructorInfo = t.GetConstructor(argumentList.ArgumentList.Select(arg => arg.Expression.Type).ToArray());
+
+            return Expression.New(constructorInfo, argumentList.ArgumentList.Select(x => x.Expression));
+        }
+
         public static Expression New(Type t, IEnumerable<Argument> arguments, ObjectOrCollectionInitializer initializer)
         {
             ConstructorInfo constructorInfo;
@@ -1412,7 +1428,7 @@ namespace ExpressionEvaluator.Parser
             {
                 if (initializer.GetType() == typeof(LocalVariableDeclarationExpression))
                 {
-                    var lvd = (LocalVariableDeclarationExpression) initializer;
+                    var lvd = (LocalVariableDeclarationExpression)initializer;
                     localVars.AddRange(lvd.Variables);
                     initializations.AddRange(lvd.Initializers);
                 }

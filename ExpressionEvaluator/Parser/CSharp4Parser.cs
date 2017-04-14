@@ -2476,27 +2476,189 @@ public partial class CSharp4Parser : Parser {
 	}
 
 	public partial class Primary_expression_startContext : ParserRuleContext {
-		public LiteralContext literal() {
-			return GetRuleContext<LiteralContext>(0);
+		public Primary_expression_startContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
 		}
+		public override int RuleIndex { get { return RULE_primary_expression_start; } }
+	 
+		public Primary_expression_startContext() { }
+		public virtual void CopyFrom(Primary_expression_startContext context) {
+			base.CopyFrom(context);
+		}
+	}
+	public partial class SimpleNameExpressionContext : Primary_expression_startContext {
 		public Simple_nameContext simple_name() {
 			return GetRuleContext<Simple_nameContext>(0);
 		}
+		public SimpleNameExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterSimpleNameExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitSimpleNameExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitSimpleNameExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class DefaultValueExpressionContext : Primary_expression_startContext {
+		public Default_value_expressionContext default_value_expression() {
+			return GetRuleContext<Default_value_expressionContext>(0);
+		}
+		public DefaultValueExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterDefaultValueExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitDefaultValueExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitDefaultValueExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class ParenthesizedExpressionContext : Primary_expression_startContext {
 		public Parenthesized_expressionContext parenthesized_expression() {
 			return GetRuleContext<Parenthesized_expressionContext>(0);
 		}
-		public Predefined_typeContext predefined_type() {
-			return GetRuleContext<Predefined_typeContext>(0);
+		public ParenthesizedExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterParenthesizedExpression(this);
 		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitParenthesizedExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitParenthesizedExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class UncheckedExpressionContext : Primary_expression_startContext {
+		public Unchecked_expressionContext unchecked_expression() {
+			return GetRuleContext<Unchecked_expressionContext>(0);
+		}
+		public UncheckedExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterUncheckedExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitUncheckedExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitUncheckedExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class LiteralExpressionContext : Primary_expression_startContext {
+		public LiteralContext literal() {
+			return GetRuleContext<LiteralContext>(0);
+		}
+		public LiteralExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterLiteralExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitLiteralExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitLiteralExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class QualifiedAliasMemberExpressionContext : Primary_expression_startContext {
 		public Qualified_alias_memberContext qualified_alias_member() {
 			return GetRuleContext<Qualified_alias_memberContext>(0);
 		}
+		public QualifiedAliasMemberExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterQualifiedAliasMemberExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitQualifiedAliasMemberExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitQualifiedAliasMemberExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class AnonymousMethodExpressionContext : Primary_expression_startContext {
+		public Anonymous_method_expressionContext anonymous_method_expression() {
+			return GetRuleContext<Anonymous_method_expressionContext>(0);
+		}
+		public AnonymousMethodExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterAnonymousMethodExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitAnonymousMethodExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitAnonymousMethodExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class CheckedExpressionContext : Primary_expression_startContext {
+		public Checked_expressionContext checked_expression() {
+			return GetRuleContext<Checked_expressionContext>(0);
+		}
+		public CheckedExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterCheckedExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitCheckedExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitCheckedExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class ThisAccessExpressionContext : Primary_expression_startContext {
 		public This_accessContext this_access() {
 			return GetRuleContext<This_accessContext>(0);
 		}
-		public Base_accessContext base_access() {
-			return GetRuleContext<Base_accessContext>(0);
+		public ThisAccessExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterThisAccessExpression(this);
 		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitThisAccessExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitThisAccessExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class NewExpressionContext : Primary_expression_startContext {
 		public ITerminalNode NEW() { return GetToken(CSharp4Parser.NEW, 0); }
 		public TypeContext type() {
 			return GetRuleContext<TypeContext>(0);
@@ -2524,40 +2686,94 @@ public partial class CSharp4Parser : Parser {
 		public Rank_specifiersContext rank_specifiers() {
 			return GetRuleContext<Rank_specifiersContext>(0);
 		}
-		public Typeof_expressionContext typeof_expression() {
-			return GetRuleContext<Typeof_expressionContext>(0);
-		}
-		public Checked_expressionContext checked_expression() {
-			return GetRuleContext<Checked_expressionContext>(0);
-		}
-		public Unchecked_expressionContext unchecked_expression() {
-			return GetRuleContext<Unchecked_expressionContext>(0);
-		}
-		public Default_value_expressionContext default_value_expression() {
-			return GetRuleContext<Default_value_expressionContext>(0);
-		}
-		public Anonymous_method_expressionContext anonymous_method_expression() {
-			return GetRuleContext<Anonymous_method_expressionContext>(0);
-		}
-		public Sizeof_expressionContext sizeof_expression() {
-			return GetRuleContext<Sizeof_expressionContext>(0);
-		}
-		public Primary_expression_startContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_primary_expression_start; } }
+		public NewExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
 		public override void EnterRule(IParseTreeListener listener) {
 			ICSharp4Listener typedListener = listener as ICSharp4Listener;
-			if (typedListener != null) typedListener.EnterPrimary_expression_start(this);
+			if (typedListener != null) typedListener.EnterNewExpression(this);
 		}
 		public override void ExitRule(IParseTreeListener listener) {
 			ICSharp4Listener typedListener = listener as ICSharp4Listener;
-			if (typedListener != null) typedListener.ExitPrimary_expression_start(this);
+			if (typedListener != null) typedListener.ExitNewExpression(this);
 		}
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitPrimary_expression_start(this);
+			if (typedVisitor != null) return typedVisitor.VisitNewExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class PredefinedTypeExpressionContext : Primary_expression_startContext {
+		public Predefined_typeContext predefined_type() {
+			return GetRuleContext<Predefined_typeContext>(0);
+		}
+		public PredefinedTypeExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterPredefinedTypeExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitPredefinedTypeExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitPredefinedTypeExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class SizeOfExpressionContext : Primary_expression_startContext {
+		public Sizeof_expressionContext sizeof_expression() {
+			return GetRuleContext<Sizeof_expressionContext>(0);
+		}
+		public SizeOfExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterSizeOfExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitSizeOfExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitSizeOfExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class BaseAccessExpressionContext : Primary_expression_startContext {
+		public Base_accessContext base_access() {
+			return GetRuleContext<Base_accessContext>(0);
+		}
+		public BaseAccessExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterBaseAccessExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitBaseAccessExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitBaseAccessExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+	public partial class TypeOfExpressionContext : Primary_expression_startContext {
+		public Typeof_expressionContext typeof_expression() {
+			return GetRuleContext<Typeof_expressionContext>(0);
+		}
+		public TypeOfExpressionContext(Primary_expression_startContext context) { CopyFrom(context); }
+		public override void EnterRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.EnterTypeOfExpression(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			ICSharp4Listener typedListener = listener as ICSharp4Listener;
+			if (typedListener != null) typedListener.ExitTypeOfExpression(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			ICSharp4Visitor<TResult> typedVisitor = visitor as ICSharp4Visitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitTypeOfExpression(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
@@ -2570,48 +2786,56 @@ public partial class CSharp4Parser : Parser {
 			State = 1046;
 			switch ( Interpreter.AdaptivePredict(TokenStream,32,Context) ) {
 			case 1:
+				_localctx = new LiteralExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 1009; literal();
 				}
 				break;
 			case 2:
+				_localctx = new SimpleNameExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
 				State = 1010; simple_name();
 				}
 				break;
 			case 3:
+				_localctx = new ParenthesizedExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
 				State = 1011; parenthesized_expression();
 				}
 				break;
 			case 4:
+				_localctx = new PredefinedTypeExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 4);
 				{
 				State = 1012; predefined_type();
 				}
 				break;
 			case 5:
+				_localctx = new QualifiedAliasMemberExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 5);
 				{
 				State = 1013; qualified_alias_member();
 				}
 				break;
 			case 6:
+				_localctx = new ThisAccessExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 6);
 				{
 				State = 1014; this_access();
 				}
 				break;
 			case 7:
+				_localctx = new BaseAccessExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 7);
 				{
 				State = 1015; base_access();
 				}
 				break;
 			case 8:
+				_localctx = new NewExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 8);
 				{
 				State = 1016; Match(NEW);
@@ -2719,36 +2943,42 @@ public partial class CSharp4Parser : Parser {
 				}
 				break;
 			case 9:
+				_localctx = new TypeOfExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 9);
 				{
 				State = 1040; typeof_expression();
 				}
 				break;
 			case 10:
+				_localctx = new CheckedExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 10);
 				{
 				State = 1041; checked_expression();
 				}
 				break;
 			case 11:
+				_localctx = new UncheckedExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 11);
 				{
 				State = 1042; unchecked_expression();
 				}
 				break;
 			case 12:
+				_localctx = new DefaultValueExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 12);
 				{
 				State = 1043; default_value_expression();
 				}
 				break;
 			case 13:
+				_localctx = new AnonymousMethodExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 13);
 				{
 				State = 1044; anonymous_method_expression();
 				}
 				break;
 			case 14:
+				_localctx = new SizeOfExpressionContext(_localctx);
 				EnterOuterAlt(_localctx, 14);
 				{
 				State = 1045; sizeof_expression();

@@ -198,11 +198,103 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// Visit a parse tree produced by the <c>LiteralExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitPrimary_expression_start([NotNull] CSharp4Parser.Primary_expression_startContext context);
+	Result VisitLiteralExpression([NotNull] CSharp4Parser.LiteralExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>SimpleNameExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSimpleNameExpression([NotNull] CSharp4Parser.SimpleNameExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>ParenthesizedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitParenthesizedExpression([NotNull] CSharp4Parser.ParenthesizedExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>PredefinedTypeExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPredefinedTypeExpression([NotNull] CSharp4Parser.PredefinedTypeExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>QualifiedAliasMemberExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitQualifiedAliasMemberExpression([NotNull] CSharp4Parser.QualifiedAliasMemberExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>ThisAccessExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitThisAccessExpression([NotNull] CSharp4Parser.ThisAccessExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>BaseAccessExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitBaseAccessExpression([NotNull] CSharp4Parser.BaseAccessExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>NewExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNewExpression([NotNull] CSharp4Parser.NewExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>TypeOfExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTypeOfExpression([NotNull] CSharp4Parser.TypeOfExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>CheckedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCheckedExpression([NotNull] CSharp4Parser.CheckedExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>UncheckedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUncheckedExpression([NotNull] CSharp4Parser.UncheckedExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>DefaultValueExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDefaultValueExpression([NotNull] CSharp4Parser.DefaultValueExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>AnonymousMethodExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAnonymousMethodExpression([NotNull] CSharp4Parser.AnonymousMethodExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>SizeOfExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSizeOfExpression([NotNull] CSharp4Parser.SizeOfExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="CSharp4Parser.bracket_expression"/>.
 	/// </summary>

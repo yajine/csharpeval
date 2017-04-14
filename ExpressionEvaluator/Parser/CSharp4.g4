@@ -199,13 +199,13 @@ primary_expression_part
   ;
 
 primary_expression_start
-  : literal
-  | simple_name
-  | parenthesized_expression
-  | predefined_type // member_access
-  | qualified_alias_member  // member_access
-  | this_access
-  | base_access
+  : literal                  #LiteralExpression
+  | simple_name              #SimpleNameExpression
+  | parenthesized_expression #ParenthesizedExpression
+  | predefined_type          #PredefinedTypeExpression
+  | qualified_alias_member   #QualifiedAliasMemberExpression
+  | this_access              #ThisAccessExpression
+  | base_access              #BaseAccessExpression 
   | NEW ( type ( object_creation_expression2
                | object_or_collection_initializer
                | OPEN_BRACKET expression_list CLOSE_BRACKET rank_specifiers? array_initializer?
@@ -213,13 +213,13 @@ primary_expression_start
                )
         | anonymous_object_initializer
         | rank_specifier array_initializer
-        )
-  | typeof_expression
-  | checked_expression
-  | unchecked_expression
-  | default_value_expression
-  | anonymous_method_expression
-  | sizeof_expression
+        )                    #NewExpression
+  | typeof_expression        #TypeOfExpression
+  | checked_expression       #CheckedExpression 
+  | unchecked_expression     #UncheckedExpression
+  | default_value_expression #DefaultValueExpression
+  | anonymous_method_expression #AnonymousMethodExpression
+  | sizeof_expression        #SizeOfExpression
   ;
 /*
 bracket_expression

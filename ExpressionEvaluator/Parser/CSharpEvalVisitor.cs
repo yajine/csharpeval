@@ -191,7 +191,12 @@ namespace ExpressionEvaluator.Parser
 
         public override Expression VisitArgument_list(CSharp4Parser.Argument_listContext context)
         {
-            return base.VisitArgument_list(context);
+            var list = new ArgumentListExpression();
+            foreach (var argumentContext in context.argument())
+            {
+                list.Add((ArgumentExpression) Visit(argumentContext));
+            }
+            return list;
         }
 
         public override Expression VisitArgument(CSharp4Parser.ArgumentContext context)
@@ -611,6 +616,17 @@ namespace ExpressionEvaluator.Parser
                 {
                     value = Expression.Assign(value, Expression.Decrement(value));
                 }
+
+                var partBracketExpressions = part_context.bracket_expression();
+                if (partBracketExpressions.Any())
+                {
+                    foreach (var bracketExpression in partBracketExpressions)
+                    {
+                        var expressionList = (ExpressionList)Visit(bracketExpression);
+                        value = ExpressionHelper.GetPropertyIndex(value, expressionList.Expressions);
+                    }
+                }
+
             }
 
             return value;
@@ -756,5 +772,67 @@ namespace ExpressionEvaluator.Parser
         {
             return Visit(context.expression());
         }
+
+        public override Expression VisitNewExpression(CSharp4Parser.NewExpressionContext context)
+        {
+            var objectCreationExpressionTree = context.object_creation_expression2();
+            if (objectCreationExpressionTree != null)
+            {
+                var argList = (ArgumentListExpression)Visit(context.object_creation_expression2().argument_list());
+                return ExpressionHelper.New(GetType(context.type().GetText()), argList);
+            }
+
+            throw new NotImplementedException();
+        }
+
+
+        public override Expression VisitObject_creation_expression2(CSharp4Parser.Object_creation_expression2Context context)
+        {
+           // context.object_or_collection_initializer()
+
+            return base.VisitObject_creation_expression2(context);
+        }
+
+//        public object_creation_expression returns[Expression value]: 
+//    // 'new'
+//    type
+//        ( '('   argument_list?   ')'  first= object_or_collection_initializer ?
+//          | second = object_or_collection_initializer )
+//        {
+//			$value = ExpressionHelper.New(GetType($type.text), $argument_list.values, $first.value ?? $second.value);
+//        }
+//    ;
+//        public object_or_collection_initializer returns[ObjectOrCollectionInitializer value]
+//@init{
+//	$value = new ObjectOrCollectionInitializer();
+//    }: 
+//    '{'  (object_initializer  { $value.ObjectInitializer = $object_initializer.value; }
+//        | collection_initializer)    '}';
+//public collection_initializer: 
+//    element_initializer_list  ;
+//public element_initializer_list: 
+//    element_initializer(',' element_initializer)* ;
+//public element_initializer: 
+//    non_assignment_expression 
+//    | '{'   expression_list   '}' ;
+//// object-initializer eg's
+////    Rectangle r = new Rectangle {
+////        P1 = new Point { X = 0, Y = 1 },
+////        P2 = new Point { X = 2, Y = 3 }
+////    };
+//// TODO: comma should only follow a member_initializer_list
+//public object_initializer returns[List < MemberInitializer > value]: 
+//    member_initializer_list?  { $value = $member_initializer_list.value; }  ;
+//public member_initializer_list returns[List < MemberInitializer > value]
+//@init {
+//	$value = new List<MemberInitializer>();
+//}: 
+//    first=member_initializer { $value.Add($first.value); }  (',' succeeding=member_initializer { $value.Add($succeeding.value); } ) ;
+//public member_initializer returns[MemberInitializer value] : 
+//    identifier   '='   initializer_value { $value = new MemberInitializer() { Identifier = $identifier.text, Value = $initializer_value.value }; };
+//public initializer_value returns[Expression value]: 
+//    expression { $value = $expression.value; }
+//    | object_or_collection_initializer ;
+
     }
 }

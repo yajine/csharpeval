@@ -83,6 +83,7 @@ namespace ExpressionEvaluator.Tests
             t.RegisterType("TestClass", typeof(TestClass));
             var c = new CompiledExpression<TestClass>(str) { TypeRegistry = t };
             var ret = c.Eval();
+            Assert.AreEqual(ret.GetType(), typeof(TestClass));
         }
 
         [TestMethod]

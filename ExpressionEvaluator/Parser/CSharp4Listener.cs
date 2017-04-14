@@ -309,15 +309,173 @@ public interface ICSharp4Listener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitPrimary_expression_part([NotNull] CSharp4Parser.Primary_expression_partContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// Enter a parse tree produced by the <c>LiteralExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterPrimary_expression_start([NotNull] CSharp4Parser.Primary_expression_startContext context);
+	void EnterLiteralExpression([NotNull] CSharp4Parser.LiteralExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// Exit a parse tree produced by the <c>LiteralExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitPrimary_expression_start([NotNull] CSharp4Parser.Primary_expression_startContext context);
+	void ExitLiteralExpression([NotNull] CSharp4Parser.LiteralExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SimpleNameExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSimpleNameExpression([NotNull] CSharp4Parser.SimpleNameExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SimpleNameExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSimpleNameExpression([NotNull] CSharp4Parser.SimpleNameExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ParenthesizedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterParenthesizedExpression([NotNull] CSharp4Parser.ParenthesizedExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ParenthesizedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitParenthesizedExpression([NotNull] CSharp4Parser.ParenthesizedExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>PredefinedTypeExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterPredefinedTypeExpression([NotNull] CSharp4Parser.PredefinedTypeExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>PredefinedTypeExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitPredefinedTypeExpression([NotNull] CSharp4Parser.PredefinedTypeExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>QualifiedAliasMemberExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterQualifiedAliasMemberExpression([NotNull] CSharp4Parser.QualifiedAliasMemberExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>QualifiedAliasMemberExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitQualifiedAliasMemberExpression([NotNull] CSharp4Parser.QualifiedAliasMemberExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ThisAccessExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterThisAccessExpression([NotNull] CSharp4Parser.ThisAccessExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ThisAccessExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitThisAccessExpression([NotNull] CSharp4Parser.ThisAccessExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>BaseAccessExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterBaseAccessExpression([NotNull] CSharp4Parser.BaseAccessExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>BaseAccessExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitBaseAccessExpression([NotNull] CSharp4Parser.BaseAccessExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>NewExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterNewExpression([NotNull] CSharp4Parser.NewExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>NewExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitNewExpression([NotNull] CSharp4Parser.NewExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>TypeOfExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTypeOfExpression([NotNull] CSharp4Parser.TypeOfExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>TypeOfExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTypeOfExpression([NotNull] CSharp4Parser.TypeOfExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>CheckedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCheckedExpression([NotNull] CSharp4Parser.CheckedExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>CheckedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCheckedExpression([NotNull] CSharp4Parser.CheckedExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>UncheckedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterUncheckedExpression([NotNull] CSharp4Parser.UncheckedExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>UncheckedExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitUncheckedExpression([NotNull] CSharp4Parser.UncheckedExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>DefaultValueExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDefaultValueExpression([NotNull] CSharp4Parser.DefaultValueExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>DefaultValueExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDefaultValueExpression([NotNull] CSharp4Parser.DefaultValueExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>AnonymousMethodExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterAnonymousMethodExpression([NotNull] CSharp4Parser.AnonymousMethodExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>AnonymousMethodExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitAnonymousMethodExpression([NotNull] CSharp4Parser.AnonymousMethodExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SizeOfExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSizeOfExpression([NotNull] CSharp4Parser.SizeOfExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SizeOfExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.primary_expression_start"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSizeOfExpression([NotNull] CSharp4Parser.SizeOfExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.bracket_expression"/>.
 	/// </summary>
