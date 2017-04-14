@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:\git\csharpeval\ExpressionEvaluator\Parser\CSharp4.g4 by ANTLR 4.5.1
+// Generated from C:\GitProjects\csharpeval\ExpressionEvaluator\Parser\CSharp4.g4 by ANTLR 4.5.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -390,6 +390,13 @@ public interface ICSharp4Visitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitCastExpression([NotNull] CSharp4Parser.CastExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>ArrayCreationExpression</c>
+	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitArrayCreationExpression([NotNull] CSharp4Parser.ArrayCreationExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>PrimaryExpression</c>
 	/// labeled alternative in <see cref="CSharp4Parser.unary_expression"/>.

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:\git\csharpeval\ExpressionEvaluator\Parser\CSharp4.g4 by ANTLR 4.5.1
+// Generated from C:\GitProjects\csharpeval\ExpressionEvaluator\Parser\CSharp4.g4 by ANTLR 4.5.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -752,6 +752,18 @@ public partial class CSharp4BaseListener : ICSharp4Listener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitCastExpression([NotNull] CSharp4Parser.CastExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="CSharp4Parser.ArrayCreationExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterArrayCreationExpression([NotNull] CSharp4Parser.ArrayCreationExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CSharp4Parser.ArrayCreationExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitArrayCreationExpression([NotNull] CSharp4Parser.ArrayCreationExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CSharp4Parser.PrimaryExpression"/>.
 	/// <para>The default implementation does nothing.</para>

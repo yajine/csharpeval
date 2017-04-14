@@ -7,32 +7,49 @@ using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
+    public class ArgumentContext
+    {
+        public Expression Expression { get; set; }
+        public string Name { get; set; }
+    }
+
     public class MethodInvocationContext
     {
         public bool IsExtensionMethod { get; set; }
+        public bool IsStaticMethod { get; set; }
         public Expression ThisParameter { get; set; }
         public TypeOrGeneric Method { get; set; }
         public IEnumerable<MethodInfo> MethodCandidates { get; set; }
         public CSharp4Parser.ArgumentContext[] ArgumentContext { get; set; }
-
+        public Type Type { get; set; }
         public CSharpEvalVisitor Visitor { get; set; }
+        public Expression Instance { get; set; }
 
         public List<TypeInferenceBounds> TypeInferenceBoundsList { get; set; }
 
         public Expression GetInvokeMethodExpression()
         {
             var appMembers = new List<ApplicableFunctionMember>();
+            IEnumerable<Argument> args = null;
 
             foreach (var F in MethodCandidates)
             {
                 if (!F.IsGenericMethod)
                 {
-                    var args = new List<Argument>();
+                    var argsList = new List<Argument>();
 
                     foreach (var argument in ArgumentContext)
                     {
-                        args.Add(new Argument() { Expression = Visitor.Visit(argument) });
+                        var argExpression = (ArgumentExpression)Visitor.Visit(argument);
+                        argsList.Add(new Argument()
+                        {
+                            Expression = argExpression.Expression,
+                            Name = argExpression.Name,
+                            IsNamedArgument = argExpression.Name != null
+                        });
                     }
+
+                    args = argsList;
 
                     var afm = IsApplicableFunctionMember(F, args);
                     if (afm != null)
@@ -42,7 +59,7 @@ namespace ExpressionEvaluator.Parser
                 }
                 else
                 {
-                    var args = ApplyTypeInference(F);
+                    args = ApplyTypeInference(F);
 
                     if (args != null)
                     {
@@ -57,9 +74,133 @@ namespace ExpressionEvaluator.Parser
 
             // based on TypeInferenceBoundsList, get the best types and re-visit the expressions
 
+            Type[] typeArgs = null;
+            var genericMethods = appMembers.Where(x => x.Member.IsGenericMethod).ToList();
 
-           // var applicableMemberFunction = MethodResolution.OverloadResolution(appMembers, args);
+            Dictionary<ApplicableFunctionMember, List<TypeInferrence>> methodTypeInferences = new Dictionary<ApplicableFunctionMember, List<TypeInferrence>>();
+
+            if (genericMethods.Any() && Method.TypeArgs == null)
+            {
+                foreach (var genericMethod in genericMethods)
+                {
+                    var inferences = MethodResolution.TypeInference(genericMethod, args);
+                    if (inferences != null)
+                    {
+                        methodTypeInferences.Add(genericMethod, inferences);
+                    }
+                }
+            }
+
+            var applicableMemberFunction = MethodResolution.OverloadResolution(appMembers, args);
+
+            if (applicableMemberFunction != null)
+            {
+                var parameterInfos = applicableMemberFunction.Member.GetParameters();
+                var argExps = args.Select(x => x.Expression).ToList();
+
+                ParameterInfo paramArrayParameter = parameterInfos.FirstOrDefault(p => p.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0);
+                List<Expression> newArgs2 = null;
+
+                if (Method.TypeArgs != null)
+                {
+                    typeArgs = Method.TypeArgs.ToArray();
+                }
+                else
+                {
+                    typeArgs = new Type[0];
+                }
+
+                if (paramArrayParameter != null)
+                {
+                    newArgs2 = argExps.Take(parameterInfos.Length - 1).ToList();
+                    var paramArgs2 = argExps.Skip(parameterInfos.Length - 1).ToList();
+
+                    var typeArgCount = parameterInfos.Count(x => x.ParameterType.IsGenericParameter);
+                    if (typeArgs == null && typeArgCount > 0) typeArgs = new Type[typeArgCount];
+
+
+                    for (var i = 0; i < parameterInfos.Length - 1; i++)
+                    {
+                        if (parameterInfos[i].ParameterType.IsGenericParameter)
+                        {
+                            var genericParameterPosition = parameterInfos[i].ParameterType.GenericParameterPosition;
+                            typeArgs[genericParameterPosition] = newArgs2[i].Type;
+                        }
+                        newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos[i].ParameterType);
+                    }
+
+                    var targetType = paramArrayParameter.ParameterType.GetElementType();
+
+                    if (targetType == null)
+                    {
+                        var ga = paramArrayParameter.ParameterType.GetGenericArguments();
+                        if (ga.Any())
+                        {
+                            targetType = ga.Single();
+                        }
+                    }
+
+                    if (targetType != null)
+                    {
+                        newArgs2.Add(Expression.NewArrayInit(targetType,
+                                                             paramArgs2.Select(x => TypeConversion.Convert(x, targetType))));
+                    }
+
+                }
+                else
+                {
+                    newArgs2 = argExps.ToList();
+                    var typeArgCount = parameterInfos.Count(x => x.ParameterType.IsGenericParameter || x.ParameterType.IsGenericType && x.ParameterType.GetGenericArguments().Any(y => y.IsGenericParameter));
+                    if (typeArgs == null && typeArgCount > 0) typeArgs = new Type[typeArgCount];
+
+                    for (var i = 0; i < parameterInfos.Length; i++)
+                    {
+                        if (parameterInfos[i].ParameterType.IsGenericParameter)
+                        {
+                            var genericParameterPosition = parameterInfos[i].ParameterType.GenericParameterPosition;
+                            typeArgs[genericParameterPosition] = newArgs2[i].Type;
+                        }
+                        if (parameterInfos[i].ParameterType.IsGenericType)
+                        {
+                            var genericArgs = parameterInfos[i].ParameterType.GetGenericArguments();
+                            var genericArgParameters = genericArgs.Where(y => y.IsGenericParameter).ToList();
+                            if (genericArgParameters.Any())
+                            {
+                                foreach (var genericArgParameter in genericArgParameters)
+                                {
+                                    var genericArgParameterPosition = genericArgParameter.GenericParameterPosition;
+                                    typeArgs[genericArgParameterPosition] = typeof(int);
+                                }
+                            }
+                        }
+                        newArgs2[i] = TypeConversion.Convert(newArgs2[i], parameterInfos[i].ParameterType);
+                    }
+                }
+
+                if (applicableMemberFunction.Member.ContainsGenericParameters)
+                {
+                    if (IsStaticMethod)
+                    {
+                        return Expression.Call(Type, Method.Identifier, typeArgs, newArgs2.ToArray());
+                    }
+                    else
+                    {
+                        return Expression.Call(Instance, Method.Identifier, typeArgs, newArgs2.ToArray());
+                    }
+                }
+
+                if (IsStaticMethod)
+                {
+                    return Expression.Call(null, applicableMemberFunction.Member, newArgs2.ToArray());
+                }
+                else
+                {
+                    return Expression.Call(Instance, applicableMemberFunction.Member, newArgs2.ToArray());
+                }
+            }
+
             return null;
+            //return Expression.Call(primaryExpression, applicableMemberFunction.Member, args.Select(x => x.Expression));
         }
 
 

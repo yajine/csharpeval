@@ -225,7 +225,7 @@ namespace ExpressionEvaluator.Tests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(Exception))]
         public void ExpressionException()
         {
             var c = new CompiledExpression();
@@ -323,7 +323,7 @@ namespace ExpressionEvaluator.Tests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(Exception))]
         public void ExpressionException2()
         {
             var c = new CompiledExpression();
@@ -332,7 +332,7 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(Exception))]
         public void ExpressionException3()
         {
             var c = new CompiledExpression();
@@ -351,12 +351,12 @@ namespace ExpressionEvaluator.Tests
             // Access List item by index
             c.StringToParse = "a.Y[3]";
             var result = c.Eval();
-            Assert.AreEqual(result, 22);
+            Assert.AreEqual(a.Y[3], result);
 
             // Access array item by index
             c.StringToParse = "a.Z[1]";
             result = c.Eval();
-            Assert.AreEqual(result, 11);
+            Assert.AreEqual(a.Z[1], result);
         }
 
         [TestMethod]
@@ -496,11 +496,11 @@ namespace ExpressionEvaluator.Tests
         [TestMethod]
         public void StringJoin()
         {
-  
-            var str = "String.Join(\",\", new[]{1, 2, 3, 4})";
+            var expected = String.Join(",", new[]{"1", "2", "3", "4"});
+            var str = "String.Join(\",\", new[]{\"1\", \"2\", \"3\", \"4\"})";
             var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
-            var ret = c.Eval();
-            Assert.AreEqual(ret, "1,2,3,4");
+            var actual = c.Eval();
+            Assert.AreEqual(actual, expected);
         }
 
         public class IndexableType
@@ -559,5 +559,103 @@ namespace ExpressionEvaluator.Tests
             Assert.AreEqual(1, s.Eval());
         }
 
-    }
+            class MyContext
+            {
+                public readonly MyContext ctx;
+
+                public bool NumEq(int a, int b)
+                {
+                    return a == b;
+                }
+
+                public string Text(string text)
+                {
+                    return text;
+                }
+
+                public int GetFirst()
+                {
+                    var r = new Random();
+
+                    return r.Next();
+                }
+
+                public int GetSecond()
+                {
+                    var r = new Random();
+
+                    return r.Next();
+                }
+
+            }
+
+            [TestMethod]
+            public void DirectTernaryNestingExpressionEvaluatorExperiment()
+            {
+            var expression = GetNestedTernary(10);
+            var compiled = new CompiledExpression<dynamic>(expression);
+            var result = compiled.ScopeCompile<MyContext>();
+            //for (int i = 0; i < 10; i++)
+            //    {
+            //        var expression = GetNestedTernary(i);
+            //        var compiled = new CompiledExpression<dynamic>(expression);
+            //        var result = compiled.ScopeCompile<MyContext>();
+            //    }
+            }
+
+            private string GetNestedTernary(int nestingCount)
+            {
+                var ternaryStart = "(ctx.NumEq(ctx.GetFirst(),ctx.GetSecond())?ctx.Text(\"B\"):";
+                var ternary = "";
+
+                if (nestingCount > 0)
+                {
+                    ternary = ternaryStart + GetNestedTernary(nestingCount - 1) + ")";
+                }
+                else
+                {
+                    ternary = ternaryStart + "ctx.Text(\"C\"))";
+                }
+
+                return ternary;
+            }
+
+
+            [TestMethod]
+            public void DirectIfNestingExpressionEvaluatorExperiment()
+            {
+                //for (int i = 0; i < 100; i++)
+                //{
+                    var expr = "string result; " + GetNestedIfDirect(1) + "result;";
+
+                    var expression = new CompiledExpression<dynamic>(expr);
+                    //var result = compiled.ScopeCompile<MyContext>();
+
+                    expression.ExpressionType = CompiledExpressionType.StatementList;
+                    expression.TypeRegistry = new TypeRegistry();
+                    expression.TypeRegistry.RegisterDefaultTypes();
+                    expression.TypeRegistry.RegisterSymbol("ctx", new MyContext());
+                    var result = expression.Compile();
+
+                //}
+            }
+
+            private string GetNestedIfDirect(int nestingCount)
+            {
+                var ternaryStart = @" if(ctx.NumEq(ctx.GetFirst(),ctx.GetSecond())){ result= ctx.Text(""B"");}else{";
+                var ternary = "";
+
+                if (nestingCount > 0)
+                {
+                    ternary = ternaryStart + GetNestedIfDirect(nestingCount - 1) + "}";
+                }
+                else
+                {
+                    ternary = ternaryStart + @"result= ctx.Text(""C"");}";
+                }
+
+                return ternary;
+            }
+        }
+
 }

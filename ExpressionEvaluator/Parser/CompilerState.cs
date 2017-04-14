@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace ExpressionEvaluator.Parser
 {
-    internal class CompilerState
+    public class CompilerState
     {
         public LabelTarget ReturnTarget { get; set; }
         public Stack<LabelTarget> BreakContext { get; private set; }

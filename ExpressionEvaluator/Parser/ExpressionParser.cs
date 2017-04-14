@@ -40,7 +40,20 @@ namespace ExpressionEvaluator.Parser
                 var parser = new CSharp4Parser(tokens);
                 parser.BuildParseTree = true;
                 parser.AddErrorListener(new ErrorListener());
-                IParseTree tree = parser.expression();
+                IParseTree tree = null;
+                switch (ExpressionType)
+                {
+                    case CompiledExpressionType.Expression:
+                        tree = parser.expression();
+                        break;
+                    case CompiledExpressionType.Statement:
+                        tree = parser.statement();
+                        break;
+                    case CompiledExpressionType.StatementList:
+                        tree = parser.statement_list();
+                        break;
+                }
+
 
                 //var listener = new MyGraphingCalcListener(d);
                 //var walker = new ParseTreeWalker();

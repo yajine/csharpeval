@@ -518,8 +518,10 @@ unary_expression
 	| unary_expression_unsafe
 	;
 */
+
 unary_expression 
 	: cast_expression			#CastExpression
+	| array_creation_expression #ArrayCreationExpression
 	| primary_expression		#PrimaryExpression
 	| PLUS unary_expression		#PlusExpression
 	| MINUS unary_expression	#NegateExpression

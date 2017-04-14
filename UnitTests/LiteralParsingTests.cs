@@ -11,7 +11,7 @@ namespace ExpressionEvaluator.Tests
     public class LiteralParsingTests
     {
         [TestMethod]
-        [ExpectedException(typeof(ExpressionParseException))]
+        [ExpectedException(typeof(Exception))]
         public void ParseInvalidNumericThrowsException()
         {
             var str = "2.55DX";
@@ -93,7 +93,7 @@ namespace ExpressionEvaluator.Tests
         {
             var t = new TypeRegistry();
             t.RegisterDefaultTypes();
-            var _compiledExpr = new CompiledExpression("DateTime.Now.ToString('dd/MM/yyyy')") { TypeRegistry = t };
+            var _compiledExpr = new CompiledExpression("DateTime.Now.ToString(\"dd/MM/yyyy\")") { TypeRegistry = t };
             var expected = DateTime.Now.ToString("dd/MM/yyyy");
             var actual = _compiledExpr.Eval();
             Assert.AreEqual(expected, actual);

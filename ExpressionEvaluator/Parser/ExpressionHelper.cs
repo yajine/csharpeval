@@ -503,6 +503,7 @@ namespace ExpressionEvaluator.Parser
                     }
                 }
 
+                return method;
             }
 
             return null;
@@ -1401,6 +1402,52 @@ namespace ExpressionEvaluator.Parser
             return While(exitLabel, continueLabel, localVar, condition, newbody);
         }
 
+        public static Expression For(LabelTarget exitLabel, LabelTarget continueLabel, Expression initializer, Expression condition, ExpressionList iterator, Expression body)
+        {
+            var initializations = new List<Expression>();
+            var localVars = new List<ParameterExpression>();
+            var loopbody = new List<Expression>();
+
+            if (initializer != null)
+            {
+                if (initializer.GetType() == typeof(LocalVariableDeclarationExpression))
+                {
+                    var lvd = (LocalVariableDeclarationExpression) initializer;
+                    localVars.AddRange(lvd.Variables);
+                    initializations.AddRange(lvd.Initializers);
+                }
+                else
+                {
+                    initializations.AddRange(((ExpressionList)initializer).Expressions);
+                }
+            }
+
+            var loopblock = new List<Expression>();
+
+            if (condition != null)
+            {
+                loopblock.Add(Expression.IfThen(Expression.Not(condition), Expression.Goto(exitLabel)));
+            }
+
+            loopblock.Add(body);
+            loopblock.Add(Expression.Label(continueLabel));
+
+            if (iterator != null)
+            {
+                loopblock.AddRange(iterator.Expressions);
+            }
+
+            var loop = Expression.Loop(Expression.Block(loopblock));
+
+            loopbody.AddRange(initializations);
+            loopbody.Add(loop);
+            loopbody.Add(Expression.Label(exitLabel));
+
+            var block = Expression.Block(localVars, loopbody);
+            return block;
+        }
+
+
         public static Expression For(LabelTarget exitLabel, LabelTarget continueLabel, MultiStatement initializer, Expression condition, StatementList iterator, Expression body)
         {
             var initializations = new List<Expression>();
@@ -1452,7 +1499,7 @@ namespace ExpressionEvaluator.Parser
                             new Expression[] {
                                 body,
                                 Expression.Label(continueLabel),
-                                Expression.IfThen(boolean,Expression.Goto(breakTarget))
+                                Expression.IfThen(Expression.Not(boolean),Expression.Goto(breakTarget))
                             })),
                     Expression.Label(breakTarget)
                 });

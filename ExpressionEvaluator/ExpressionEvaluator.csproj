@@ -74,9 +74,11 @@
     <Compile Include="IDynamicObjectProvider.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Parser\AntlrParser.cs" />
+    <Compile Include="Parser\ArgumentExpression.cs" />
     <Compile Include="Parser\ErrorListener.cs" />
     <Compile Include="Parser\CompilationContext.cs" />
     <Compile Include="Parser\CSharpEvalVisitor.cs" />
+    <Compile Include="Parser\ExpressionList.cs" />
     <Compile Include="Parser\ExpressionParser.cs" />
     <Compile Include="Parser\Expressions\ApplicableFunctionMember.cs" />
     <Compile Include="Parser\Expressions\Argument.cs" />
@@ -109,6 +111,8 @@
     <Compile Include="Parser\Expressions\InitializerValue.cs" />
     <Compile Include="Parser\Expressions\MemberInitializer.cs" />
     <Compile Include="Parser\IAntlrParser.cs" />
+    <Compile Include="Parser\LocalVariableDeclarationExpression.cs" />
+    <Compile Include="Parser\LocalVariableDeclaratorExpression.cs" />
     <Compile Include="Parser\MethodInvocationContext.cs" />
     <Compile Include="Parser\MethodResolution.cs" />
     <Compile Include="Parser\NullLiteralType.cs" />
