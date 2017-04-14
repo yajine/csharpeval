@@ -7,14 +7,17 @@ using Antlr4.Runtime.Tree;
 using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
-{
-    public class CSharpEvalVisitor : CSharp4BaseVisitor<Expression>
+{ 
+    public partial class CSharpEvalVisitor : CSharp4BaseVisitor<Expression>
     {
         public TypeRegistry TypeRegistry { get; set; }
         public Expression Scope { get; set; }
         public CompilationContext CompilationContext { get; set; }
         public ParameterList ParameterList = new ParameterList();
         public CompilerState CompilerState = new CompilerState();
+        Stack<MethodInvocationContext> methodInvocationContextStack = new Stack<MethodInvocationContext>();
+        Stack<TypeInferenceBounds> typeInferenceBoundsStack = new Stack<TypeInferenceBounds>();
+
 
         public override Expression VisitSimple_name(CSharp4Parser.Simple_nameContext context)
         {
@@ -64,6 +67,38 @@ namespace ExpressionEvaluator.Parser
             // throw new UnknownIdentifierException(identifier);
         }
 
+
+        private ParameterExpression MakeParameterWithExpression(string typeName, string identifier, Expression expression)
+        {
+            Type type = null;
+
+            if (typeName == "var")
+            {
+                if (expression.Type.IsGenericType)
+                {
+                    type = expression.Type.GetGenericArguments()[0];
+                }
+                else if (expression.Type.IsArray)
+                {
+                    type = expression.Type.GetElementType();
+                }
+                else
+                {
+                    type = expression.Type;
+                }
+            }
+            else
+            {
+                type = GetType(typeName);
+            }
+
+            var parameter = Expression.Parameter(type, identifier);
+
+
+            return parameter;
+        }
+
+
         public Type GetType(string type)
         {
             object _type;
@@ -83,92 +118,6 @@ namespace ExpressionEvaluator.Parser
                 list.Expressions.Add(Visit(statement));
             }
             return list;
-        }
-
-        public override Expression VisitFor_statement(CSharp4Parser.For_statementContext context)
-        {
-            var breaklabel = CompilerState.PushBreak();
-            var continuelabel = CompilerState.PushContinue();
-
-            Expression condition = null;
-            IParseTree conditionTree;
-            ExpressionList iterator = null;
-            IParseTree iteratorTree;
-            Expression initializer = null;
-            IParseTree initializerTree;
-
-            if ((initializerTree = context.for_initializer()) != null)
-            {
-                initializer = Visit(initializerTree);
-                if (initializer.GetType() == typeof(LocalVariableDeclarationExpression))
-                {
-                    foreach (var initializerVariable in ((LocalVariableDeclarationExpression)initializer).Variables)
-                    {
-                        ParameterList.Add(initializerVariable);
-                    }
-                }
-            }
-
-
-            if ((conditionTree = context.for_condition()) != null)
-            {
-                condition = Visit(conditionTree);
-            }
-
-            if ((iteratorTree = context.for_iterator()) != null)
-            {
-                iterator = (ExpressionList)Visit(iteratorTree);
-            }
-
-            var body = Visit(context.embedded_statement());
-
-            var val = ExpressionHelper.For(breaklabel, continuelabel, initializer, condition, iterator, body);
-            CompilerState.PopContinue();
-            CompilerState.PopBreak();
-            return val;
-        }
-
-        public override Expression VisitForeach_statement(CSharp4Parser.Foreach_statementContext context)
-        {
-            var breaklabel = CompilerState.PushBreak();
-            var continuelabel = CompilerState.PushContinue();
-            var iterator = Visit(context.expression());
-
-            var typeName = context.local_variable_type().GetText();
-            Type type = null;
-
-            if (typeName == "var")
-            {
-                if (iterator.Type.IsGenericType)
-                {
-                    type = iterator.Type.GetGenericArguments()[0];
-                }
-                else if (iterator.Type.IsArray)
-                {
-                    type = iterator.Type.GetElementType();
-                }
-                else
-                {
-                    type = typeof(object);
-                }
-            }
-            else
-            {
-                type = GetType(typeName);
-            }
-
-            var parameter = Expression.Parameter(type, context.identifier().GetText());
-
-            ParameterList.Add(parameter);
-
-            // The parameter must have been parsed first and added to the parameterList before the body
-            // is parsed, otherwise it's usage as an identifier will not be recognized
-            var body = Visit(context.embedded_statement());
-
-            var retval = ExpressionHelper.ForEach(breaklabel, continuelabel, parameter, iterator, body);
-            CompilerState.PopContinue();
-            CompilerState.PopBreak();
-            return retval;
         }
 
 
@@ -300,9 +249,6 @@ namespace ExpressionEvaluator.Parser
             throw new InvalidOperationException();
         }
 
-        Stack<MethodInvocationContext> methodInvocationContextStack = new Stack<MethodInvocationContext>();
-        Stack<TypeInferenceBounds> typeInferenceBoundsStack = new Stack<TypeInferenceBounds>();
-
         public ParameterInfo CurrentParameterInfo { get; set; }
 
         public override Expression VisitIf_statement(CSharp4Parser.If_statementContext context)
@@ -323,40 +269,6 @@ namespace ExpressionEvaluator.Parser
             }
 
             return Expression.IfThenElse(boolExp, ifBodyExpression, Visit(elseBody));
-        }
-
-        public override Expression VisitContinue_statement(CSharp4Parser.Continue_statementContext context)
-        {
-            return CompilerState.Continue();
-        }
-
-        public override Expression VisitBreak_statement(CSharp4Parser.Break_statementContext context)
-        {
-            return CompilerState.Break();
-        }
-
-        public override Expression VisitWhile_statement(CSharp4Parser.While_statementContext context)
-        {
-            var breakTarget = CompilerState.PushBreak();
-            var continueTarget = CompilerState.PushContinue();
-            var expression = Visit(context.expression());
-            var body = Visit(context.embedded_statement());
-            var retval = ExpressionHelper.While(breakTarget, continueTarget, null, expression, body);
-            CompilerState.PopContinue();
-            CompilerState.PopBreak();
-            return retval;
-        }
-
-        public override Expression VisitDo_statement(CSharp4Parser.Do_statementContext context)
-        {
-            var breakTarget = CompilerState.PushBreak();
-            var continueTarget = CompilerState.PushContinue();
-            var expression = Visit(context.expression());
-            var body = Visit(context.embedded_statement());
-            var retval = ExpressionHelper.DoWhile(breakTarget, continueTarget, body, expression);
-            CompilerState.PopContinue();
-            CompilerState.PopBreak();
-            return retval;
         }
 
 
@@ -455,7 +367,7 @@ namespace ExpressionEvaluator.Parser
         public override Expression VisitStatement_list(CSharp4Parser.Statement_listContext context)
         {
             var expressions = new List<Expression>();
-
+            ParameterList.Push();
             foreach (var statement in context.statement())
             {
                 var ex = Visit(statement);
@@ -464,15 +376,20 @@ namespace ExpressionEvaluator.Parser
                     expressions.AddRange(((ExpressionList)ex).Expressions);
                 }
                 else
+                                if (ex.GetType() == typeof(LocalVariableDeclarationExpression))
+                {
+                    expressions.AddRange(((LocalVariableDeclarationExpression)ex).Initializers);
+                }
+                else
                 {
                     expressions.Add(ex);
                 }
             }
 
-            var variables = expressions.OfType<LocalVariableDeclarationExpression>().SelectMany(x => x.Variables).ToList();
-            var initializers = expressions.OfType<LocalVariableDeclarationExpression>().SelectMany(x => x.Initializers).ToList();
-            expressions.RemoveAll(x => x.GetType() == typeof(LocalVariableDeclarationExpression));
-            return Expression.Block(variables, initializers.Concat(expressions));
+            var variables = ParameterList.Current;
+            var retval =  Expression.Block(variables, expressions);
+            ParameterList.Pop();
+            return retval;
         }
 
         public override Expression VisitExpression_list(CSharp4Parser.Expression_listContext context)
@@ -488,25 +405,36 @@ namespace ExpressionEvaluator.Parser
         public override Expression VisitLocal_variable_declaration(CSharp4Parser.Local_variable_declarationContext context)
         {
             var list = new LocalVariableDeclarationExpression();
-            var type = context.local_variable_type().type().GetText();
-            Type t = null;
-            if (type != "var")
-            {
-                t = GetType(type);
-            }
+            var typeName = context.local_variable_type().type().GetText();
             var lvds = (ExpressionList)Visit(context.local_variable_declarators());
-            foreach (var localVarDeclarator in lvds.Expressions)
+
+            if (typeName != "var")
             {
-                var x = (LocalVariableDeclaratorExpression)localVarDeclarator;
-                t = t == null ? x.Expression.Type : t;
-                var variable = Expression.Parameter(t, x.Identifer);
-                list.Variables.Add(variable);
-                ParameterList.Add(variable);
-                if (x.Expression != null)
+                var type = GetType(typeName);
+                foreach (var localVarDeclarator in lvds.Expressions)
                 {
-                    list.Initializers.Add(Expression.Assign(variable, x.Expression));
+                    var x = (LocalVariableDeclaratorExpression)localVarDeclarator;
+                    var variable = Expression.Parameter(type, x.Identifer);
+                    ParameterList.Add(variable);
+                    if (x.Expression != null)
+                    {
+                        list.Initializers.Add(Expression.Assign(variable, x.Expression));
+                    }
                 }
             }
+            else
+            {
+                if (lvds.Expressions.Count > 1)
+                {
+                    throw new CompilerException("Implicitly-typed local variables cannot have multiple declarators");
+                }
+                var expression = (LocalVariableDeclaratorExpression) lvds.Expressions[0];
+                var variable = MakeParameterWithExpression(typeName, expression.Identifer, expression.Expression);
+                ParameterList.Add(variable);
+                list.Initializers.Add(Expression.Assign(variable, expression.Expression));
+
+            }
+
             return list;
         }
 
@@ -823,124 +751,6 @@ namespace ExpressionEvaluator.Parser
             return null;
         }
 
-        #region Equality Operators
-        public override Expression VisitEqualityExpression(CSharp4Parser.EqualityExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            switch (context.op.Type)
-            {
-                case CSharp4Parser.OP_EQ:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Equal);
-                case CSharp4Parser.OP_NE:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.NotEqual);
-            }
-            throw new InvalidOperationException();
-        }
-        #endregion
-
-        #region Conditional Operator
-        public override Expression VisitConditionalExpression(CSharp4Parser.ConditionalExpressionContext context)
-        {
-            var condition = Visit(context.expression(0));
-            var iftrue = Visit(context.expression(1));
-            var iffalse = Visit(context.expression(2));
-            return ExpressionHelper.Condition(condition, iftrue, iffalse);
-        }
-        #endregion
-
-        #region Bitwise Logical Operators
-        public override Expression VisitAndExpression(CSharp4Parser.AndExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.And);
-        }
-
-        public override Expression VisitXorExpression(CSharp4Parser.XorExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.ExclusiveOr);
-        }
-
-        public override Expression VisitOrExpression(CSharp4Parser.OrExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
-        }
-        #endregion
-
-        #region Conditional Logical Operators
-        public override Expression VisitConditionalAndExpression(CSharp4Parser.ConditionalAndExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.AndAlso);
-        }
-
-        public override Expression VisitConditionalOrExpression(CSharp4Parser.ConditionalOrExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
-        }
-        #endregion
-
-        #region Binary Operators
-
-        public override Expression VisitMultiplicativeExpression(CSharp4Parser.MultiplicativeExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            switch (context.op.Type)
-            {
-                case CSharp4Parser.STAR:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Multiply);
-                case CSharp4Parser.DIV:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Divide);
-                case CSharp4Parser.PERCENT:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Modulo);
-            }
-            throw new InvalidOperationException();
-        }
-
-        public override Expression VisitAdditiveExpression(CSharp4Parser.AdditiveExpressionContext context)
-        {
-            var lex = Visit(context.expression(0));
-            var rex = Visit(context.expression(1));
-            switch (context.op.Type)
-            {
-                case CSharp4Parser.PLUS:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Add);
-
-                case CSharp4Parser.MINUS:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Subtract);
-            }
-            throw new InvalidOperationException();
-        }
-
-        #endregion
-
-        #region Unary Operators
-
-        public override Expression VisitNegateExpression(CSharp4Parser.NegateExpressionContext context)
-        {
-            return Expression.Negate(Visit(context.unary_expression()));
-        }
-
-        public override Expression VisitNotExpression(CSharp4Parser.NotExpressionContext context)
-        {
-            return Expression.Not(Visit(context.unary_expression()));
-        }
-
-        public override Expression VisitComplementExpression(CSharp4Parser.ComplementExpressionContext context)
-        {
-            return Expression.OnesComplement(Visit(context.unary_expression()));
-        }
-
-        #endregion
 
         public override Expression VisitParenExpression(CSharp4Parser.ParenExpressionContext context)
         {

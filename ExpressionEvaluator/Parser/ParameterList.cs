@@ -7,12 +7,28 @@ namespace ExpressionEvaluator.Parser
 {
     public class ParameterList
     {
-        private readonly List<ParameterExpression> _parameters = new List<ParameterExpression>();
+        private readonly Stack<List<ParameterExpression>> _parameterListStack = new Stack<List<ParameterExpression>>();
+        private List<ParameterExpression> _parameters = new List<ParameterExpression>();
+
+        public List<ParameterExpression> Current
+        {
+            get { return _parameters; }
+        }
+
+        public void Push()
+        {
+            _parameterListStack.Push(_parameters);
+            _parameters = new List<ParameterExpression>();
+        }
+
+        public void Pop()
+        {
+            _parameters = _parameterListStack.Pop();
+        }
 
         public void Add(ParameterExpression parameter)
         {
-            ParameterExpression p;
-            if (!ParameterLookup.TryGetValue(parameter.Name, out p))
+            if (_parameterListStack.SelectMany(x => x.Select(y => y)).Concat(_parameters).All(p => p.Name != parameter.Name))
             {
                 _parameters.Add(parameter);
             }
@@ -31,11 +47,13 @@ namespace ExpressionEvaluator.Parser
             }
         }
 
-        private Dictionary<string, ParameterExpression> ParameterLookup { get { return _parameters.ToDictionary(expression => expression.Name); } }
 
         public bool TryGetValue(string name, out ParameterExpression parameter)
         {
-            return ParameterLookup.TryGetValue(name, out parameter);
+            parameter = _parameterListStack.SelectMany(x => x.Select(y => y))
+                .Concat(_parameters)
+                .SingleOrDefault(p => p.Name == name);
+            return parameter != null;
         }
 
         public void Remove(List<ParameterExpression> list)
@@ -44,7 +62,7 @@ namespace ExpressionEvaluator.Parser
             {
                 ParameterExpression p;
 
-                if (ParameterLookup.TryGetValue(parameterExpression.Name, out p))
+                if (TryGetValue(parameterExpression.Name, out p))
                 {
                     _parameters.Remove(parameterExpression);
                 }

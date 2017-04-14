@@ -75,6 +75,8 @@
     <Compile Include="ParseException.cs" />
     <Compile Include="Parser\AntlrParser.cs" />
     <Compile Include="Parser\ArgumentExpression.cs" />
+    <Compile Include="Parser\CSharpEvalVisitor.Operators.cs" />
+    <Compile Include="Parser\CSharpEvalVisitor.Loops.cs" />
     <Compile Include="Parser\ErrorListener.cs" />
     <Compile Include="Parser\CompilationContext.cs" />
     <Compile Include="Parser\CSharpEvalVisitor.cs" />
