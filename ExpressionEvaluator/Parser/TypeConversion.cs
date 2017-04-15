@@ -6,11 +6,6 @@ using Converter = System.Convert;
 
 namespace ExpressionEvaluator.Parser
 {
-    internal class InvalidNumericPromotionException : Exception
-    {
-
-    }
-
     internal class TypeConversion
     {
         private static Dictionary<Type, List<Type>> ImplicitNumericConversions = new Dictionary<Type, List<Type>>();
@@ -242,7 +237,7 @@ namespace ExpressionEvaluator.Parser
         // This conversion produces the null value (§4.1.10) of the given nullable type.
         public static bool NullLiteralConverion(ref Expression src, Type destType)
         {
-            if (src.NodeType == ExpressionType.Constant && src.Type == typeof(object) && ((ConstantExpression)src).Value == null && destType.IsNullable())
+            if (src.NodeType == System.Linq.Expressions.ExpressionType.Constant && src.Type == typeof(object) && ((ConstantExpression)src).Value == null && destType.IsNullable())
             {
                 src = Expression.Constant(Activator.CreateInstance(destType), destType);
                 return true;
@@ -277,7 +272,7 @@ namespace ExpressionEvaluator.Parser
         public static bool ImplicitConstantConversion(ref Expression src, Type destType)
         {
             //An implicit constant expression conversion permits the following conversions:
-            if (src.NodeType == ExpressionType.Constant)
+            if (src.NodeType == System.Linq.Expressions.ExpressionType.Constant)
             {
                 //•	A constant-expression (§7.19) of type int can be converted to type sbyte, byte, short, ushort, uint, or ulong, provided the value of the constant-expression is within the range of the destination type.
                 if (src.Type == typeof(int))

@@ -48,17 +48,17 @@ namespace ExpressionEvaluator.Parser
 
             switch (ExpressionType)
             {
-                case CompiledExpressionType.Expression:
+                case ExpressionEvaluator.ExpressionType.Expression:
                     var expression = parser.expression();
                     break;
-                case CompiledExpressionType.Statement:
+                case ExpressionEvaluator.ExpressionType.Statement:
                     var statement = parser.statement();
                     //if (statement != null)
                     //{
                     //    Expression = statement.Expression;
                     //}
                     break;
-                case CompiledExpressionType.StatementList:
+                case ExpressionEvaluator.ExpressionType.StatementList:
                     var statements = parser.statement_list();
                     //Expression = statements.ToBlock();
                     break;
@@ -68,7 +68,7 @@ namespace ExpressionEvaluator.Parser
 
         public object Global { get; set; }
 
-        public CompiledExpressionType ExpressionType { get; set; }
+        public ExpressionType ExpressionType { get; set; }
 
         public List<ParameterExpression> ExternalParameters { get; set; }
         public Type ReturnType { get; set; }

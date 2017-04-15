@@ -19,9 +19,9 @@ namespace ExpressionEvaluator.Parser
             switch (context.op.Type)
             {
                 case CSharp4Parser.OP_EQ:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Equal);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Equal);
                 case CSharp4Parser.OP_NE:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.NotEqual);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.NotEqual);
             }
             throw new InvalidOperationException();
         }
@@ -42,21 +42,21 @@ namespace ExpressionEvaluator.Parser
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.And);
+            return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.And);
         }
 
         public override Expression VisitXorExpression(CSharp4Parser.XorExpressionContext context)
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.ExclusiveOr);
+            return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.ExclusiveOr);
         }
 
         public override Expression VisitOrExpression(CSharp4Parser.OrExpressionContext context)
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Or);
+            return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Or);
         }
         #endregion
 
@@ -65,14 +65,14 @@ namespace ExpressionEvaluator.Parser
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.AndAlso);
+            return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.AndAlso);
         }
 
         public override Expression VisitConditionalOrExpression(CSharp4Parser.ConditionalOrExpressionContext context)
         {
             var lex = Visit(context.expression(0));
             var rex = Visit(context.expression(1));
-            return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.OrElse);
+            return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.OrElse);
         }
         #endregion
 
@@ -85,11 +85,11 @@ namespace ExpressionEvaluator.Parser
             switch (context.op.Type)
             {
                 case CSharp4Parser.STAR:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Multiply);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Multiply);
                 case CSharp4Parser.DIV:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Divide);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Divide);
                 case CSharp4Parser.PERCENT:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Modulo);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Modulo);
             }
             throw new InvalidOperationException();
         }
@@ -101,10 +101,10 @@ namespace ExpressionEvaluator.Parser
             switch (context.op.Type)
             {
                 case CSharp4Parser.PLUS:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Add);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Add);
 
                 case CSharp4Parser.MINUS:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.Subtract);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.Subtract);
             }
             throw new InvalidOperationException();
         }

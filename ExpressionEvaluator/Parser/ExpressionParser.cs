@@ -22,7 +22,7 @@ namespace ExpressionEvaluator.Parser
         public Dictionary<string, Type> DynamicTypeLookup { get; set; }
         public Expression Expression { get; set; }
         public string ExpressionString { get; set; }
-        public CompiledExpressionType ExpressionType { get; set; }
+        public ExpressionType ExpressionType { get; set; }
         public List<ParameterExpression> ExternalParameters { get; set; }
         public object Global { get; set; }
         public Type ReturnType { get; set; }
@@ -43,13 +43,13 @@ namespace ExpressionEvaluator.Parser
                 IParseTree tree = null;
                 switch (ExpressionType)
                 {
-                    case CompiledExpressionType.Expression:
+                    case ExpressionType.Expression:
                         tree = parser.expression();
                         break;
-                    case CompiledExpressionType.Statement:
+                    case ExpressionType.Statement:
                         tree = parser.statement();
                         break;
-                    case CompiledExpressionType.StatementList:
+                    case ExpressionType.StatementList:
                         tree = parser.statement_list();
                         break;
                 }

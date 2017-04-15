@@ -1,6 +1,6 @@
 ﻿namespace ExpressionEvaluator
 {
-    public enum CompiledExpressionType
+    public enum ExpressionType
     {
         Expression = 0,
         Statement = 1,

@@ -25,7 +25,7 @@ namespace ExpressionEvaluator.Tests
             try
             {
                 var str = "var x = helper.availableMethod(someparameter);\r\nvar y = helper.unavailableMethod(someparameter);";
-                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = CompiledExpressionType.StatementList };
+                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = ExpressionType.StatementList };
                 var helper = new Helper();
                 var someparameter = 1;
                 c.TypeRegistry.RegisterSymbol("helper", helper);
@@ -33,7 +33,7 @@ namespace ExpressionEvaluator.Tests
                 var ret = c.Eval();
                 Assert.Fail();
             }
-            catch (ExpressionParseException exception)
+            catch (CompilerException exception)
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
                 var m = regex.Match(exception.Message);
@@ -48,14 +48,14 @@ namespace ExpressionEvaluator.Tests
             try
             {
                 var str = "var x = helper.availableProperty;\r\nvar y = helper.unavailableProperty;";
-                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = CompiledExpressionType.StatementList };
+                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = ExpressionType.StatementList };
                 var helper = new Helper() { availableProperty = 1 };
                 var someparameter = 1;
                 c.TypeRegistry.RegisterSymbol("helper", helper);
                 var ret = c.Eval();
                 Assert.Fail();
             }
-            catch (ExpressionParseException exception)
+            catch (CompilerException exception)
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
                 var m = regex.Match(exception.Message);
@@ -410,7 +410,7 @@ namespace ExpressionEvaluator.Tests
         public void Escaping()
         {
             var x = "//table[@id=\"ct_lookup\"]/descendant::tr[last()]/th[2]/descendant::button[@type=\"submit\"]";
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             var w = CreateEmbeddedString(x);
             Assert.AreNotEqual(x, w);
             c.StringToParse = "var x = \"" + w + "\";";
@@ -424,7 +424,7 @@ namespace ExpressionEvaluator.Tests
         public void EmbeddedUnicodeStrings()
         {
             var x = "\u8ba1\u7b97\u673a\u2022\u7f51\u7edc\u2022\u6280\u672f\u7c7b";
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             c.StringToParse = "var x = \"\\u8ba1\\u7b97\\u673a\\u2022\\u7f51\\u7edc\\u2022\\u6280\\u672f\\u7c7b\";";
             var z = new Z { z = x };
             var func = c.ScopeCompile<Z>();
@@ -436,7 +436,7 @@ namespace ExpressionEvaluator.Tests
         public void EmbeddedHexStrings()
         {
             var x = "\x010\x045\x32\x12\x1002\x444\x333\x232\x11\x0";
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             c.StringToParse = "var x = \"\\x010\\x045\\x32\\x12\\x1002\\x444\\x333\\x232\\x11\\x0\";";
             var z = new Z { z = x };
             var func = c.ScopeCompile<Z>();
@@ -448,7 +448,7 @@ namespace ExpressionEvaluator.Tests
         public void EmbeddedEscapeStrings()
         {
             var x = "\a\b\f\r\n\t\v\0";
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             c.StringToParse = "var x = \"\\a\\b\\f\\r\\n\\t\\v\\0\";";
             var z = new Z { z = x };
             var func = c.ScopeCompile<Z>();
@@ -460,7 +460,7 @@ namespace ExpressionEvaluator.Tests
         [ExpectedException(typeof(Exception))]
         public void InvalidEscapeLiteral()
         {
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             c.StringToParse = "var x = \"\\c\";";
             var result = c.Eval();
         }
@@ -469,7 +469,7 @@ namespace ExpressionEvaluator.Tests
         [ExpectedException(typeof(Exception))]
         public void InvalidUnicodeLiteral()
         {
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             c.StringToParse = "var x = \"\\u123\";";
             var result = c.Eval();
         }
@@ -478,7 +478,7 @@ namespace ExpressionEvaluator.Tests
         [ExpectedException(typeof(Exception))]
         public void InvalidHexiteral()
         {
-            var c = new CompiledExpression() { ExpressionType = CompiledExpressionType.StatementList };
+            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
             c.StringToParse = "var x = \"\\x\";";
             var result = c.Eval();
         }
@@ -632,7 +632,7 @@ namespace ExpressionEvaluator.Tests
                     var expression = new CompiledExpression<dynamic>(expr);
                     //var result = compiled.ScopeCompile<MyContext>();
 
-                    expression.ExpressionType = CompiledExpressionType.StatementList;
+                    expression.ExpressionType = ExpressionType.StatementList;
                     expression.TypeRegistry = new TypeRegistry();
                     expression.TypeRegistry.RegisterDefaultTypes();
                     expression.TypeRegistry.RegisterSymbol("ctx", new MyContext());

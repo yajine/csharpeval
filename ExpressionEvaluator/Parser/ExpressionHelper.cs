@@ -163,7 +163,7 @@ namespace ExpressionEvaluator.Parser
             var type = le.Type;
             var isDynamic = type.IsDynamicOrObject();
 
-            if (le.NodeType == ExpressionType.Call)
+            if (le.NodeType == System.Linq.Expressions.ExpressionType.Call)
             {
                 var mc = (MethodCallExpression)le;
                 if (mc.Method.Name == "getVar")
@@ -182,11 +182,11 @@ namespace ExpressionEvaluator.Parser
                             dynamicTypeLookup.Add((string)ce.Value, re.Type);
                         }
                     }
-                    return GetMethod(mc.Object, method1, args1.Select(x => new Argument() { Expression = x }), false, null);
+                    return GetMethod(mc.Object, method1, args1.Select(x => new ArgumentExpression() { Expression = x }).ToList(), false, null);
                 }
             }
 
-            if (type.IsDynamic() || le.NodeType == ExpressionType.Dynamic)
+            if (type.IsDynamic() || le.NodeType == System.Linq.Expressions.ExpressionType.Dynamic)
             {
                 var dle = (DynamicExpression)le;
                 var membername = ((GetMemberBinder)dle.Binder).Name;
@@ -231,7 +231,7 @@ namespace ExpressionEvaluator.Parser
             {
                 var ei = args[i];
                 var Ti = T[i];
-                if (ei.NodeType == ExpressionType.Lambda)
+                if (ei.NodeType == System.Linq.Expressions.ExpressionType.Lambda)
                 {
                     var lambda = ((LambdaExpression)ei);
                     // 7.5.2.7 Explicit argument type inferences
@@ -326,7 +326,7 @@ namespace ExpressionEvaluator.Parser
 
         private static bool IsDynamic(Expression expr)
         {
-            return (expr.NodeType == ExpressionType.Dynamic) || expr.Type.IsDynamic() || (expr.NodeType == ExpressionType.Call && ((MethodCallExpression)expr).Method.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(DynamicAttribute), true).Length > 0);
+            return (expr.NodeType == System.Linq.Expressions.ExpressionType.Dynamic) || expr.Type.IsDynamic() || (expr.NodeType == System.Linq.Expressions.ExpressionType.Call && ((MethodCallExpression)expr).Method.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(DynamicAttribute), true).Length > 0);
         }
 
         public static Expression GetProperty(Expression le, string membername)
@@ -423,7 +423,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression GetMethod(Expression le,
             TypeOrGeneric member,
-            IEnumerable<Argument> args,
+            IList<ArgumentExpression> args,
             bool isCall,
             CompilationContext context
             )
@@ -482,7 +482,7 @@ namespace ExpressionEvaluator.Parser
 
                 if (method == null)
                 {
-                    var extensionmethodArgs = new List<Argument>() { new Argument() { Expression = instance } };
+                    var extensionmethodArgs = new List<ArgumentExpression>() { new ArgumentExpression() { Expression = instance } };
                     extensionmethodArgs.AddRange(args);
 
                     foreach (var @namespace in context.Namespaces)
@@ -513,7 +513,7 @@ namespace ExpressionEvaluator.Parser
 
 
         public static Expression MethodInvokeExpression(Type type, Expression instance, TypeOrGeneric member,
-                                                   IEnumerable<Argument> args)
+                                                   IList<ArgumentExpression> args)
         {
             var candidates = MethodResolution.GetCandidateMembers(type, member.Identifier);
 
@@ -522,7 +522,7 @@ namespace ExpressionEvaluator.Parser
             return ResolveApplicableMembers(type, instance, applicableMembers, member, args);
         }
 
-        public static Expression ResolveApplicableMembers(Type type, Expression instance, IEnumerable<ApplicableFunctionMember> applicableMembers, TypeOrGeneric member, IEnumerable<Argument> args)
+        public static Expression ResolveApplicableMembers(Type type, Expression instance, IEnumerable<ApplicableFunctionMember> applicableMembers, TypeOrGeneric member, IList<ArgumentExpression> args)
         {
             Type[] typeArgs = null;
             var genericMethods = applicableMembers.Where(x => x.Member.IsGenericMethod).ToList();
@@ -1033,7 +1033,7 @@ namespace ExpressionEvaluator.Parser
             return Expression.Constant(token, typeof(string));
         }
 
-        public static Expression UnaryOperator(Expression le, ExpressionType expressionType)
+        public static Expression UnaryOperator(Expression le, System.Linq.Expressions.ExpressionType expressionType)
         {
             // perform implicit conversion on known types
 
@@ -1047,16 +1047,16 @@ namespace ExpressionEvaluator.Parser
             }
         }
 
-        public static Expression BinaryOperator(Expression le, Expression re, ExpressionType expressionType)
+        public static Expression BinaryOperator(Expression le, Expression re, System.Linq.Expressions.ExpressionType expressionType)
         {
             // perform implicit conversion on known types
 
             if (IsDynamic(le) || IsDynamic(re))
             {
-                if (expressionType == ExpressionType.OrElse)
+                if (expressionType == System.Linq.Expressions.ExpressionType.OrElse)
                 {
                     le = Expression.IsTrue(Expression.Convert(le, typeof(bool)));
-                    expressionType = ExpressionType.Or;
+                    expressionType = System.Linq.Expressions.ExpressionType.Or;
                     return Expression.Condition(le, Expression.Constant(true),
                                                 Expression.Convert(
                                                     DynamicBinaryOperator(Expression.Constant(false), re, expressionType),
@@ -1064,10 +1064,10 @@ namespace ExpressionEvaluator.Parser
                 }
 
 
-                if (expressionType == ExpressionType.AndAlso)
+                if (expressionType == System.Linq.Expressions.ExpressionType.AndAlso)
                 {
                     le = Expression.IsFalse(Expression.Convert(le, typeof(bool)));
-                    expressionType = ExpressionType.And;
+                    expressionType = System.Linq.Expressions.ExpressionType.And;
                     return Expression.Condition(le, Expression.Constant(false),
                                                 Expression.Convert(
                                                     DynamicBinaryOperator(Expression.Constant(true), re, expressionType),
@@ -1093,42 +1093,42 @@ namespace ExpressionEvaluator.Parser
             }
         }
 
-        public static Expression GetUnaryOperator(Expression le, ExpressionType expressionType)
+        public static Expression GetUnaryOperator(Expression le, System.Linq.Expressions.ExpressionType expressionType)
         {
             switch (expressionType)
             {
 
-                case ExpressionType.Negate:
+                case System.Linq.Expressions.ExpressionType.Negate:
                     return Expression.Negate(le);
 
-                case ExpressionType.UnaryPlus:
+                case System.Linq.Expressions.ExpressionType.UnaryPlus:
                     return Expression.UnaryPlus(le);
 
-                case ExpressionType.NegateChecked:
+                case System.Linq.Expressions.ExpressionType.NegateChecked:
                     return Expression.NegateChecked(le);
 
-                case ExpressionType.Not:
+                case System.Linq.Expressions.ExpressionType.Not:
                     return Expression.Not(le);
 
-                case ExpressionType.Decrement:
+                case System.Linq.Expressions.ExpressionType.Decrement:
                     return Expression.Decrement(le);
 
-                case ExpressionType.Increment:
+                case System.Linq.Expressions.ExpressionType.Increment:
                     return Expression.Increment(le);
 
-                case ExpressionType.OnesComplement:
+                case System.Linq.Expressions.ExpressionType.OnesComplement:
                     return Expression.OnesComplement(le);
 
-                case ExpressionType.PreIncrementAssign:
+                case System.Linq.Expressions.ExpressionType.PreIncrementAssign:
                     return Expression.PreIncrementAssign(le);
 
-                case ExpressionType.PreDecrementAssign:
+                case System.Linq.Expressions.ExpressionType.PreDecrementAssign:
                     return Expression.PreDecrementAssign(le);
 
-                case ExpressionType.PostIncrementAssign:
+                case System.Linq.Expressions.ExpressionType.PostIncrementAssign:
                     return Expression.PostIncrementAssign(le);
 
-                case ExpressionType.PostDecrementAssign:
+                case System.Linq.Expressions.ExpressionType.PostDecrementAssign:
                     return Expression.PostDecrementAssign(le);
 
                 default:
@@ -1136,113 +1136,113 @@ namespace ExpressionEvaluator.Parser
             }
         }
 
-        public static Expression GetBinaryOperator(Expression le, Expression re, ExpressionType expressionType)
+        public static Expression GetBinaryOperator(Expression le, Expression re, System.Linq.Expressions.ExpressionType expressionType)
         {
             switch (expressionType)
             {
-                case ExpressionType.Add:
+                case System.Linq.Expressions.ExpressionType.Add:
                     return Add(le, re);
 
-                case ExpressionType.And:
+                case System.Linq.Expressions.ExpressionType.And:
                     return Expression.And(le, re);
 
-                case ExpressionType.AndAlso:
+                case System.Linq.Expressions.ExpressionType.AndAlso:
                     return Expression.AndAlso(le, re);
 
-                case ExpressionType.Coalesce:
+                case System.Linq.Expressions.ExpressionType.Coalesce:
                     return Expression.Coalesce(le, re);
 
-                case ExpressionType.Divide:
+                case System.Linq.Expressions.ExpressionType.Divide:
                     return Expression.Divide(le, re);
 
-                case ExpressionType.Equal:
+                case System.Linq.Expressions.ExpressionType.Equal:
                     return Expression.Equal(le, re);
 
-                case ExpressionType.ExclusiveOr:
+                case System.Linq.Expressions.ExpressionType.ExclusiveOr:
                     return Expression.ExclusiveOr(le, re);
 
-                case ExpressionType.GreaterThan:
+                case System.Linq.Expressions.ExpressionType.GreaterThan:
                     return Expression.GreaterThan(le, re);
 
-                case ExpressionType.GreaterThanOrEqual:
+                case System.Linq.Expressions.ExpressionType.GreaterThanOrEqual:
                     return Expression.GreaterThanOrEqual(le, re);
 
-                case ExpressionType.LeftShift:
+                case System.Linq.Expressions.ExpressionType.LeftShift:
                     return Expression.LeftShift(le, re);
 
-                case ExpressionType.LessThan:
+                case System.Linq.Expressions.ExpressionType.LessThan:
                     return Expression.LessThan(le, re);
 
-                case ExpressionType.LessThanOrEqual:
+                case System.Linq.Expressions.ExpressionType.LessThanOrEqual:
                     return Expression.LessThanOrEqual(le, re);
 
-                case ExpressionType.Modulo:
+                case System.Linq.Expressions.ExpressionType.Modulo:
                     return Expression.Modulo(le, re);
 
-                case ExpressionType.Multiply:
+                case System.Linq.Expressions.ExpressionType.Multiply:
                     return Expression.Multiply(le, re);
 
-                case ExpressionType.NotEqual:
+                case System.Linq.Expressions.ExpressionType.NotEqual:
                     return Expression.NotEqual(le, re);
 
-                case ExpressionType.Or:
+                case System.Linq.Expressions.ExpressionType.Or:
                     return Expression.Or(le, re);
 
-                case ExpressionType.OrElse:
+                case System.Linq.Expressions.ExpressionType.OrElse:
                     return Expression.OrElse(le, re);
 
-                case ExpressionType.Power:
+                case System.Linq.Expressions.ExpressionType.Power:
                     return Expression.Power(le, re);
 
-                case ExpressionType.RightShift:
+                case System.Linq.Expressions.ExpressionType.RightShift:
                     return Expression.RightShift(le, re);
 
-                case ExpressionType.Subtract:
+                case System.Linq.Expressions.ExpressionType.Subtract:
                     return Expression.Subtract(le, re);
 
-                case ExpressionType.Assign:
+                case System.Linq.Expressions.ExpressionType.Assign:
                     return Expression.Assign(le, re);
 
-                case ExpressionType.AddAssign:
+                case System.Linq.Expressions.ExpressionType.AddAssign:
                     return Expression.AddAssign(le, re);
 
-                case ExpressionType.AndAssign:
+                case System.Linq.Expressions.ExpressionType.AndAssign:
                     return Expression.AndAssign(le, re);
 
-                case ExpressionType.DivideAssign:
+                case System.Linq.Expressions.ExpressionType.DivideAssign:
                     return Expression.DivideAssign(le, re);
 
-                case ExpressionType.ExclusiveOrAssign:
+                case System.Linq.Expressions.ExpressionType.ExclusiveOrAssign:
                     return Expression.ExclusiveOrAssign(le, re);
 
-                case ExpressionType.LeftShiftAssign:
+                case System.Linq.Expressions.ExpressionType.LeftShiftAssign:
                     return Expression.LeftShiftAssign(le, re);
 
-                case ExpressionType.ModuloAssign:
+                case System.Linq.Expressions.ExpressionType.ModuloAssign:
                     return Expression.ModuloAssign(le, re);
 
-                case ExpressionType.MultiplyAssign:
+                case System.Linq.Expressions.ExpressionType.MultiplyAssign:
                     return Expression.MultiplyAssign(le, re);
 
-                case ExpressionType.OrAssign:
+                case System.Linq.Expressions.ExpressionType.OrAssign:
                     return Expression.OrAssign(le, re);
 
-                case ExpressionType.PowerAssign:
+                case System.Linq.Expressions.ExpressionType.PowerAssign:
                     return Expression.PowerAssign(le, re);
 
-                case ExpressionType.RightShiftAssign:
+                case System.Linq.Expressions.ExpressionType.RightShiftAssign:
                     return Expression.RightShiftAssign(le, re);
 
-                case ExpressionType.SubtractAssign:
+                case System.Linq.Expressions.ExpressionType.SubtractAssign:
                     return Expression.SubtractAssign(le, re);
 
-                case ExpressionType.AddAssignChecked:
+                case System.Linq.Expressions.ExpressionType.AddAssignChecked:
                     return Expression.AddAssignChecked(le, re);
 
-                case ExpressionType.MultiplyAssignChecked:
+                case System.Linq.Expressions.ExpressionType.MultiplyAssignChecked:
                     return Expression.MultiplyAssignChecked(le, re);
 
-                case ExpressionType.SubtractAssignChecked:
+                case System.Linq.Expressions.ExpressionType.SubtractAssignChecked:
                     return Expression.SubtractAssignChecked(le, re);
 
                 default:
@@ -1250,7 +1250,7 @@ namespace ExpressionEvaluator.Parser
             }
         }
 
-        private static Expression DynamicUnaryOperator(Expression le, ExpressionType expressionType)
+        private static Expression DynamicUnaryOperator(Expression le, System.Linq.Expressions.ExpressionType expressionType)
         {
             var expArgs = new List<Expression>() { le };
 
@@ -1264,7 +1264,7 @@ namespace ExpressionEvaluator.Parser
             return Expression.Dynamic(binderM, typeof(object), expArgs);
         }
 
-        private static Expression DynamicBinaryOperator(Expression le, Expression re, ExpressionType expressionType)
+        private static Expression DynamicBinaryOperator(Expression le, Expression re, System.Linq.Expressions.ExpressionType expressionType)
         {
             var expArgs = new List<Expression>() { le, re };
 
@@ -1282,11 +1282,11 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression Condition(Expression condition, Expression ifTrue, Expression ifFalse)
         {
-            if (condition.NodeType == ExpressionType.Dynamic)
+            if (condition.NodeType == System.Linq.Expressions.ExpressionType.Dynamic)
             {
                 var expArgs = new List<Expression>() { condition };
 
-                var binderM = Binder.UnaryOperation(CSharpBinderFlags.None, ExpressionType.IsTrue, condition.Type,
+                var binderM = Binder.UnaryOperation(CSharpBinderFlags.None, System.Linq.Expressions.ExpressionType.IsTrue, condition.Type,
                                                 new CSharpArgumentInfo[]
                                                     {
                                                         CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
@@ -1316,43 +1316,6 @@ namespace ExpressionEvaluator.Parser
             return Expression.New(constructorInfo, argumentList.ArgumentList.Select(x => x.Expression));
         }
 
-        public static Expression New(Type t, IEnumerable<Argument> arguments, ObjectOrCollectionInitializer initializer)
-        {
-            ConstructorInfo constructorInfo;
-
-            if (arguments == null)
-            {
-                var p = t.GetConstructors();
-                constructorInfo = p.First(x => !x.GetParameters().Any());
-
-                IEnumerable<MemberInfo> memberInfos = null;
-                if (memberInfos == null)
-                {
-                    return Expression.New(constructorInfo, null);
-                }
-                else
-                {
-                    return Expression.New(constructorInfo, null, memberInfos);
-                }
-            }
-            else
-            {
-                constructorInfo = t.GetConstructor(arguments.Select(arg => arg.Expression.Type).ToArray());
-
-                IEnumerable<MemberInfo> memberInfos = null;
-                if (memberInfos == null)
-                {
-                    return Expression.New(constructorInfo, arguments.Select(x => x.Expression));
-                }
-                else
-                {
-                    return Expression.New(constructorInfo, arguments.Select(x => x.Expression), memberInfos);
-                }
-            }
-
-
-        }
-
         public static Expression Switch(LabelTarget breakTarget, Expression switchCase, List<SwitchCase> switchBlock)
         {
             var defaultCase = switchBlock.SingleOrDefault(x => x.TestValues[0].Type == typeof(void));
@@ -1360,9 +1323,9 @@ namespace ExpressionEvaluator.Parser
 
             foreach (var @case in cases)
             {
-                if (@case.Body.NodeType != ExpressionType.Block) continue;
+                if (@case.Body.NodeType != System.Linq.Expressions.ExpressionType.Block) continue;
                 var caseBlock = (BlockExpression)@case.Body;
-                if (caseBlock.Expressions.Last().NodeType != ExpressionType.Goto)
+                if (caseBlock.Expressions.Last().NodeType != System.Linq.Expressions.ExpressionType.Goto)
                 {
                     throw new Exception("Break statement is missing");
                 }
@@ -1388,16 +1351,16 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ForEach(LabelTarget exitLabel, LabelTarget continueLabel, ParameterExpression parameter, Expression iterator, Expression body)
         {
-            var enumerator = GetMethod(iterator, new TypeOrGeneric() { Identifier = "GetEnumerator" }, new List<Argument>(), false, null);
+            var enumerator = GetMethod(iterator, new TypeOrGeneric() { Identifier = "GetEnumerator" }, new List<ArgumentExpression>(), false, null);
 
             var enumParam = Expression.Variable(enumerator.Type);
             var assign = Expression.Assign(enumParam, enumerator);
 
-            var localVar = new LocalVariableDeclaration();
+            var localVar = new LocalVariableDeclarationExpression();
             localVar.Variables.Add(enumParam);
             localVar.Initializers.Add(assign);
 
-            var condition = GetMethod(enumParam, new TypeOrGeneric() { Identifier = "MoveNext" }, new List<Argument>(), false, null);
+            var condition = GetMethod(enumParam, new TypeOrGeneric() { Identifier = "MoveNext" }, new List<ArgumentExpression>(), false, null);
 
             var expressions = new List<Expression>();
             var variables = new List<ParameterExpression>();
@@ -1462,50 +1425,7 @@ namespace ExpressionEvaluator.Parser
             var block = Expression.Block(localVars, loopbody);
             return block;
         }
-
-
-        public static Expression For(LabelTarget exitLabel, LabelTarget continueLabel, MultiStatement initializer, Expression condition, StatementList iterator, Expression body)
-        {
-            var initializations = new List<Expression>();
-            var localVars = new List<ParameterExpression>();
-            var loopbody = new List<Expression>();
-
-            if (initializer != null)
-            {
-                if (initializer.GetType() == typeof(LocalVariableDeclaration))
-                {
-                    var t = (LocalVariableDeclaration)initializer;
-                    localVars.AddRange(t.Variables);
-                    initializations.AddRange(t.Initializers);
-                }
-            }
-
-
-            var loopblock = new List<Expression>();
-
-            if (condition != null)
-            {
-                loopblock.Add(Expression.IfThen(Expression.Not(condition), Expression.Goto(exitLabel)));
-            }
-
-            loopblock.Add(body);
-            loopblock.Add(Expression.Label(continueLabel));
-
-            if (iterator != null)
-            {
-                loopblock.AddRange(iterator.Statements.Select(x => x.Expression));
-            }
-
-            var loop = Expression.Loop(Expression.Block(loopblock));
-
-            loopbody.AddRange(initializations);
-            loopbody.Add(loop);
-            loopbody.Add(Expression.Label(exitLabel));
-
-            var block = Expression.Block(localVars, loopbody);
-            return block;
-        }
-
+        
         public static Expression DoWhile(LabelTarget breakTarget, LabelTarget continueLabel, Expression body, Expression boolean)
         {
             var block = Expression.Block(
@@ -1522,7 +1442,7 @@ namespace ExpressionEvaluator.Parser
             return block;
         }
 
-        public static Expression While(LabelTarget breakTarget, LabelTarget continueLabel, LocalVariableDeclaration setup, Expression boolean, Expression body)
+        public static Expression While(LabelTarget breakTarget, LabelTarget continueLabel, LocalVariableDeclarationExpression setup, Expression boolean, Expression body)
         {
             var loopBody = new List<Expression>();
             if (setup != null)

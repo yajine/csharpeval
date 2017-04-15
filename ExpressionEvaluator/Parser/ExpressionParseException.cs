@@ -1,5 +1,5 @@
 using System;
-using Antlr.Runtime;
+using Antlr4.Runtime;
 
 namespace ExpressionEvaluator.Parser
 {
@@ -9,7 +9,7 @@ namespace ExpressionEvaluator.Parser
         private ITokenStream _tokenStream;
 
         public ExpressionParseException(string message, ITokenStream tokenStream)
-            : base(string.Format("{0} at line {1} char {2}", message, tokenStream.LT(-1).Line, tokenStream.LT(-1).CharPositionInLine))
+            : base(string.Format("{0} at line {1} char {2}", message, tokenStream.Lt(-1).Line, tokenStream.Lt(-1).Column))
         {
             this._tokenStream = tokenStream;
         }

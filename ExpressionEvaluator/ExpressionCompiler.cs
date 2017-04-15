@@ -10,7 +10,7 @@ namespace ExpressionEvaluator
     {
 
         public Expression Expression { get; set; }
-        public CompiledExpressionType ExpressionType { get; set; }
+        public ExpressionType ExpressionType { get; set; }
         public LambdaExpression LambdaExpression { get; set; }
 
         protected IParser Parser = null;

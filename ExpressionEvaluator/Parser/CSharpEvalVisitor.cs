@@ -7,7 +7,7 @@ using Antlr4.Runtime.Tree;
 using ExpressionEvaluator.Parser.Expressions;
 
 namespace ExpressionEvaluator.Parser
-{ 
+{
     public partial class CSharpEvalVisitor : CSharp4BaseVisitor<Expression>
     {
         public TypeRegistry TypeRegistry { get; set; }
@@ -194,7 +194,7 @@ namespace ExpressionEvaluator.Parser
             var list = new ArgumentListExpression();
             foreach (var argumentContext in context.argument())
             {
-                list.Add((ArgumentExpression) Visit(argumentContext));
+                list.Add((ArgumentExpression)Visit(argumentContext));
             }
             return list;
         }
@@ -231,25 +231,25 @@ namespace ExpressionEvaluator.Parser
                 case CSharp4Parser.ASSIGNMENT:
                     return ExpressionHelper.Assign(le, re);
                 case CSharp4Parser.OP_ADD_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AddAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.AddAssign);
                 case CSharp4Parser.OP_AND_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.AndAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.AndAssign);
                 case CSharp4Parser.OP_DIV_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.DivideAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.DivideAssign);
                 case CSharp4Parser.OP_LEFT_SHIFT_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.LeftShiftAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.LeftShiftAssign);
                 case CSharp4Parser.OP_MOD_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ModuloAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.ModuloAssign);
                 case CSharp4Parser.OP_MULT_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.MultiplyAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.MultiplyAssign);
                 case CSharp4Parser.OP_OR_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.OrAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.OrAssign);
                 case CSharp4Parser.OP_SUB_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.SubtractAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.SubtractAssign);
                 case CSharp4Parser.OP_RIGHT_SHIFT_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.RightShiftAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.RightShiftAssign);
                 case CSharp4Parser.OP_XOR_ASSIGNMENT:
-                    return ExpressionHelper.GetBinaryOperator(le, re, ExpressionType.ExclusiveOrAssign);
+                    return ExpressionHelper.GetBinaryOperator(le, re, System.Linq.Expressions.ExpressionType.ExclusiveOrAssign);
             }
             throw new InvalidOperationException();
         }
@@ -392,7 +392,7 @@ namespace ExpressionEvaluator.Parser
             }
 
             var variables = ParameterList.Current;
-            var retval =  Expression.Block(variables, expressions);
+            var retval = Expression.Block(variables, expressions);
             ParameterList.Pop();
             return retval;
         }
@@ -433,7 +433,7 @@ namespace ExpressionEvaluator.Parser
                 {
                     throw new CompilerException("Implicitly-typed local variables cannot have multiple declarators");
                 }
-                var expression = (LocalVariableDeclaratorExpression) lvds.Expressions[0];
+                var expression = (LocalVariableDeclaratorExpression)lvds.Expressions[0];
                 var variable = MakeParameterWithExpression(typeName, expression.Identifer, expression.Expression);
                 ParameterList.Add(variable);
                 list.Initializers.Add(Expression.Assign(variable, expression.Expression));
@@ -472,6 +472,92 @@ namespace ExpressionEvaluator.Parser
         public override Expression VisitObject_creation_expression(CSharp4Parser.Object_creation_expressionContext context)
         {
             return base.VisitObject_creation_expression(context);
+        }
+
+        private static Dictionary<string, string> typeAliasLookup = new Dictionary<string, string>()
+        {
+            {"object", "System.Object" },
+            {"bool", "System.Boolean" },
+            {"sbyte", "System.SByte" },
+            {"byte", "System.Byte" },
+            {"char", "System.Char" },
+            {"short", "System.Int16" },
+            {"int", "System.Int32" },
+            {"long", "System.Int64" },
+            {"ushort", "System.UInt16" },
+            {"uint", "System.UInt32" },
+            {"ulong", "System.UInt64" },
+            {"decimal", "System.Decimal" },
+            {"double", "System.Double" },
+            {"float", "System.Single" },
+            {"string", "System.String" },
+        };
+
+        public override Expression VisitSimple_type(CSharp4Parser.Simple_typeContext context)
+        {
+            var typeName = context.GetText();
+            string actualName;
+            if (typeAliasLookup.TryGetValue(typeName, out actualName))
+            {
+                typeName = actualName;
+            }
+
+            return new NamespaceOrTypeExpression()
+            {
+                Identifier = typeName,
+                DetectedType = Type.GetType(typeName)
+            };
+        }
+
+        public override Expression VisitBase_type(CSharp4Parser.Base_typeContext context)
+        {
+            var simpleType = context.simple_type();
+            if (simpleType != null)
+            {
+                return Visit(simpleType);
+            }
+            else
+            {
+                return Visit(context.class_type());
+            }
+            //return base.VisitBase_type(context);
+        }
+
+        public override Expression VisitClass_type(CSharp4Parser.Class_typeContext context)
+        {
+            return Visit(context.type_name());
+            //return Visit(context.OBJECT());
+            //return Visit(context.STRING());
+            //return Visit(context.dynamic_contextual_keyword());
+        }
+
+        public override Expression VisitType_name(CSharp4Parser.Type_nameContext context)
+        {
+            return Visit(context.namespace_or_type_name());
+        }
+
+        public override Expression VisitNamespace_or_type_name(CSharp4Parser.Namespace_or_type_nameContext context)
+        {
+            var identifiers = context.identifier();
+            var ident = string.Join(".", identifiers.Select(x => x.GetText()));
+            return new NamespaceOrTypeExpression()
+            {
+                DetectedType = GetType(ident),
+                Identifier = ident
+            };
+        }
+
+        public override Expression VisitType(CSharp4Parser.TypeContext context)
+        {
+            return Visit(context.base_type());
+            //var rankSpecifiers = context.rank_specifier();
+            //if (rankSpecifiers.Any())
+            //{
+            //    foreach (var rankSpecifier in rankSpecifiers)
+            //    {
+            //        Visit(rankSpecifier);
+            //    }
+            //}
         }
 
         public override Expression VisitPrimary_expression(CSharp4Parser.Primary_expressionContext context)
@@ -518,16 +604,34 @@ namespace ExpressionEvaluator.Parser
             {
                 CSharp4Parser.Method_invocation2Context methodInvocation2Context;
                 CSharp4Parser.Member_access2Context memberAccess2Context;
+                var typeArgs = new List<Type>();
                 if ((memberAccess2Context = part_context.member_access2()) != null)
                 {
                     var identifier = memberAccess2Context.identifier().GetText();
+                    var typeArgList = memberAccess2Context.type_argument_list_opt();
+
+                    if (typeArgList != null)
+                    {
+                        // Move to own rule!
+                        var x = typeArgList.type_argument_list();
+                        if (x != null)
+                        {
+                            var typeargs = x.type_arguments().type_argument();
+                            foreach (var typearg in typeargs)
+                            {
+                                var t = (NamespaceOrTypeExpression)Visit(typearg.type());
+                                typeArgs.Add(t.DetectedType);
+                            }
+                        }
+
+                    }
 
                     List<MethodInfo> methodCandidates = null;
 
                     var type = value.Type;
                     var isStaticMethodInvocation = false;
 
-                    if (value.NodeType == ExpressionType.Constant)
+                    if (value.NodeType == System.Linq.Expressions.ExpressionType.Constant)
                     {
                         var valueValue = ((ConstantExpression)value).Value;
                         if (typeof(Type).IsAssignableFrom(valueValue.GetType()))
@@ -572,6 +676,11 @@ namespace ExpressionEvaluator.Parser
                     if (!methodCandidates.Any())
                     {
                         value = ExpressionHelper.GetProperty(value, identifier);
+
+                        if (value == null)
+                        {
+                            throw new CompilerException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", identifier, type));
+                        }
                     }
                     else
                     {
@@ -580,7 +689,7 @@ namespace ExpressionEvaluator.Parser
                             Method = new TypeOrGeneric()
                             {
                                 Identifier = identifier,
-                                // TODO: Type Arguments...
+                                TypeArgs = typeArgs
                             },
                             MethodCandidates = methodCandidates,
                             IsStaticMethod = isStaticMethodInvocation,
@@ -595,18 +704,20 @@ namespace ExpressionEvaluator.Parser
                 {
                     var methodInvocationContext = methodInvocationContextStack.Peek();
                     var argListContext = methodInvocation2Context.argument_list();
-                    methodInvocationContext.Visitor = this;
 
                     if (argListContext != null)
                     {
-                        methodInvocationContext.ArgumentContext = argListContext.argument();
-                    }
-                    else
-                    {
-                        methodInvocationContext.ArgumentContext = new CSharp4Parser.ArgumentContext[0];
+                        foreach (var argumentContext in argListContext.argument())
+                        {
+                            methodInvocationContext.Arguments.Add((ArgumentExpression)Visit(argumentContext));
+                        }
                     }
 
                     value = methodInvocationContext.GetInvokeMethodExpression();
+                    if (value == null)
+                    {
+                        throw new CompilerException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", methodInvocationContext.Method.Identifier, methodInvocationContext.Type.Name));
+                    }
                 }
                 else if (part_context.OP_INC() != null)
                 {
@@ -676,9 +787,9 @@ namespace ExpressionEvaluator.Parser
             switch (context.op.Type)
             {
                 case CSharp4Parser.OP_LEFT_SHIFT:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.LeftShift);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.LeftShift);
                 case CSharp4Parser.OP_RIGHT_SHIFT:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.RightShift);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.RightShift);
             }
             throw new InvalidOperationException();
         }
@@ -690,13 +801,13 @@ namespace ExpressionEvaluator.Parser
             switch (context.op.Type)
             {
                 case CSharp4Parser.LT:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.LessThan);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.LessThan);
                 case CSharp4Parser.GT:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.GreaterThan);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.GreaterThan);
                 case CSharp4Parser.OP_LE:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.LessThanOrEqual);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.LessThanOrEqual);
                 case CSharp4Parser.OP_GE:
-                    return ExpressionHelper.BinaryOperator(lex, rex, ExpressionType.GreaterThanOrEqual);
+                    return ExpressionHelper.BinaryOperator(lex, rex, System.Linq.Expressions.ExpressionType.GreaterThanOrEqual);
             }
             throw new InvalidOperationException();
         }
@@ -778,7 +889,12 @@ namespace ExpressionEvaluator.Parser
             var objectCreationExpressionTree = context.object_creation_expression2();
             if (objectCreationExpressionTree != null)
             {
-                var argList = (ArgumentListExpression)Visit(context.object_creation_expression2().argument_list());
+                ArgumentListExpression argList = null;
+                var argListTree = objectCreationExpressionTree.argument_list();
+                if (argListTree != null)
+                {
+                    argList = (ArgumentListExpression)Visit(argListTree);
+                }
                 return ExpressionHelper.New(GetType(context.type().GetText()), argList);
             }
 
@@ -788,51 +904,51 @@ namespace ExpressionEvaluator.Parser
 
         public override Expression VisitObject_creation_expression2(CSharp4Parser.Object_creation_expression2Context context)
         {
-           // context.object_or_collection_initializer()
+            // context.object_or_collection_initializer()
 
             return base.VisitObject_creation_expression2(context);
         }
 
-//        public object_creation_expression returns[Expression value]: 
-//    // 'new'
-//    type
-//        ( '('   argument_list?   ')'  first= object_or_collection_initializer ?
-//          | second = object_or_collection_initializer )
-//        {
-//			$value = ExpressionHelper.New(GetType($type.text), $argument_list.values, $first.value ?? $second.value);
-//        }
-//    ;
-//        public object_or_collection_initializer returns[ObjectOrCollectionInitializer value]
-//@init{
-//	$value = new ObjectOrCollectionInitializer();
-//    }: 
-//    '{'  (object_initializer  { $value.ObjectInitializer = $object_initializer.value; }
-//        | collection_initializer)    '}';
-//public collection_initializer: 
-//    element_initializer_list  ;
-//public element_initializer_list: 
-//    element_initializer(',' element_initializer)* ;
-//public element_initializer: 
-//    non_assignment_expression 
-//    | '{'   expression_list   '}' ;
-//// object-initializer eg's
-////    Rectangle r = new Rectangle {
-////        P1 = new Point { X = 0, Y = 1 },
-////        P2 = new Point { X = 2, Y = 3 }
-////    };
-//// TODO: comma should only follow a member_initializer_list
-//public object_initializer returns[List < MemberInitializer > value]: 
-//    member_initializer_list?  { $value = $member_initializer_list.value; }  ;
-//public member_initializer_list returns[List < MemberInitializer > value]
-//@init {
-//	$value = new List<MemberInitializer>();
-//}: 
-//    first=member_initializer { $value.Add($first.value); }  (',' succeeding=member_initializer { $value.Add($succeeding.value); } ) ;
-//public member_initializer returns[MemberInitializer value] : 
-//    identifier   '='   initializer_value { $value = new MemberInitializer() { Identifier = $identifier.text, Value = $initializer_value.value }; };
-//public initializer_value returns[Expression value]: 
-//    expression { $value = $expression.value; }
-//    | object_or_collection_initializer ;
+        //        public object_creation_expression returns[Expression value]: 
+        //    // 'new'
+        //    type
+        //        ( '('   argument_list?   ')'  first= object_or_collection_initializer ?
+        //          | second = object_or_collection_initializer )
+        //        {
+        //			$value = ExpressionHelper.New(GetType($type.text), $argument_list.values, $first.value ?? $second.value);
+        //        }
+        //    ;
+        //        public object_or_collection_initializer returns[ObjectOrCollectionInitializer value]
+        //@init{
+        //	$value = new ObjectOrCollectionInitializer();
+        //    }: 
+        //    '{'  (object_initializer  { $value.ObjectInitializer = $object_initializer.value; }
+        //        | collection_initializer)    '}';
+        //public collection_initializer: 
+        //    element_initializer_list  ;
+        //public element_initializer_list: 
+        //    element_initializer(',' element_initializer)* ;
+        //public element_initializer: 
+        //    non_assignment_expression 
+        //    | '{'   expression_list   '}' ;
+        //// object-initializer eg's
+        ////    Rectangle r = new Rectangle {
+        ////        P1 = new Point { X = 0, Y = 1 },
+        ////        P2 = new Point { X = 2, Y = 3 }
+        ////    };
+        //// TODO: comma should only follow a member_initializer_list
+        //public object_initializer returns[List < MemberInitializer > value]: 
+        //    member_initializer_list?  { $value = $member_initializer_list.value; }  ;
+        //public member_initializer_list returns[List < MemberInitializer > value]
+        //@init {
+        //	$value = new List<MemberInitializer>();
+        //}: 
+        //    first=member_initializer { $value.Add($first.value); }  (',' succeeding=member_initializer { $value.Add($succeeding.value); } ) ;
+        //public member_initializer returns[MemberInitializer value] : 
+        //    identifier   '='   initializer_value { $value = new MemberInitializer() { Identifier = $identifier.text, Value = $initializer_value.value }; };
+        //public initializer_value returns[Expression value]: 
+        //    expression { $value = $expression.value; }
+        //    | object_or_collection_initializer ;
 
     }
 }

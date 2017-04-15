@@ -14,9 +14,9 @@ namespace UnitTestProject1
         {
             var expr = "settings.showAsteriskMessage = true;";
             expr += "settings.showStatisticallySignificantExplanation = page.HasSignificantScore;";
-            //expr += "rowHeightNum = helper.getRowHeight(data);";
-            expr += "rowHeight = rowHeightNum.ToString() + 'px';";
-            expr += "barHeight = (rowHeightNum - 3).ToString() + 'px';";
+            expr += "rowHeightNum = helper.getRowHeight(data);";
+            expr += "rowHeight = rowHeightNum.ToString() + \"px\";";
+            expr += "barHeight = (rowHeightNum - 3).ToString() + \"px\";";
             expr += "showPaging = count > 1;";
             dynamic scope = new ExpandoObject();
             scope.rowHeightNum = 10;
@@ -24,7 +24,7 @@ namespace UnitTestProject1
             scope.page = new Page();
             scope.settings = new ExpandoObject();
             var p = new CompiledExpression { StringToParse = expr };
-            p.ExpressionType = CompiledExpressionType.StatementList;
+            p.ExpressionType = ExpressionType.StatementList;
             var f = p.ScopeCompile<ExpandoObject>();
             f(scope);
             Assert.AreEqual(true, scope.settings.showAsteriskMessage);

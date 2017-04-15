@@ -112,7 +112,7 @@ namespace Tests
 
             var expression = "var x = \"test\";\n\n";
             expression = expression + "if(null!=10d) x= \"rest\"; ";
-            var ce1 = new CompiledExpression() { StringToParse = expression, ExpressionType = CompiledExpressionType.StatementList };
+            var ce1 = new CompiledExpression() { StringToParse = expression, ExpressionType = ExpressionType.StatementList };
             var result = ce1.Eval();
         }
 
@@ -184,12 +184,12 @@ namespace Tests
             var nn = new Sub() { x = new List<int>() { 1, 2, 3, 4, 5 } };
             object aa = new List<Sub>();
 
-            var ee = new CompiledExpression<bool>() { StringToParse = "test = x > 1; test2 = test && true; test2;", ExpressionType = CompiledExpressionType.StatementList, DynamicTypeLookup = tt.types };
+            var ee = new CompiledExpression<bool>() { StringToParse = "test = x > 1; test2 = test && true; test2;", ExpressionType = ExpressionType.StatementList, DynamicTypeLookup = tt.types };
             // ee.DynamicTypeLookup.Add("z", typeof(float));
             var xx = ee.ScopeCompile<Super>();
             var yx = xx(tt);
 
-            var rr = new CompiledExpression<int>() { StringToParse = "z(aa)", ExpressionType = CompiledExpressionType.Expression, TypeRegistry = new TypeRegistry() };
+            var rr = new CompiledExpression<int>() { StringToParse = "z(aa)", ExpressionType = ExpressionType.Expression, TypeRegistry = new TypeRegistry() };
             // ee.DynamicTypeLookup.Add("z", typeof(float));
             rr.TypeRegistry.Add("aa", aa);
             var uu = rr.ScopeCompile<Sub>();
@@ -240,7 +240,7 @@ namespace Tests
 
             var test1 = new Test();
             //var x1 = new List<ImportedValue>();
-            var ce1 = new CompiledExpression<int>() { StringToParse = exp1, TypeRegistry = reg1, ExpressionType = CompiledExpressionType.StatementList };
+            var ce1 = new CompiledExpression<int>() { StringToParse = exp1, TypeRegistry = reg1, ExpressionType = ExpressionType.StatementList };
             var res1 = ce1.ScopeCompile<Test>()(test1);
 
             Console.WriteLine(res1);
@@ -277,7 +277,7 @@ namespace Tests
             registry.RegisterDefaultTypes();
 
             var cc = new CompiledExpression() { StringToParse = "var x = new objHolder(); x.number = 3; x.number++; var varname = 23; varname++; obj.number = varname -  x.number;", TypeRegistry = registry };
-            cc.ExpressionType = CompiledExpressionType.StatementList;
+            cc.ExpressionType = ExpressionType.StatementList;
             var result = cc.Eval();
 
 

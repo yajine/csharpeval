@@ -34,7 +34,7 @@ namespace REPLSample
             cex = new CompiledExpression();
             cex.TypeRegistry = new TypeRegistry();
             cex.TypeRegistry.RegisterDefaultTypes();
-            cex.ExpressionType = CompiledExpressionType.Expression;
+            cex.ExpressionType = ExpressionType.Expression;
             isRunning = true;
         }
 

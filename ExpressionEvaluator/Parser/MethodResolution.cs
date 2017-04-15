@@ -10,7 +10,7 @@ namespace ExpressionEvaluator.Parser
 
     public class TypeInferrence
     {
-        public Argument Argument { get; set; }
+        public ArgumentExpression Argument { get; set; }
         public ParameterInfo Parameter { get; set; }
         public Type[] UnfixedBounds { get; set; }
         public Type FixedType { get; set; }
@@ -49,7 +49,7 @@ namespace ExpressionEvaluator.Parser
         }
 
 
-        public static List<TypeInferrence> SecondPhase(ApplicableFunctionMember member, IEnumerable<Argument> arguments)
+        public static List<TypeInferrence> SecondPhase(ApplicableFunctionMember member, IEnumerable<ArgumentExpression> arguments)
         {
             return null;
         }
@@ -84,7 +84,7 @@ namespace ExpressionEvaluator.Parser
 
 
         //7.5.2.1 The first phase
-        public static List<TypeInferrence> FirstPhase(ApplicableFunctionMember member, IEnumerable<Argument> arguments)
+        public static List<TypeInferrence> FirstPhase(ApplicableFunctionMember member, IEnumerable<ArgumentExpression> arguments)
         {
             var genericArgs = member.Member.GetGenericArguments().ToList();
             var parameters = member.Member.GetParameters().ToList();
@@ -95,7 +95,7 @@ namespace ExpressionEvaluator.Parser
             //            For each of the method arguments Ei:
             for (var i = 0; i < E.Count(); i++)
             {
-                if (E[i].Expression.NodeType == ExpressionType.Lambda)
+                if (E[i].Expression.NodeType == System.Linq.Expressions.ExpressionType.Lambda)
                 {
                     //•	If Ei is an anonymous function, an explicit parameter type inference (§7.5.2.7) is made from Ei to Ti
                 }
@@ -127,7 +127,7 @@ namespace ExpressionEvaluator.Parser
         //   Is there any unfixed, bounded type parameter such that an unfixed type parameter depends on it, directly or indirectly?
         //      Fix all such type parameters and go back to the top of the loop.
         //   If we make it here then we failed to make progress; we have just as many fixed type parameters as we started with. Type inference fails. Terminate the algorithm.
-        public static List<TypeInferrence> TypeInference(ApplicableFunctionMember member, IEnumerable<Argument> arguments)
+        public static List<TypeInferrence> TypeInference(ApplicableFunctionMember member, IEnumerable<ArgumentExpression> arguments)
         {
             return null;
         }
@@ -271,12 +271,11 @@ namespace ExpressionEvaluator.Parser
 
         // 7.5.3.1 Applicable Function Member
 
-        public static ApplicableFunctionMember IsApplicableFunctionMember(MethodInfo F, IEnumerable<Argument> argList)
+        public static ApplicableFunctionMember IsApplicableFunctionMember(MethodInfo F, IList<ArgumentExpression> argList)
         {
             bool isMatch = true;
             bool isParamArray = false;
             bool isExpanded = false;
-            List<Argument> args = argList.ToList();
             //        A function member is said to be an applicable function member with respect to an argument list A when all of the following are true:
 
             //•	Each argument in A corresponds to a parameter in the function member declaration as described in §7.5.1.1, and any parameter to which no argument corresponds is an optional parameter.
@@ -297,7 +296,7 @@ namespace ExpressionEvaluator.Parser
             int argCount = 0;
             foreach (ParameterInfo pInfo in F.GetParameters())
             {
-                bool haveArg = argCount < args.Count();
+                bool haveArg = argCount < argList.Count();
 
                 if (pInfo.IsOut || pInfo.ParameterType.IsByRef)
                 {
@@ -307,14 +306,14 @@ namespace ExpressionEvaluator.Parser
                     }
                     else if (pInfo.IsOut)
                     {
-                        if (args[argCount].ParameterPassingMode != ParameterPassingModeEnum.Out)
+                        if (argList[argCount].ParameterPassingMode != ParameterPassingModeEnum.Out)
                         {
                             isMatch = false;
                         }
                     }
                     else if (pInfo.ParameterType.IsByRef)
                     {
-                        if (args[argCount].ParameterPassingMode != ParameterPassingModeEnum.ByRef)
+                        if (argList[argCount].ParameterPassingMode != ParameterPassingModeEnum.ByRef)
                         {
                             isMatch = false;
                         }
@@ -322,7 +321,7 @@ namespace ExpressionEvaluator.Parser
 
                     // Step 4 (technically)
                     // Check types if either are a ref type. Must match exactly
-                    String argTypeStr = args[argCount].Expression.Type.FullName;
+                    String argTypeStr = argList[argCount].Expression.Type.FullName;
                     Type paramType = F.GetParameters()[argCount].ParameterType;
                     String paramTypeStr = paramType.ToString().Substring(0, paramType.ToString().Length - 1);
 
@@ -337,7 +336,7 @@ namespace ExpressionEvaluator.Parser
                     if (pInfo.IsOptional)
                     {
                         // If an argument for this parameter position was specified, check its type
-                        if (haveArg && !HasImplicitConversion(args[argCount].Expression, args[argCount].Expression.Type, pInfo.ParameterType))
+                        if (haveArg && !HasImplicitConversion(argList[argCount].Expression, argList[argCount].Expression.Type, pInfo.ParameterType))
                         {
                             isMatch = false;
                         }
@@ -346,14 +345,14 @@ namespace ExpressionEvaluator.Parser
                     { // Check ParamArray arguments
                         isParamArray = true;
 
-                        if (argCount < args.Count)
+                        if (argCount < argList.Count)
                         {
                             isExpanded = true;
                             var elementType = pInfo.ParameterType.GetElementType();
 
-                            for (int j = pInfo.Position; j < args.Count; j++)
+                            for (int j = pInfo.Position; j < argList.Count; j++)
                             {
-                                if (!HasImplicitConversion(args[j].Expression, args[j].Expression.Type, elementType))
+                                if (!HasImplicitConversion(argList[j].Expression, argList[j].Expression.Type, elementType))
                                 {
                                     isMatch = false;
                                 }
@@ -366,7 +365,7 @@ namespace ExpressionEvaluator.Parser
                     }
                     else
                     { // Checking non-optional, non-ParamArray arguments
-                        if (!haveArg || !HasImplicitConversion(args[argCount].Expression, args[argCount].Expression.Type, pInfo.ParameterType))
+                        if (!haveArg || !HasImplicitConversion(argList[argCount].Expression, argList[argCount].Expression.Type, pInfo.ParameterType))
                         {
                             isMatch = false;
                         }
@@ -381,7 +380,7 @@ namespace ExpressionEvaluator.Parser
                 argCount++;
             }
 
-            if (isMatch && argCount < args.Count)
+            if (isMatch && argCount < argList.Count)
                 isMatch = false;
 
             if (!isMatch) return null;
@@ -457,7 +456,7 @@ namespace ExpressionEvaluator.Parser
         public static bool HasNullLiteralConversion(Expression E, Type T1)
         {
             // An implicit conversion exists from the null literal to any nullable type. This conversion produces the null value (§4.1.10) of the given nullable type.
-            return T1.IsNullable() && ((E.NodeType == ExpressionType.Constant) && ((ConstantExpression)E).Value == null);
+            return T1.IsNullable() && ((E.NodeType == System.Linq.Expressions.ExpressionType.Constant) && ((ConstantExpression)E).Value == null);
         }
 
         public static bool IsDelegate(Type t)
@@ -543,7 +542,7 @@ namespace ExpressionEvaluator.Parser
             //An implicit constant expression conversion permits the following conversions:
             //•	A constant-expression (§7.19) of type int can be converted to type sbyte, byte, short, ushort, uint, or ulong, provided the value of the constant-expression 
             //is within the range of the destination type.
-            if (E != null && E.NodeType == ExpressionType.Constant)
+            if (E != null && E.NodeType == System.Linq.Expressions.ExpressionType.Constant)
             {
                 if (E.Type == typeof(int))
                 {
@@ -648,7 +647,7 @@ namespace ExpressionEvaluator.Parser
             //•	E has a type S and an identity conversion exists from S to T1 but not from S to T2
             if (HasIdentityConversion(S, T1) && !HasIdentityConversion(S, T2)) return true;
             //•	E is not an anonymous function and T1 is a better conversion target than T2 (§7.5.3.5)
-            if (E.NodeType != ExpressionType.Lambda)
+            if (E.NodeType != System.Linq.Expressions.ExpressionType.Lambda)
             {
                 return IsBetterConversionTarget(E, T1, T2);
             }
@@ -688,7 +687,7 @@ namespace ExpressionEvaluator.Parser
             return expandedParameterTypes;
         }
 
-        public static int GetBetterFunctionMember(ApplicableFunctionMember MP, ApplicableFunctionMember MQ, IEnumerable<Argument> argList)
+        public static int GetBetterFunctionMember(ApplicableFunctionMember MP, ApplicableFunctionMember MQ, IEnumerable<ArgumentExpression> argList)
         {
             //        For the purposes of determining the better function member, a stripped-down argument list A is constructed containing just the argument expressions themselves in the order they appear in the original argument list.
 
@@ -768,7 +767,7 @@ namespace ExpressionEvaluator.Parser
 
 
         // 7.5.3
-        public static ApplicableFunctionMember OverloadResolution(IEnumerable<ApplicableFunctionMember> candidates, IEnumerable<Argument> A)
+        public static ApplicableFunctionMember OverloadResolution(IEnumerable<ApplicableFunctionMember> candidates, IEnumerable<ArgumentExpression> A)
         {
             //            7.5.3 Overload resolution
             //•	Given the set of applicable candidate function members, the best function member in that set is located. 
@@ -797,7 +796,7 @@ namespace ExpressionEvaluator.Parser
         }
 
         // 7.5.3.1
-        public static IEnumerable<ApplicableFunctionMember> GetApplicableMembers(IEnumerable<MethodInfo> candidates, IEnumerable<Argument> A)
+        public static IEnumerable<ApplicableFunctionMember> GetApplicableMembers(IEnumerable<MethodInfo> candidates, IList<ArgumentExpression> A)
         {
 
             // paramater matching && ref C# lang spec section 7.5.1.1

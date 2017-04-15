@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace ExpressionEvaluator.Parser
+namespace ExpressionEvaluator.Parser.Expressions
 {
     public class LocalVariableDeclaratorExpression : Expression
     {
