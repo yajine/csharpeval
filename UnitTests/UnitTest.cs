@@ -37,8 +37,8 @@ namespace ExpressionEvaluator.Tests
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
                 var m = regex.Match(exception.Message);
-                Assert.AreEqual(m.Groups[1].Value, "unavailableMethod");
-                Assert.AreEqual(m.Groups[2].Value, "Helper");
+                Assert.AreEqual("unavailableMethod", m.Groups[1].Value);
+                Assert.AreEqual("UnitTestProject1.Domain.Helper", m.Groups[2].Value);
             }
         }
 
@@ -59,8 +59,8 @@ namespace ExpressionEvaluator.Tests
             {
                 var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
                 var m = regex.Match(exception.Message);
-                Assert.AreEqual(m.Groups[1].Value, "unavailableProperty");
-                Assert.AreEqual(m.Groups[2].Value, "Helper");
+                Assert.AreEqual("unavailableProperty", m.Groups[1].Value);
+                Assert.AreEqual("UnitTestProject1.Domain.Helper", m.Groups[2].Value);
             }
         }
 

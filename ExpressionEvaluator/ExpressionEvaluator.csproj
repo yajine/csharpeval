@@ -69,7 +69,6 @@
     <Compile Include="ExpressionCompiler.cs" />
     <Compile Include="IDynamicObjectProvider.cs" />
     <Compile Include="ParseException.cs" />
-    <Compile Include="Parser\AntlrParser.cs" />
     <Compile Include="Parser\Expressions\ArgumentExpression.cs" />
     <Compile Include="Parser\Expressions\ArgumentListExpression.cs" />
     <Compile Include="Parser\CSharpEvalVisitor.Operators.cs" />
@@ -85,6 +84,7 @@
     <Compile Include="Parser\CompilerState.cs" />
     <Compile Include="Parser\ExpressionHelper.cs" />
     <Compile Include="Parser\ExpressionParseException.cs" />
+    <Compile Include="Parser\Expressions\SwitchBlockExpression.cs" />
     <Compile Include="Parser\Expressions\TypeOrGeneric.cs" />
     <Compile Include="Parser\IParser.cs" />
     <Compile Include="Parser\Expressions\LocalVariableDeclarationExpression.cs" />

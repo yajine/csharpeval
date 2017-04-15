@@ -702,7 +702,7 @@ namespace ExpressionEvaluator.Parser
                 }
                 else if ((methodInvocation2Context = part_context.method_invocation2()) != null)
                 {
-                    var methodInvocationContext = methodInvocationContextStack.Peek();
+                    var methodInvocationContext = methodInvocationContextStack.Pop();
                     var argListContext = methodInvocation2Context.argument_list();
 
                     if (argListContext != null)
@@ -778,6 +778,41 @@ namespace ExpressionEvaluator.Parser
                 return ExpressionHelper.ParseRealLiteral(context.REAL_LITERAL().GetText());
             }
             throw new InvalidOperationException();
+        }
+
+
+        public override Expression VisitSwitch_block(CSharp4Parser.Switch_blockContext context)
+        {
+            var block = new SwitchBlockExpression();
+            foreach (var switchSection in context.switch_sections().switch_section())
+            {
+                var testValues = new List<Expression>();
+                foreach (var switchLabel in switchSection.switch_labels().switch_label())
+                {
+                    if (switchLabel.DEFAULT() != null)
+                    {
+                        testValues.Add(Expression.Empty());
+                    }
+                    else
+                    {
+                        testValues.Add(Visit(switchLabel.constant_expression()));
+
+                    }
+                    var body = Visit(switchSection.statement_list());
+                    block.Cases.Add(Expression.SwitchCase(body, testValues));
+                }
+            }
+            return block;
+        }
+
+        public override Expression VisitSwitch_statement(CSharp4Parser.Switch_statementContext context)
+        {
+            var breakTarget = CompilerState.PushBreak();
+            var expression = Visit(context.expression());
+            var block = (SwitchBlockExpression)Visit(context.switch_block());
+            var retval = ExpressionHelper.Switch(breakTarget, expression, block);
+            CompilerState.PopBreak();
+            return retval;
         }
 
         public override Expression VisitShiftExpression(CSharp4Parser.ShiftExpressionContext context)

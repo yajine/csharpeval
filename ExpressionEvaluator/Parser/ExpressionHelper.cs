@@ -1316,10 +1316,10 @@ namespace ExpressionEvaluator.Parser
             return Expression.New(constructorInfo, argumentList.ArgumentList.Select(x => x.Expression));
         }
 
-        public static Expression Switch(LabelTarget breakTarget, Expression switchCase, List<SwitchCase> switchBlock)
+        public static Expression Switch(LabelTarget breakTarget, Expression switchCase, SwitchBlockExpression switchBlock)
         {
-            var defaultCase = switchBlock.SingleOrDefault(x => x.TestValues[0].Type == typeof(void));
-            var cases = switchBlock.Where(x => x.TestValues[0].Type != typeof(void)).ToArray();
+            var defaultCase = switchBlock.Cases.SingleOrDefault(x => x.TestValues[0].Type == typeof(void));
+            var cases = switchBlock.Cases.Where(x => x.TestValues[0].Type != typeof(void)).ToArray();
 
             foreach (var @case in cases)
             {

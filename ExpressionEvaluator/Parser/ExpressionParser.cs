@@ -31,47 +31,41 @@ namespace ExpressionEvaluator.Parser
 
         public Expression Parse(Expression scope, bool isCall = false)
         {
-            byte[] byteArray = Encoding.UTF8.GetBytes(ExpressionString);
-            using (MemoryStream mstream = new MemoryStream(byteArray))
+            var stream = new AntlrInputStream(ExpressionString);
+            ITokenSource lexer = new CSharp4Lexer(stream);
+            ITokenStream tokens = new CommonTokenStream(lexer);
+            var parser = new CSharp4Parser(tokens) { BuildParseTree = true };
+            parser.AddErrorListener(new ErrorListener());
+            IParseTree tree = null;
+
+            switch (ExpressionType)
             {
-                AntlrInputStream stream = new AntlrInputStream(mstream);
-                ITokenSource lexer = new CSharp4Lexer(stream);
-                ITokenStream tokens = new CommonTokenStream(lexer);
-                var parser = new CSharp4Parser(tokens);
-                parser.BuildParseTree = true;
-                parser.AddErrorListener(new ErrorListener());
-                IParseTree tree = null;
-                switch (ExpressionType)
-                {
-                    case ExpressionType.Expression:
-                        tree = parser.expression();
-                        break;
-                    case ExpressionType.Statement:
-                        tree = parser.statement();
-                        break;
-                    case ExpressionType.StatementList:
-                        tree = parser.statement_list();
-                        break;
-                }
-
-
-                //var listener = new MyGraphingCalcListener(d);
-                //var walker = new ParseTreeWalker();
-                //walker.Walk(listener, tree);
-                //var exp = listener.Result;
-                if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
-
-                var visitor = new CSharpEvalVisitor();
-                visitor.CompilationContext = Context;
-                visitor.TypeRegistry = TypeRegistry;
-                visitor.Scope = scope;
-                if (ExternalParameters != null)
-                {
-                    visitor.ParameterList.Add(ExternalParameters);
-                }
-                return Expression = visitor.Visit(tree);
-                //return Expression.Lambda<Action<CalculatorContext>>(exp, pcontext).Compile();
+                case ExpressionType.Expression:
+                    tree = parser.expression();
+                    break;
+                case ExpressionType.Statement:
+                    tree = parser.statement();
+                    break;
+                case ExpressionType.StatementList:
+                    tree = parser.statement_list();
+                    break;
             }
+
+            if (TypeRegistry == null) TypeRegistry = new TypeRegistry();
+
+            var visitor = new CSharpEvalVisitor
+            {
+                CompilationContext = Context,
+                TypeRegistry = TypeRegistry,
+                Scope = scope
+            };
+
+            if (ExternalParameters != null)
+            {
+                visitor.ParameterList.Add(ExternalParameters);
+            }
+
+            return Expression = visitor.Visit(tree);
         }
     }
 }

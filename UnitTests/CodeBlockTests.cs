@@ -300,7 +300,7 @@ namespace ExpressionEvaluator.Tests
             }
 
             t.RegisterSymbol("Debug", typeof(Debug));
-            var p = new CompiledExpression { StringToParse = "switch(x) { case 1: case 2: Debug.WriteLine('Hello'); break; case 3: Debug.WriteLine('There'); break; case 4: Debug.WriteLine('World'); break; default: Debug.WriteLine('Undefined'); break; }", TypeRegistry = t };
+            var p = new CompiledExpression { StringToParse = "switch(x) { case 1: case 2: Debug.WriteLine(\"Hello\"); break; case 3: Debug.WriteLine(\"There\"); break; case 4: Debug.WriteLine(\"World\"); break; default: Debug.WriteLine(\"Undefined\"); break; }", TypeRegistry = t };
             p.ExpressionType = ExpressionType.StatementList;
             var func = p.ScopeCompile<ClassA>();
             for (a.x = 1; a.x < 7; a.x++)
