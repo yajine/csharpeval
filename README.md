@@ -1,10 +1,18 @@
+This project was initially hosted on CodePlex. Since they are shutting down, this site will continue to host the code.
+
+# New ANTLR4 Code
+
+ANTLR3 has been dropped due to its method of embedding code inside the grammar and so as much as possible no new enhancements will go to the AntlrParser branch. Also affecting this decision is that the ANTLR3 parser results in an infinite loop when parsing nested ternary operators at around a depth of 7.
+
+The ANTLR4 branch now passes most tests, and avoids the infinite loop on nested ternaries, but it is still in early beta.  There may be expressions not covered by current test cases. Calls on generic methods currently fail.
+
 # Introduction
 
-C# does not include a built-in method to evaluate a string during runtime, like Javascript's eval() or VBScript's Eval().
+C# does not include a built-in method to evaluate a string during runtime, like Javascript's eval() or VBScript's Eval(), although Roslyn's Scripting API now allows you to perform much of the same functionality in a similar manner.
 
-ExpressionEvaluator is a lightweight, simple and free library capable of parsing and compiling simple to medium complexity C# expressions. It features a Antlr-based tokenizer and parser and generates a LINQ Expression tree which is then compiled into a function.
+ExpressionEvaluator is a lightweight, simple and free library capable of parsing and compiling C# expressions, statements and code blocks. 
 
-Applications for an expression parser and compiler are usually in the form of embedded code or user-defined expressions that need to be executed against runtime objects. 
+It features an ANTLR4-based parser and generates a LINQ Expression tree which is then compiled into a delegate.
 
 # How can I use this library?
 
@@ -14,8 +22,6 @@ Applications for an expression parser and compiler are usually in the form of em
 * Customer-defined queries
 * User-defined execution parameters for pluggable controls
 
-If you have downloaded and used this library, I'd like to know about it's usage! Feel free to [let me know about it](https://www.codeplex.com/site/users/contact/rupertavery?OriginalUrl=https://csharpeval.codeplex.com).
-
 # NuGet
 
 Expression Evaluator is now available via [NuGet](https://www.nuget.org/packages/ExpressionEvaluator)
@@ -23,10 +29,6 @@ Expression Evaluator is now available via [NuGet](https://www.nuget.org/packages
 # Getting Started
 
 See **Usage** and **Sample Expressions** under [Documentation](https://csharpeval.codeplex.com/documentation)
-
-# Latest Updates
-
-For more details see [Updates]
 
 # Features
 
@@ -46,11 +48,14 @@ For more details see [Updates]
 * Pre-registered default types e.g. bool, int, double, float, char, string
 * Supports nested function calls (x.method(y.method(z.method()), y.method2()))
 
-# Donate
+# Buy me a Beer!
 
-Expression Evaluator is 100% free, but if you would like to support the project in any way please do so.
+Programming sure is hard work.  A cold beer would really be appreciated!
 
-[![Donate](https://www.paypalobjects.com/webstatic/en_US/btn/btn_donate_cc_147x47.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=rupert.avery@gmail.com&lc=PH&item_name=Expression Evaluator&currency_code=USD&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted)
+* [Buy me an expensive beer! - USD 5.00](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=rupert.avery@gmail.com&lc=PH&item_name=Donate%20a%20%245%20Beer%20-%20Expression%20Evaluator&currency_code=USD&amount=5.00)
+* [Buy me a nice, probably imported beer! - USD 3.00](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=rupert.avery@gmail.com&lc=PH&item_name=Donate%20a%20%243%20Beer%20-%20Expression%20Evaluator&currency_code=USD&amount=3.00)
+* [Buy me a good beer! - USD 2.00](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=rupert.avery@gmail.com&lc=PH&item_name=Donate%20a%20%242%20Beer%20-%20Expression%20Evaluator&currency_code=USD&amount=2.00)
+* [Buy me a cheap, but decent beer! - USD 1.00](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=rupert.avery@gmail.com&lc=PH&item_name=Donate%20a%20%241%20Beer%20-%20Expression%20Evaluator&currency_code=USD&amount=1.00)
 
 # Disclaimer
 
