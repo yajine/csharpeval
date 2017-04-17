@@ -107,7 +107,7 @@ namespace ExpressionEvaluator.Tests
         public void DynamicValue()
         {
             var registry = new TypeRegistry();
-            var obj = new objHolder() { Value = "aa" };
+            var obj = new IteratorTest() { Value = "aa" };
             registry.RegisterSymbol("obj", obj);
             registry.RegisterDefaultTypes();
 

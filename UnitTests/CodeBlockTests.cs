@@ -13,10 +13,10 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            object obj = new objHolder() { result = false, value = NumEnum.Two };
+            object obj = new IteratorTest() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             var cc = new CompiledExpression() { StringToParse = "var x = new objHolder(); x.number = 3; x.number++; var varname = 23; varname++; obj.number = varname -  x.number;", TypeRegistry = registry };
@@ -29,12 +29,12 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
 
             do { obj.number2++; } while (obj.number2 < 10);
 
             registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             var cc = new CompiledExpression() { StringToParse = "do{ obj.number++; } while (obj.number < 10);", TypeRegistry = registry };
@@ -49,12 +49,12 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
 
             while (obj.number2 < 10) { obj.number2++; }
 
             registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             var cc = new CompiledExpression() { StringToParse = "while (obj.number < 10) { obj.number++; }", TypeRegistry = registry };
@@ -69,11 +69,11 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);
             registry.RegisterType("Debug", typeof(Debug));
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             for (var i = 0; i < 10; i++) { obj.number2++; }
@@ -87,72 +87,58 @@ namespace ExpressionEvaluator.Tests
         [TestMethod]
         public void ForLoopWithMultipleIterators()
         {
-            var registry = new TypeRegistry();
+            var expected = 13; for (int i = 0, j = 0; i < 10; i++, j++) { expected += i * j; }
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
+            var expression = "var actual = 13; for(int i = 0, j = 0; i < 10; i++, j++) { actual += i * j; } actual;";
 
-            registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("Debug", typeof(Debug));
-            registry.RegisterType("objHolder", typeof(objHolder));
-            registry.RegisterDefaultTypes();
-
-            for (int i = 0, j = 0; i < 10; i++, j++) { obj.number2 = j; }
-
-            var cc = new CompiledExpression() { StringToParse = "for(int i = 0, j = 0; i < 10; i++, j++) { obj.number = j; }", TypeRegistry = registry };
-            cc.ExpressionType = ExpressionType.StatementList;
-            cc.Eval();
-            Assert.AreEqual(9, obj.number);
-            Assert.AreEqual(obj.number2, obj.number);
+            var c = new CompiledExpression(expression)
+            {
+                ExpressionType = ExpressionType.StatementList
+            };
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ForEachLoop()
         {
+            var test = new IteratorTest() { Words = new List<string>() { "Hello", "there", "world" } };
+
+            var expected = ""; foreach (var word in test.Words) { expected += word; }
+
+            var expression = "var actual = \"\"; foreach(var word in test.Words) { actual += word; } actual;";
+
             var registry = new TypeRegistry();
+            registry.RegisterSymbol("test", test);
+            var c = new CompiledExpression(expression)
+            {
+                TypeRegistry = registry,
+                ExpressionType = ExpressionType.StatementList
+            };
 
-            var obj = new objHolder() { iterator = new List<string>() { "Hello", "there", "world" } };
-
-            registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("Debug", typeof(Debug));
-            registry.RegisterType("objHolder", typeof(objHolder));
-            registry.RegisterDefaultTypes();
-
-            //var iterator = new List<string>() { "Hello", "there", "world" };
-            //var enumerator = iterator.GetEnumerator();
-            //while (enumerator.MoveNext())
-            //{
-            //    var word = enumerator.Current;
-            //    Debug.WriteLine(word);
-            //}
-
-            var cc = new CompiledExpression() { StringToParse = "foreach(var word in obj.iterator) { Debug.WriteLine(word); }", TypeRegistry = registry };
-            cc.ExpressionType = ExpressionType.StatementList;
-            cc.Eval();
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public void ForEachLoopNoBlock()
+        public void ForEachLoopSingleStatement()
         {
+            var test = new IteratorTest() { Words = new List<string>() { "Hello", "there", "world" } };
+
+            var expected = ""; foreach (var word in test.Words) expected += word; 
+
+            var expression = "var actual = \"\"; foreach(var word in test.Words) actual += word; actual;";
+
             var registry = new TypeRegistry();
+            registry.RegisterSymbol("test", test);
+            var c = new CompiledExpression(expression)
+            {
+                TypeRegistry = registry,
+                ExpressionType = ExpressionType.StatementList
+            };
 
-            var obj = new objHolder() { iterator = new List<string>() { "Hello", "there", "world" } };
-
-            registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("Debug", typeof(Debug));
-            registry.RegisterType("objHolder", typeof(objHolder));
-            registry.RegisterDefaultTypes();
-
-            //var iterator = new List<string>() { "Hello", "there", "world" };
-            //var enumerator = iterator.GetEnumerator();
-            //while (enumerator.MoveNext())
-            //{
-            //    var word = enumerator.Current;
-            //    Debug.WriteLine(word);
-            //}
-
-            var cc = new CompiledExpression() { StringToParse = "foreach(var word in obj.iterator) Debug.WriteLine(word);", TypeRegistry = registry };
-            cc.ExpressionType = ExpressionType.StatementList;
-            cc.Eval();
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
 
@@ -161,7 +147,7 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { stringIterator = new[] { "Hello", "there", "world" } };
+            var obj = new IteratorTest() { stringIterator = new[] { "Hello", "there", "world" } };
 
             //foreach (var word in obj.stringIterator) { Debug.WriteLine(word); }
 
@@ -174,7 +160,7 @@ namespace ExpressionEvaluator.Tests
 
             registry.RegisterSymbol("obj", obj);
             registry.RegisterType("Debug", typeof(Debug));
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             var cc = new CompiledExpression() { StringToParse = "foreach(var word in obj.stringIterator) { Debug.WriteLine(word); }", TypeRegistry = registry };
@@ -188,11 +174,11 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
-            var obj2 = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
+            var obj2 = new IteratorTest() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             for (var i = 0; i < 10; i++) { obj2.number++; if (i > 5) continue; obj2.number2++; }
@@ -209,11 +195,11 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
-            var obj2 = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
+            var obj2 = new IteratorTest() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             for (var i = 0; i < 10; i++) { obj2.number++; if (i > 5) break; obj2.number2++; }
@@ -230,10 +216,10 @@ namespace ExpressionEvaluator.Tests
         {
             var registry = new TypeRegistry();
 
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
 
             var cc = new CompiledExpression() { StringToParse = "while (obj.number < 10) { obj.number++; if(obj.number == 5) break; }", TypeRegistry = registry };
@@ -246,11 +232,11 @@ namespace ExpressionEvaluator.Tests
         public void NestedWhileLoopWithBreak()
         {
             var registry = new TypeRegistry();
-            var obj = new objHolder() { result = false, value = NumEnum.Two };
+            var obj = new IteratorTest() { result = false, value = NumEnum.Two };
 
             registry.RegisterSymbol("obj", obj);
             registry.RegisterType("Debug", typeof(Debug));
-            registry.RegisterType("objHolder", typeof(objHolder));
+            registry.RegisterType("objHolder", typeof(IteratorTest));
             registry.RegisterDefaultTypes();
             var cc = new CompiledExpression() { StringToParse = "while (obj.number < 10) { Debug.WriteLine(obj.number.ToString()); obj.number++; while (obj.number2 < 10) { Debug.WriteLine(obj.number2.ToString()); obj.number2++; if(obj.number2 == 5) break;  }  if(obj.number == 5) break; }", TypeRegistry = registry };
             cc.ExpressionType = ExpressionType.StatementList;

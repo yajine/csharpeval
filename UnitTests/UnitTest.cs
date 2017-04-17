@@ -13,6 +13,52 @@ using UnitTestProject1.Domain;
 
 namespace ExpressionEvaluator.Tests
 {
+
+    public static class StaticMethodTest
+    {
+        public static int StaticMethod()
+        {
+            return 42;
+        }
+    }
+
+    public class ParamArrayTest
+    {
+        public int ParamArraySum(params int[] values)
+        {
+            var sum = 0;
+            foreach (var value in values)
+            {
+                sum += value;
+            }
+            return sum;
+        }
+    }
+
+    public class RegisterTest
+    {
+
+    }
+
+    public class IndexTest
+    {
+        public string this[string index]
+        {
+            get
+            {
+                return "Hello world " + index;
+            }
+        }
+    }
+
+    public class PropertyNameTest
+    {
+        public int FooBar { get; set; }
+        public int _FooBar { get; set; }
+        public int Foo_Bar { get; set; }
+        public int FooBar_ { get; set; }
+    }
+
     /// <summary>
     /// Summary description for UnitTest1
     /// </summary>
@@ -65,25 +111,30 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        public void UnderscoreVariables()
+        public void UnderscoreInMemberNames()
         {
-            var str = "1 | VARIABLE_NAME | _VARNAME";
-            var t = new TypeRegistry();
-            t.RegisterSymbol("VARIABLE_NAME", 16);
-            t.RegisterSymbol("_VARNAME", 32);
-            var c = new CompiledExpression(str) { TypeRegistry = t };
-            var ret = c.Eval();
+            var test = new PropertyNameTest
+            {
+                _FooBar = 21,
+                Foo_Bar = 39,
+                FooBar_ = 42
+            };
+            DefaultTest(test, "test._FooBar", test._FooBar);
+            DefaultTest(test, "test.Foo_Bar", test.Foo_Bar);
+            DefaultTest(test, "test.FooBar_", test.FooBar_);
         }
 
         [TestMethod]
         public void New()
         {
-            var str = "new TestClass(123)";
+            var expected = typeof(ObjectCreationTest);
+            var expression = "new testType()";
             var t = new TypeRegistry();
-            t.RegisterType("TestClass", typeof(TestClass));
-            var c = new CompiledExpression<TestClass>(str) { TypeRegistry = t };
+            t.RegisterType("testType", expected);
+            var c = new CompiledExpression(expression) { TypeRegistry = t };
             var ret = c.Eval();
-            Assert.AreEqual(ret.GetType(), typeof(TestClass));
+            var actual = ret.GetType();
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
@@ -304,7 +355,7 @@ namespace ExpressionEvaluator.Tests
             context.Namespaces.Add("System.Linq");
 
             t.RegisterSymbol("p1", p1);
-            var c = new CompiledExpression() { TypeRegistry = t, Context = context};
+            var c = new CompiledExpression() { TypeRegistry = t, Context = context };
             //c.StringToParse = "p1.Count()";
             //var actual1 = c.Eval();
             //Assert.AreEqual(expected1, actual1);
@@ -396,91 +447,52 @@ namespace ExpressionEvaluator.Tests
 
         }
 
-        public class Z
-        {
-            public string z { get; set; }
-        }
-
-        private string CreateEmbeddedString(string text)
-        {
-            return text.Replace("\\", "\\\\").Replace("\"", "\\\"");
-        }
-
         [TestMethod]
-        public void Escaping()
+        public void EscapeCharacters()
         {
-            var x = "//table[@id=\"ct_lookup\"]/descendant::tr[last()]/th[2]/descendant::button[@type=\"submit\"]";
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            var w = CreateEmbeddedString(x);
-            Assert.AreNotEqual(x, w);
-            c.StringToParse = "var x = \"" + w + "\";";
-            var z = new Z { z = x };
-            var func = c.ScopeCompile<Z>();
-            var result = func(z);
-            Assert.AreEqual(x, result);
+            var expected = "\\\"\a\b\f\r\n\t\v\0";
+            var expression = "\"\\\\\\\"\\a\\b\\f\\r\\n\\t\\v\\0\"";
+            DefaultTest(expression, expected);
         }
 
         [TestMethod]
         public void EmbeddedUnicodeStrings()
         {
-            var x = "\u8ba1\u7b97\u673a\u2022\u7f51\u7edc\u2022\u6280\u672f\u7c7b";
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            c.StringToParse = "var x = \"\\u8ba1\\u7b97\\u673a\\u2022\\u7f51\\u7edc\\u2022\\u6280\\u672f\\u7c7b\";";
-            var z = new Z { z = x };
-            var func = c.ScopeCompile<Z>();
-            var result = func(z);
-            Assert.AreEqual(x, result);
+            var expected = "\u8ba1\u7b97\u673a\u2022\u7f51\u7edc\u2022\u6280\u672f\u7c7b";
+            var expression = "\"\\u8ba1\\u7b97\\u673a\\u2022\\u7f51\\u7edc\\u2022\\u6280\\u672f\\u7c7b\"";
+            DefaultTest(expression, expected);
         }
 
         [TestMethod]
         public void EmbeddedHexStrings()
         {
-            var x = "\x010\x045\x32\x12\x1002\x444\x333\x232\x11\x0";
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            c.StringToParse = "var x = \"\\x010\\x045\\x32\\x12\\x1002\\x444\\x333\\x232\\x11\\x0\";";
-            var z = new Z { z = x };
-            var func = c.ScopeCompile<Z>();
-            var result = func(z);
-            Assert.AreEqual(x, result);
-        }
-
-        [TestMethod]
-        public void EmbeddedEscapeStrings()
-        {
-            var x = "\a\b\f\r\n\t\v\0";
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            c.StringToParse = "var x = \"\\a\\b\\f\\r\\n\\t\\v\\0\";";
-            var z = new Z { z = x };
-            var func = c.ScopeCompile<Z>();
-            var result = func(z);
-            Assert.AreEqual(x, result);
+            var expected = "\x010\x045\x32\x12\x1002\x444\x333\x232\x11\x0";
+            var expression = "\"\\x010\\x045\\x32\\x12\\x1002\\x444\\x333\\x232\\x11\\x0\"";
+            DefaultTest(expression, expected);
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void InvalidEscapeLiteral()
+        public void InvalidEscapeCharacter()
         {
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            c.StringToParse = "var x = \"\\c\";";
-            var result = c.Eval();
+            var c = new CompiledExpression("\"\\c\"");
+            c.Eval();
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void InvalidUnicodeLiteral()
         {
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            c.StringToParse = "var x = \"\\u123\";";
-            var result = c.Eval();
+            var c = new CompiledExpression("\"\\u123\"");
+            c.Eval();
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void InvalidHexiteral()
         {
-            var c = new CompiledExpression() { ExpressionType = ExpressionType.StatementList };
-            c.StringToParse = "var x = \"\\x\";";
-            var result = c.Eval();
+            var c = new CompiledExpression("\"\\x\"");
+            c.Eval();
         }
 
         //[TestMethod]
@@ -495,56 +507,98 @@ namespace ExpressionEvaluator.Tests
         //}
 
         [TestMethod]
-        public void StringJoin()
+        public void ImplicitlyTypedArray()
         {
-            var expected = String.Join(",", new[]{"1", "2", "3", "4"});
-            var str = "String.Join(\",\", new[]{\"1\", \"2\", \"3\", \"4\"})";
+            var expected = new[] { "1", "2", "3", "4" };
+            var str = "new[]{\"1\", \"2\", \"3\", \"4\"}";
+            var c = new CompiledExpression(str);
+            var actual = (string[])c.Eval();
+            Assert.AreEqual(expected.Length, actual.Length);
+            Assert.AreEqual(expected.GetType(), actual.GetType());
+        }
+
+        [TestMethod]
+        public void RegisterSymbol()
+        {
+            var test = new RegisterTest();
+            var expected = test.GetType();
+            var str = "test";
             var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            c.TypeRegistry.RegisterSymbol("test", test);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual.GetType());
+        }
+
+
+        [TestMethod]
+        public void ParamArray()
+        {
+            var test = new ParamArrayTest();
+            var expected = test.ParamArraySum(1, 1, 1, 1, 1);
+            var str = "test.ParamArraySum(1, 1, 1, 1, 1)";
+            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
+            c.TypeRegistry.RegisterSymbol("test", test);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void StaticMethod()
+        {
+            var expected = StaticMethodTest.StaticMethod();
+            var str = "s.StaticMethod()";
+            var t = new TypeRegistry();
+            t.RegisterType("s", typeof(StaticMethodTest));
+            var c = new CompiledExpression(str) { TypeRegistry = t };
             var actual = c.Eval();
             Assert.AreEqual(actual, expected);
         }
 
-        public class IndexableType
+        [TestMethod]
+        public void CustomIndex()
         {
-            public string this[string name] => "Hello world";
+            var test = new IndexTest();
+            DefaultTest(test, "test[\"Foobar\"]", test["Foobar"]);
         }
 
         [TestMethod]
-        public void CustomIndexer()
+        public void DictionaryIndex()
         {
-            TypeRegistry t = new TypeRegistry();
-            t.RegisterSymbol("MyObject", new IndexableType());
-            CompiledExpression s = new CompiledExpression("MyObject[\"asdf\"]");
-            s.TypeRegistry = t;
-            Assert.AreEqual("Hello world", s.Eval());
+            var test = new Dictionary<string, string> { ["Foobar"] = "Hello world" };
+            DefaultTest(test, "test[\"Foobar\"]", test["Foobar"]);
         }
 
         [TestMethod]
-        public void DictionaryIndexer()
+        public void ListIndex()
         {
-            const string key = "asdf";
-            const string helloWorld = "Hello world";
-
-            TypeRegistry t = new TypeRegistry();
-            Dictionary<string, string> dict = new Dictionary<string, string> { [key] = helloWorld };
-            t.RegisterSymbol("FooBar", dict);
-            CompiledExpression s = new CompiledExpression("FooBar[\"asdf\"]");
-            s.TypeRegistry = t;
-            Assert.AreEqual(helloWorld, s.Eval());
+            var test = new List<int> { 13, 21, 42 };
+            DefaultTest(test, "test[2]", test[2]);
         }
 
-        [TestMethod]
-        public void ListIndexer()
-        {
-            // this one is working as expected!
-            const int key = 1;
 
-            TypeRegistry t = new TypeRegistry();
-            IList<int> dict = new List<int> { key };
-            t.RegisterSymbol("FooBar", dict);
-            CompiledExpression s = new CompiledExpression("FooBar[0]");
-            s.TypeRegistry = t;
-            Assert.AreEqual(1, s.Eval());
+        private void DefaultTest(string expression, object expected)
+        {
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+        private void DefaultTest(object testObject, string expression, object expected)
+        {
+            var t = new TypeRegistry();
+            t.RegisterSymbol("test", testObject);
+            var c = new CompiledExpression(expression) { TypeRegistry = t };
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+        private void BasicTest(Action<TypeRegistry> registration, string expression, object expected)
+        {
+            var t = new TypeRegistry();
+            registration(t);
+            var c = new CompiledExpression(expression) { TypeRegistry = t };
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
@@ -560,39 +614,39 @@ namespace ExpressionEvaluator.Tests
             Assert.AreEqual(1, s.Eval());
         }
 
-            class MyContext
+        class MyContext
+        {
+            public readonly MyContext ctx;
+
+            public bool NumEq(int a, int b)
             {
-                public readonly MyContext ctx;
-
-                public bool NumEq(int a, int b)
-                {
-                    return a == b;
-                }
-
-                public string Text(string text)
-                {
-                    return text;
-                }
-
-                public int GetFirst()
-                {
-                    var r = new Random();
-
-                    return r.Next();
-                }
-
-                public int GetSecond()
-                {
-                    var r = new Random();
-
-                    return r.Next();
-                }
-
+                return a == b;
             }
 
-            [TestMethod]
-            public void DirectTernaryNestingExpressionEvaluatorExperiment()
+            public string Text(string text)
             {
+                return text;
+            }
+
+            public int GetFirst()
+            {
+                var r = new Random();
+
+                return r.Next();
+            }
+
+            public int GetSecond()
+            {
+                var r = new Random();
+
+                return r.Next();
+            }
+
+        }
+
+        [TestMethod]
+        public void DirectTernaryNestingExpressionEvaluatorExperiment()
+        {
             var expression = GetNestedTernary(10);
             var compiled = new CompiledExpression<dynamic>(expression);
             var result = compiled.ScopeCompile<MyContext>();
@@ -602,61 +656,61 @@ namespace ExpressionEvaluator.Tests
             //        var compiled = new CompiledExpression<dynamic>(expression);
             //        var result = compiled.ScopeCompile<MyContext>();
             //    }
-            }
-
-            private string GetNestedTernary(int nestingCount)
-            {
-                var ternaryStart = "(ctx.NumEq(ctx.GetFirst(),ctx.GetSecond())?ctx.Text(\"B\"):";
-                var ternary = "";
-
-                if (nestingCount > 0)
-                {
-                    ternary = ternaryStart + GetNestedTernary(nestingCount - 1) + ")";
-                }
-                else
-                {
-                    ternary = ternaryStart + "ctx.Text(\"C\"))";
-                }
-
-                return ternary;
-            }
-
-
-            [TestMethod]
-            public void DirectIfNestingExpressionEvaluatorExperiment()
-            {
-                //for (int i = 0; i < 100; i++)
-                //{
-                    var expr = "string result; " + GetNestedIfDirect(1) + "result;";
-
-                    var expression = new CompiledExpression<dynamic>(expr);
-                    //var result = compiled.ScopeCompile<MyContext>();
-
-                    expression.ExpressionType = ExpressionType.StatementList;
-                    expression.TypeRegistry = new TypeRegistry();
-                    expression.TypeRegistry.RegisterDefaultTypes();
-                    expression.TypeRegistry.RegisterSymbol("ctx", new MyContext());
-                    var result = expression.Compile();
-
-                //}
-            }
-
-            private string GetNestedIfDirect(int nestingCount)
-            {
-                var ternaryStart = @" if(ctx.NumEq(ctx.GetFirst(),ctx.GetSecond())){ result= ctx.Text(""B"");}else{";
-                var ternary = "";
-
-                if (nestingCount > 0)
-                {
-                    ternary = ternaryStart + GetNestedIfDirect(nestingCount - 1) + "}";
-                }
-                else
-                {
-                    ternary = ternaryStart + @"result= ctx.Text(""C"");}";
-                }
-
-                return ternary;
-            }
         }
+
+        private string GetNestedTernary(int nestingCount)
+        {
+            var ternaryStart = "(ctx.NumEq(ctx.GetFirst(),ctx.GetSecond())?ctx.Text(\"B\"):";
+            var ternary = "";
+
+            if (nestingCount > 0)
+            {
+                ternary = ternaryStart + GetNestedTernary(nestingCount - 1) + ")";
+            }
+            else
+            {
+                ternary = ternaryStart + "ctx.Text(\"C\"))";
+            }
+
+            return ternary;
+        }
+
+
+        [TestMethod]
+        public void DirectIfNestingExpressionEvaluatorExperiment()
+        {
+            //for (int i = 0; i < 100; i++)
+            //{
+            var expr = "string result; " + GetNestedIfDirect(1) + "result;";
+
+            var expression = new CompiledExpression<dynamic>(expr);
+            //var result = compiled.ScopeCompile<MyContext>();
+
+            expression.ExpressionType = ExpressionType.StatementList;
+            expression.TypeRegistry = new TypeRegistry();
+            expression.TypeRegistry.RegisterDefaultTypes();
+            expression.TypeRegistry.RegisterSymbol("ctx", new MyContext());
+            var result = expression.Compile();
+
+            //}
+        }
+
+        private string GetNestedIfDirect(int nestingCount)
+        {
+            var ternaryStart = @" if(ctx.NumEq(ctx.GetFirst(),ctx.GetSecond())){ result= ctx.Text(""B"");}else{";
+            var ternary = "";
+
+            if (nestingCount > 0)
+            {
+                ternary = ternaryStart + GetNestedIfDirect(nestingCount - 1) + "}";
+            }
+            else
+            {
+                ternary = ternaryStart + @"result= ctx.Text(""C"");}";
+            }
+
+            return ternary;
+        }
+    }
 
 }

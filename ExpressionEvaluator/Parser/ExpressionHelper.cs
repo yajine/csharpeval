@@ -24,16 +24,39 @@ namespace ExpressionEvaluator.Parser
             return Expression.Call(typeof(Convert), "ToString", null, instance);
         }
 
-        public static Expression Add(Expression le, Expression re)
+        public static bool TryImplicitStringAdd(Expression le, Expression re, out Expression expr)
         {
             if (le.Type == StringType || re.Type == StringType)
             {
                 if (le.Type != typeof(string)) le = ConvertToString(le);
                 if (re.Type != typeof(string)) re = ConvertToString(re);
-                return Expression.Add(le, re, StringType.GetMethod("Concat", new Type[] { le.Type, re.Type }));
+                expr = Expression.Add(le, re, StringType.GetMethod("Concat", new Type[] { le.Type, re.Type }));
+                return true;
+            }
+            expr = null;
+            return false;
+        }
+
+        public static Expression Add(Expression le, Expression re)
+        {
+            Expression expr;
+            if (TryImplicitStringAdd(le, re, out expr))
+            {
+                return expr;
             }
             return Expression.Add(le, re);
         }
+
+        public static Expression AddAssign(Expression le, Expression re)
+        {
+            Expression expr;
+            if (TryImplicitStringAdd(le, re, out expr))
+            {
+                return Expression.Assign(le, expr);
+            }
+            return Expression.AddAssign(le, re);
+        }
+
 
         public static Expression GetPropertyIndex(Expression le, IEnumerable<Expression> args)
         {
@@ -1204,7 +1227,7 @@ namespace ExpressionEvaluator.Parser
                     return Expression.Assign(le, re);
 
                 case System.Linq.Expressions.ExpressionType.AddAssign:
-                    return Expression.AddAssign(le, re);
+                    return AddAssign(le, re);
 
                 case System.Linq.Expressions.ExpressionType.AndAssign:
                     return Expression.AndAssign(le, re);

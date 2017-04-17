@@ -55,16 +55,44 @@ namespace ExpressionEvaluator.Parser
                 return Expression.Constant(result);
             }
 
-            if (_lambdaContextStack.Count > 0)
+            //if (_lambdaContextStack.Count > 0)
+            //{
+            //    var lambdaContext = _lambdaContextStack.Peek();
+            //    var p = lambdaContext.Parameters.FirstOrDefault(x => x.Identifier == identifier);
+            //    if (p != null) return p.Expression;
+            //}
+
+            if (Scope != null)
             {
-                var lambdaContext = _lambdaContextStack.Peek();
-                var p = lambdaContext.Parameters.FirstOrDefault(x => x.Identifier == identifier);
-                if (p != null) return p.Expression;
+                var scopeMember = ExpressionHelper.GetProperty(Scope, identifier);
+
+                if (scopeMember == null)
+                {
+                    var candidates = MethodResolution.GetCandidateMembers(Scope.Type, identifier);
+                    if (candidates != null)
+                    {
+                        methodInvocationContextStack.Push(new MethodInvocationContext()
+                        {
+                            Method = new TypeOrGeneric()
+                            {
+                                Identifier = identifier,
+                                // TODO: Type Arguments...
+                            },
+                            MethodCandidates = candidates,
+                            Instance = Scope,
+                            Type = Scope.Type
+                        });
+
+                        return Scope;
+                    }
+                }
+                else
+                {
+                    return scopeMember;
+                }
             }
 
-            return null;
-
-            // throw new UnknownIdentifierException(identifier);
+            throw new Exception("Unexpected identifier: \"" + identifier + "\"");
         }
 
 
@@ -154,38 +182,7 @@ namespace ExpressionEvaluator.Parser
         public override Expression VisitIdentifier(CSharp4Parser.IdentifierContext context)
         {
             var identifier_text = context.IDENTIFIER().GetText();
-
             var value = GetIdentifier(identifier_text);
-
-            if (value == null)
-            {
-                if (Scope != null)
-                {
-                    value = ExpressionHelper.GetProperty(Scope, identifier_text);
-
-                    if (value == null)
-                    {
-                        var candidates = MethodResolution.GetCandidateMembers(Scope.Type, identifier_text);
-                        if (candidates != null)
-                        {
-                            methodInvocationContextStack.Push(new MethodInvocationContext()
-                            {
-                                Method = new TypeOrGeneric()
-                                {
-                                    Identifier = identifier_text,
-                                    // TODO: Type Arguments...
-                                },
-                                MethodCandidates = candidates,
-                                Instance = Scope,
-                                Type = Scope.Type
-                            });
-
-                            value = Scope;
-                        }
-                    }
-                }
-            }
-
             return value;
         }
 
@@ -226,6 +223,7 @@ namespace ExpressionEvaluator.Parser
         {
             var le = Visit(context.unary_expression());
             var re = Visit(context.expression());
+
             switch (context.op.Type)
             {
                 case CSharp4Parser.ASSIGNMENT:

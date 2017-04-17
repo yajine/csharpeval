@@ -71,7 +71,7 @@
     <Compile Include="Domain\Scope.cs" />
     <Compile Include="Domain\ScopeDataType.cs" />
     <Compile Include="Domain\StaticFunctionCache.cs" />
-    <Compile Include="Domain\TestClass.cs" />
+    <Compile Include="Domain\ObjectCreationTest.cs" />
     <Compile Include="DynamicTests.cs" />
     <Compile Include="EnumTests.cs" />
     <Compile Include="OperatorTests.cs" />
