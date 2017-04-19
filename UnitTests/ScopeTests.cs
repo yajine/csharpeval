@@ -1,7 +1,7 @@
+using ExpressionEvaluator.UnitTests.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestProject1.Domain;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
     [TestClass]
     public class ScopeTests
@@ -10,21 +10,21 @@ namespace ExpressionEvaluator.Tests
         [TestMethod]
         public void ScopeCompile()
         {
-            var helper = new Helper();
-            var str = "availableMethod(1)";
+            var test = new MemberResolutionTest();
+            var str = "Foobar()";
             var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
-            var ret = c.ScopeCompile<Helper>();
-            ret(helper);
+            var ret = c.ScopeCompile<MemberResolutionTest>();
+            ret(test);
         }
 
         [TestMethod]
         public void ScopeCompileCall()
         {
-            var helper = new Helper();
-            var str = "availableMethod(1)";
+            var test = new MemberResolutionTest();
+            var str = "Foobar()";
             var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
-            var ret = c.ScopeCompileCall<Helper>();
-            ret(helper);
+            var ret = c.ScopeCompileCall<MemberResolutionTest>();
+            ret(test);
         }
 
         [TestMethod]

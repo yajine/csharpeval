@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
     public static class TestHelpers
     {

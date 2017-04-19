@@ -421,7 +421,7 @@ namespace ExpressionEvaluator.Parser
                     ParameterList.Add(variable);
                     if (x.Expression != null)
                     {
-                        list.Initializers.Add(Expression.Assign(variable, x.Expression));
+                        list.Initializers.Add(ExpressionHelper.Assign(variable, x.Expression));
                     }
                 }
             }
@@ -597,6 +597,7 @@ namespace ExpressionEvaluator.Parser
                 }
             }
 
+            var stackIndex = methodInvocationContextStack.Count;
 
             foreach (var part_context in context.primary_expression_part())
             {
@@ -677,8 +678,25 @@ namespace ExpressionEvaluator.Parser
 
                         if (value == null)
                         {
-                            throw new CompilerException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", identifier, type));
+                            throw new MemberResolutionException(identifier, type);
                         }
+
+
+                        //methodInvocationContextStack.Push(new MethodInvocationContext()
+                        //{
+                        //    Method = new TypeOrGeneric()
+                        //    {
+                        //        Identifier = identifier,
+                        //        TypeArgs = typeArgs
+                        //    },
+                        //    MethodCandidates = methodCandidates,
+                        //    IsStaticMethod = isStaticMethodInvocation,
+                        //    IsExtensionMethod = isExtensionMethod,
+                        //    ThisParameter = thisParameter,
+                        //    Type = type,
+                        //    Instance = value
+                        //});
+
                     }
                     else
                     {
@@ -697,6 +715,8 @@ namespace ExpressionEvaluator.Parser
                             Instance = value
                         });
                     }
+
+
                 }
                 else if ((methodInvocation2Context = part_context.method_invocation2()) != null)
                 {
@@ -712,9 +732,10 @@ namespace ExpressionEvaluator.Parser
                     }
 
                     value = methodInvocationContext.GetInvokeMethodExpression();
+
                     if (value == null)
                     {
-                        throw new CompilerException(string.Format("Cannot resolve member \"{0}\" on type \"{1}\"", methodInvocationContext.Method.Identifier, methodInvocationContext.Type.Name));
+                        throw new MemberResolutionException(methodInvocationContext.Method.Identifier, methodInvocationContext.Type);
                     }
                 }
                 else if (part_context.OP_INC() != null)
@@ -738,6 +759,11 @@ namespace ExpressionEvaluator.Parser
 
             }
 
+            //if (methodInvocationContextStack.Count != stackIndex)
+            //{
+            // throw new CompilerException("Only assignment, call, increment, decrement and new object expressions can be used as a statement");   
+            //};
+
             return value;
         }
 
@@ -753,28 +779,34 @@ namespace ExpressionEvaluator.Parser
                 }
                 return ExpressionHelper.ParseIntLiteral(int_literal_text);
             }
+
             if (context.boolean_literal() != null)
             {
                 var bool_text = context.boolean_literal().GetText();
                 if (bool_text == "true") return Expression.Constant(true);
                 if (bool_text == "false") return Expression.Constant(false);
             }
+
             if (context.STRING_LITERAL() != null)
             {
                 return ExpressionHelper.ParseStringLiteral(context.STRING_LITERAL().GetText());
             }
+
             if (context.CHARACTER_LITERAL() != null)
             {
                 return ExpressionHelper.ParseCharLiteral(context.CHARACTER_LITERAL().GetText());
             }
+
             if (context.NULL() != null)
             {
                 return Expression.Constant(null);
             }
+
             if (context.REAL_LITERAL() != null)
             {
                 return ExpressionHelper.ParseRealLiteral(context.REAL_LITERAL().GetText());
             }
+
             throw new InvalidOperationException();
         }
 

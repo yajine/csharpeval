@@ -1,6 +1,6 @@
 using System;
 
-namespace UnitTestProject1.Domain
+namespace ExpressionEvaluator.UnitTests.Domain
 {
     public class MethodOverloading
     {

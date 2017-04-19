@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Globalization;
-using System.Text;
-using ExpressionEvaluator.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ExpressionEvaluator;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
     [TestClass]
     public class LiteralParsingTests
@@ -20,62 +16,88 @@ namespace ExpressionEvaluator.Tests
         }
 
 
-        [TestMethod]
-        public void ParseDSuffixReturnsDouble()
-        {
-            var str = "2.5D";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret.GetType() == typeof(System.Double));
-            Assert.IsTrue(Convert.ToDouble(ret) == 2.5D);
-        }
 
         [TestMethod]
         public void ImplicitNumericCasting()
         {
-            var str = "2.5D + 1";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
+            var expression = "2.5D + 1";
+            var expected = 2.5D + 1;
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.IsTrue(actual is double);
+            Assert.AreEqual(expected, actual);
 
-            Assert.IsTrue(ret.GetType() == typeof(System.Double));
-            Assert.IsTrue(Convert.ToDouble(ret) == 3.5D);
-
-            c.StringToParse = "1 + 2.5d";
-            ret = c.Eval();
-            Assert.IsTrue(ret.GetType() == typeof(System.Double));
-            Assert.IsTrue(Convert.ToDouble(ret) == 3.5d);
-        }
-
-
-
-        [TestMethod]
-        public void ParseFSuffixReturnsSingle()
-        {
-            var str = "2.5F";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret.GetType() == typeof(System.Single));
-            Assert.IsTrue(Convert.ToSingle(ret) == 2.5F);
+            expression = "1 + 2.5D";
+            expected = 1 + 2.5D;
+            c = new CompiledExpression(expression);
+            actual = c.Eval();
+            Assert.IsTrue(actual is double);
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public void ParseMSuffixReturnsDecimal()
+        public void ExplicitDecimal()
         {
-            var str = "2.5M";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret.GetType() == typeof(System.Decimal));
-            Assert.IsTrue(Convert.ToDecimal(ret) == 2.5M);
+            var expression = "2.5M";
+            var expected = 2.5M;
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+
+            expression = "2.5m";
+            expected = 2.5m;
+            c = new CompiledExpression(expression);
+            actual = c.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public void ParseLSuffixReturnsLong()
+        public void ExplicitDouble()
         {
-            var str = "2L";
-            var c = new CompiledExpression(str);
-            var ret = c.Eval();
-            Assert.IsTrue(ret.GetType() == typeof(System.Int64));
-            Assert.IsTrue(Convert.ToInt64(ret) == 2L);
+            var expression = "2.5D";
+            var expected = 2.5D;
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+
+            expression = "2.5d";
+            expected = 2.5d;
+            c = new CompiledExpression(expression);
+            actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+
+        [TestMethod]
+        public void ExplicitSingle()
+        {
+            var expression = "2.5F";
+            var expected = 2.5F;
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+
+            expression = "2.5f";
+            expected = 2.5f;
+            c = new CompiledExpression(expression);
+            actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void ExplicitLong()
+        {
+            var expression = "25L";
+            var expected = 25L;
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual);
+
+            expression = "25l";
+            expected = 25l;
+            c = new CompiledExpression(expression);
+            actual = c.Eval();
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
@@ -125,10 +147,10 @@ namespace ExpressionEvaluator.Tests
         public void LongMin()
         {
             var expected = -9223372036854775808;
-            var str = "-9223372036854775808";
-            var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry() };
-            var ret = c.Eval();
-            Assert.AreEqual(expected, ret, "Input: <{0}>", str);
+            var expression = "-9223372036854775808";
+            var c = new CompiledExpression(expression);
+            var actual = c.Eval();
+            Assert.AreEqual(expected, actual, "Input: <{0}>", expression);
         }
 
         [TestMethod]
@@ -149,8 +171,10 @@ namespace ExpressionEvaluator.Tests
             //Assert.AreEqual(expected, ret, "Input: <{0}>", str);
         }
 
+
+
         [TestMethod]
-        public void Double()
+        public void DoubleLowestMinimum()
         {
             var expected = -9223372036854775809d;
             var str = "-9223372036854775809d";

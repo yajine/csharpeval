@@ -22,11 +22,46 @@ namespace ExpressionEvaluator.Parser
         public Type Type { get; set; }
         public Expression Instance { get; set; }
         public IList<ArgumentExpression> Arguments { get; set; }
-
+        public bool IsCall { get; set; }
         public List<TypeInferenceBounds> TypeInferenceBoundsList { get; set; }
+
+        public Expression GetDynamicInvokeMethodExpression()
+        {
+            var expArgs = new List<Expression> { Instance };
+
+            expArgs.AddRange(Arguments.Select(x => x.Expression));
+
+            if (IsCall)
+            {
+                var binderMC = Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
+                    Microsoft.CSharp.RuntimeBinder.CSharpBinderFlags.ResultDiscarded,
+                    Method.Identifier,
+                    null,
+                    Type,
+                    expArgs.Select(x => Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags.None, null))
+                    );
+
+                return Expression.Dynamic(binderMC, typeof(void), expArgs);
+            }
+
+            var binderM = Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
+                Microsoft.CSharp.RuntimeBinder.CSharpBinderFlags.None,
+                Method.Identifier,
+                null,
+                Type,
+                expArgs.Select(x => Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags.None, null))
+                );
+
+            return Expression.Dynamic(binderM, typeof(object), expArgs);
+    }
 
         public Expression GetInvokeMethodExpression()
         {
+            if (ExpressionHelper.IsDynamic(Instance))
+            {
+                return GetDynamicInvokeMethodExpression();
+            }
+
             var appMembers = new List<ApplicableFunctionMember>();
             //IEnumerable<Argument> args = null;
 

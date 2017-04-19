@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
 
-namespace UnitTestProject1.Domain
+namespace ExpressionEvaluator.UnitTests.Domain
 {
     public class PropertyExtensibleObject : DynamicObject
     {

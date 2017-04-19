@@ -1,8 +1,8 @@
 using System;
+using ExpressionEvaluator.UnitTests.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestProject1.Domain;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
     [TestClass]
     public class OperatorTests

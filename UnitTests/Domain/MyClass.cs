@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UnitTestProject1.Domain
+namespace ExpressionEvaluator.UnitTests.Domain
 {
     public class MyClass
     {

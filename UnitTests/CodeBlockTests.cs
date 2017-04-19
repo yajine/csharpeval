@@ -1,27 +1,39 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using ExpressionEvaluator.UnitTests.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestProject1.Domain;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
     [TestClass]
     public class CodeBlockTests
     {
         [TestMethod]
-        public void LocalImplicitVariables()
+        public void LocalImplicitlyTypedVariable()
         {
-            var registry = new TypeRegistry();
+            var expressison = "var expected = 42l; expected;";
+            var expected = 42l;
+            var c = new CompiledExpression(expressison)
+            {
+                ExpressionType = ExpressionType.StatementList
+            };
+            var actual = c.Eval();
+            Assert.AreEqual(expected.GetType(), actual.GetType());
+            Assert.AreEqual(expected, actual);
+        }
 
-            object obj = new IteratorTest() { result = false, value = NumEnum.Two };
-
-            registry.RegisterSymbol("obj", obj);
-            registry.RegisterType("objHolder", typeof(IteratorTest));
-            registry.RegisterDefaultTypes();
-
-            var cc = new CompiledExpression() { StringToParse = "var x = new objHolder(); x.number = 3; x.number++; var varname = 23; varname++; obj.number = varname -  x.number;", TypeRegistry = registry };
-            cc.ExpressionType = ExpressionType.StatementList;
-            var result = cc.Eval();
+        [TestMethod]
+        public void LocalExplicitlyTypedVariable()
+        {
+            var expressison = "long expected = 42; expected;";
+            long expected = 42;
+            var c = new CompiledExpression(expressison)
+            {
+                ExpressionType = ExpressionType.StatementList
+            };
+            var actual = c.Eval();
+            Assert.AreEqual(expected.GetType(), actual.GetType());
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]

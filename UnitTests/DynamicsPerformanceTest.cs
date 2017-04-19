@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using System.Dynamic;
-using ExpressionEvaluator;
+using ExpressionEvaluator.UnitTests.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestProject1.Domain;
 
-namespace UnitTestProject1
+namespace ExpressionEvaluator.UnitTests
 {
     [TestClass]
     public class DynamicsPerformanceTest

@@ -1,12 +1,16 @@
-namespace UnitTestProject1.Domain
+using System;
+
+namespace ExpressionEvaluator.UnitTests.Domain
 {
-    public class Helper
+    public class MemberResolutionTest
     {
-        public int availableMethod(int someParameter)
+        public Action Foobax { get; set; }
+
+        public void Foobar()
         {
-            return someParameter + 1;
+            
         }
 
-        public int availableProperty { get; set; }
+        public int Foobaz { get; set; }
     }
 }

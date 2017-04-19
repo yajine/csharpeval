@@ -251,7 +251,7 @@ INTEGER_LITERAL
   | Hexadecimal_integer_literal
   ;
 fragment Decimal_integer_literal 
-  : Decimal_digits Integer_type_suffix?
+  : Sign? Decimal_digits Integer_type_suffix?
   ;
 fragment Decimal_digits 
   : DECIMAL_DIGIT+
@@ -274,7 +274,7 @@ fragment Integer_type_suffix
   | 'lu'
   ;
 fragment Hexadecimal_integer_literal 
-  : ('0x' | '0X') Hex_digits Integer_type_suffix?
+  : Sign? ('0x' | '0X') Hex_digits Integer_type_suffix?
   ;
 fragment Hex_digits 
   : HEX_DIGIT+
@@ -294,10 +294,13 @@ LiteralAccess
   ;
 
 REAL_LITERAL 
-  : Decimal_digits DOT Decimal_digits Exponent_part? Real_type_suffix?
-  | DOT Decimal_digits Exponent_part? Real_type_suffix?
-  | Decimal_digits Exponent_part Real_type_suffix?
-  | Decimal_digits Real_type_suffix
+  : Sign? 
+	(
+		Decimal_digits DOT Decimal_digits Exponent_part? Real_type_suffix?
+	  | DOT Decimal_digits Exponent_part? Real_type_suffix?
+	  | Decimal_digits Exponent_part Real_type_suffix?
+	  | Decimal_digits Real_type_suffix
+  )
   ;
 fragment Exponent_part 
   : ('e' | 'E') Sign? Decimal_digits

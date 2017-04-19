@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Dynamic;
+using ExpressionEvaluator.UnitTests.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestProject1.Domain;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
     public class DynamicContainer
     {
@@ -21,7 +20,7 @@ namespace ExpressionEvaluator.Tests
     public class DynamicTests
     {
         [TestMethod]
-        public void CallMethodOnDynamicProperty()
+        public void MethodOnDynamicProperty()
         {
             dynamic invoice = new ExpandoObject();
             invoice.Date = DateTime.Now;
@@ -34,7 +33,7 @@ namespace ExpressionEvaluator.Tests
         }
 
         [TestMethod]
-        public void DynamicBinaryOperators()
+        public void BinaryOperatorsOnDynamicObjects()
         {
             var c = new DynamicContainer();
             c.a = 1;
@@ -111,7 +110,7 @@ namespace ExpressionEvaluator.Tests
             registry.RegisterSymbol("obj", obj);
             registry.RegisterDefaultTypes();
 
-            var cc = new CompiledExpression() { StringToParse = "obj.Value == 'aa'", TypeRegistry = registry };
+            var cc = new CompiledExpression() { StringToParse = "obj.Value == \"aa\"", TypeRegistry = registry };
             var ret = cc.Eval();
             Assert.AreEqual(true, ret);
 

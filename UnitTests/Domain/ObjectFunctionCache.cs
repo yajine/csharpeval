@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ExpressionEvaluator;
 
-namespace UnitTestProject1.Domain
+namespace ExpressionEvaluator.UnitTests.Domain
 {
     public class ObjectFunctionCache<T>
     {

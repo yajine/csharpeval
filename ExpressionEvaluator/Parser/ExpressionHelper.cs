@@ -347,7 +347,7 @@ namespace ExpressionEvaluator.Parser
             //Otherwise, no inferences are made.
         }
 
-        private static bool IsDynamic(Expression expr)
+        public static bool IsDynamic(Expression expr)
         {
             return (expr.NodeType == System.Linq.Expressions.ExpressionType.Dynamic) || expr.Type.IsDynamic() || (expr.NodeType == System.Linq.Expressions.ExpressionType.Call && ((MethodCallExpression)expr).Method.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(DynamicAttribute), true).Length > 0);
         }
@@ -961,7 +961,7 @@ namespace ExpressionEvaluator.Parser
 
         public static Expression ParseCharLiteral(string token)
         {
-            token = token.Substring(2, token.Length - 3);
+            token = token.Substring(1, token.Length - 2);
             return Expression.Constant(Convert.ToChar(token), typeof(char));
         }
 

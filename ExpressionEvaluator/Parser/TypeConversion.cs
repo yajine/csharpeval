@@ -6,116 +6,121 @@ using Converter = System.Convert;
 
 namespace ExpressionEvaluator.Parser
 {
+    public class InvalidNumericPromotionException : Exception
+    {
+        
+    }
+
     internal class TypeConversion
     {
         private static Dictionary<Type, List<Type>> ImplicitNumericConversions = new Dictionary<Type, List<Type>>();
 
-        //private static bool PromoteNumericWithAlternate(Type referenceType, ref Expression le, ref Expression re, Type[] alternateTypes, Type targetType)
-        //{
-        //    if (le.Type == referenceType && alternateTypes.Contains(re.Type))
-        //    {
-        //        re = Expression.Convert(re, targetType);
-        //        return true;
-        //    }
+        private static bool PromoteNumericWithAlternate(Type referenceType, ref Expression le, ref Expression re, Type[] alternateTypes, Type targetType)
+        {
+            if (le.Type == referenceType && alternateTypes.Contains(re.Type))
+            {
+                re = Expression.Convert(re, targetType);
+                return true;
+            }
 
-        //    if (re.Type == referenceType && alternateTypes.Contains(le.Type))
-        //    {
-        //        le = Expression.Convert(le, targetType);
-        //        return true;
-        //    }
+            if (re.Type == referenceType && alternateTypes.Contains(le.Type))
+            {
+                le = Expression.Convert(le, targetType);
+                return true;
+            }
 
-        //    return false;
+            return false;
 
-        //}
+        }
 
-        //private static bool PromoteNumeric(Type referenceType, Type thisOperandType, ref Expression otherOperand, Type[] invalidTypes = null)
-        //{
-        //    if (thisOperandType == referenceType && otherOperand.Type != referenceType)
-        //    {
-        //        if (invalidTypes != null && invalidTypes.Contains(otherOperand.Type))
-        //        {
-        //            throw new InvalidNumericPromotionException();
-        //        }
+        private static bool PromoteNumeric(Type referenceType, Type thisOperandType, ref Expression otherOperand, Type[] invalidTypes = null)
+        {
+            if (thisOperandType == referenceType && otherOperand.Type != referenceType)
+            {
+                if (invalidTypes != null && invalidTypes.Contains(otherOperand.Type))
+                {
+                    throw new InvalidNumericPromotionException();
+                }
 
-        //        otherOperand = Expression.Convert(otherOperand, referenceType);
-        //        return true;
-        //    }
+                otherOperand = Expression.Convert(otherOperand, referenceType);
+                return true;
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
 
-        //private static bool PromoteNumeric(Type referenceType, ref Expression le, ref Expression re, Type[] invalidTypes = null)
-        //{
-        //    return PromoteNumeric(referenceType, le.Type, ref re, invalidTypes) ||
-        //    PromoteNumeric(referenceType, re.Type, ref le, invalidTypes);
-        //}
+        private static bool PromoteNumeric(Type referenceType, ref Expression le, ref Expression re, Type[] invalidTypes = null)
+        {
+            return PromoteNumeric(referenceType, le.Type, ref re, invalidTypes) ||
+            PromoteNumeric(referenceType, re.Type, ref le, invalidTypes);
+        }
 
-        //private static bool PromoteNumericInt(ref Expression le, ref Expression re)
-        //{
-        //    le = Expression.Convert(le, typeof(int));
-        //    re = Expression.Convert(re, typeof(int));
-        //    return true;
-        //}
+        private static bool PromoteNumericInt(ref Expression le, ref Expression re)
+        {
+            le = Expression.Convert(le, typeof(int));
+            re = Expression.Convert(re, typeof(int));
+            return true;
+        }
 
 
         // 7.3.6.2 Binary numeric promotions
-        //public static bool BinaryNumericPromotion(ExpressionType expressionType, ref Expression le, ref Expression re)
-        //{
-        //    try
-        //    {
-        //        // Binary numeric promotion occurs for the operands of the predefined +, –, *, /, %, &, |, ^, ==, !=, >, <, >=, and <= binary operators. Binary numeric promotion implicitly converts both operands to a common type which, in case of the non-relational operators, also becomes the result type of the operation. Binary numeric promotion consists of applying the following rules, in the order they appear here:
-        //        switch (expressionType)
-        //        {
-        //            case ExpressionType.Add:
-        //            case ExpressionType.AddChecked:
-        //            case ExpressionType.Subtract:
-        //            case ExpressionType.SubtractChecked:
-        //            case ExpressionType.Multiply:
-        //            case ExpressionType.MultiplyChecked:
-        //            case ExpressionType.Divide:
-        //            case ExpressionType.Modulo:
-        //            case ExpressionType.And:
-        //            case ExpressionType.Or:
-        //            case ExpressionType.ExclusiveOr:
-        //            case ExpressionType.Equal:
-        //            case ExpressionType.NotEqual:
-        //            case ExpressionType.GreaterThan:
-        //            case ExpressionType.LessThan:
-        //            case ExpressionType.GreaterThanOrEqual:
-        //            case ExpressionType.LessThanOrEqual:
-        //                if (le.Type.IsNumericType() && re.Type.IsNumericType())
-        //                {
-        //                    // •	If either operand is of type decimal, the other operand is converted to type decimal, or a binding-time error occurs if the other operand is of type float or double.
-        //                    return PromoteNumeric(typeof(decimal), ref le, ref re, new Type[] { typeof(float), typeof(double) }) ||
-        //                        // •	Otherwise, if either operand is of type double, the other operand is converted to type double.
-        //                    PromoteNumeric(typeof(double), ref le, ref re) ||
-        //                        // •	Otherwise, if either operand is of type float, the other operand is converted to type float.
-        //                    PromoteNumeric(typeof(float), ref le, ref re) ||
-        //                        // •	Otherwise, if either operand is of type ulong, the other operand is converted to type ulong, or a binding-time error occurs if the other operand is of type sbyte, short, int, or long.
-        //                    PromoteNumeric(typeof(ulong), ref le, ref re, new Type[] { typeof(sbyte), typeof(short), typeof(int), typeof(long) }) ||
-        //                        // •	Otherwise, if either operand is of type long, the other operand is converted to type long.
-        //                    PromoteNumeric(typeof(long), ref le, ref re) ||
-        //                        // •	Otherwise, if either operand is of type uint and the other operand is of type sbyte, short, or int, both operands are converted to type long.
-        //                    PromoteNumericWithAlternate(typeof(uint), ref le, ref re, new Type[] { typeof(sbyte), typeof(short), typeof(int) }, typeof(long)) ||
-        //                        // •	Otherwise, if either operand is of type uint, the other operand is converted to type uint.
-        //                    PromoteNumeric(typeof(uint), ref le, ref re) ||
-        //                        // •	Otherwise, both operands are converted to type int.
-        //                    PromoteNumericInt(ref le, ref re)
-        //                   ;
-        //                }
-        //                // Note that the first rule disallows any operations that mix the decimal type with the double and float types. The rule follows from the fact that there are no implicit conversions between the decimal type and the double and float types.
-        //                // Also note that it is not possible for an operand to be of type ulong when the other operand is of a signed integral type. The reason is that no integral type exists that can represent the full range of ulong as well as the signed integral types.
-        //                break;
-        //        }
-        //    }
-        //    catch (InvalidNumericPromotionException)
-        //    {
-        //        throw new Exception(string.Format("Cannot apply operator {0} to operands of type {1} and {2}", expressionType, le.Type, re.Type));
-        //    }
+        public static bool BinaryNumericPromotion(System.Linq.Expressions.ExpressionType expressionType, ref Expression le, ref Expression re)
+        {
+            try
+            {
+                // Binary numeric promotion occurs for the operands of the predefined +, –, *, /, %, &, |, ^, ==, !=, >, <, >=, and <= binary operators. Binary numeric promotion implicitly converts both operands to a common type which, in case of the non-relational operators, also becomes the result type of the operation. Binary numeric promotion consists of applying the following rules, in the order they appear here:
+                switch (expressionType)
+                {
+                    case System.Linq.Expressions.ExpressionType.Add:
+                    case System.Linq.Expressions.ExpressionType.AddChecked:
+                    case System.Linq.Expressions.ExpressionType.Subtract:
+                    case System.Linq.Expressions.ExpressionType.SubtractChecked:
+                    case System.Linq.Expressions.ExpressionType.Multiply:
+                    case System.Linq.Expressions.ExpressionType.MultiplyChecked:
+                    case System.Linq.Expressions.ExpressionType.Divide:
+                    case System.Linq.Expressions.ExpressionType.Modulo:
+                    case System.Linq.Expressions.ExpressionType.And:
+                    case System.Linq.Expressions.ExpressionType.Or:
+                    case System.Linq.Expressions.ExpressionType.ExclusiveOr:
+                    case System.Linq.Expressions.ExpressionType.Equal:
+                    case System.Linq.Expressions.ExpressionType.NotEqual:
+                    case System.Linq.Expressions.ExpressionType.GreaterThan:
+                    case System.Linq.Expressions.ExpressionType.LessThan:
+                    case System.Linq.Expressions.ExpressionType.GreaterThanOrEqual:
+                    case System.Linq.Expressions.ExpressionType.LessThanOrEqual:
+                        if (le.Type.IsNumericType() && re.Type.IsNumericType())
+                        {
+                            // •	If either operand is of type decimal, the other operand is converted to type decimal, or a binding-time error occurs if the other operand is of type float or double.
+                            return PromoteNumeric(typeof(decimal), ref le, ref re, new Type[] { typeof(float), typeof(double) }) ||
+                            // •	Otherwise, if either operand is of type double, the other operand is converted to type double.
+                            PromoteNumeric(typeof(double), ref le, ref re) ||
+                            // •	Otherwise, if either operand is of type float, the other operand is converted to type float.
+                            PromoteNumeric(typeof(float), ref le, ref re) ||
+                            // •	Otherwise, if either operand is of type ulong, the other operand is converted to type ulong, or a binding-time error occurs if the other operand is of type sbyte, short, int, or long.
+                            PromoteNumeric(typeof(ulong), ref le, ref re, new Type[] { typeof(sbyte), typeof(short), typeof(int), typeof(long) }) ||
+                            // •	Otherwise, if either operand is of type long, the other operand is converted to type long.
+                            PromoteNumeric(typeof(long), ref le, ref re) ||
+                            // •	Otherwise, if either operand is of type uint and the other operand is of type sbyte, short, or int, both operands are converted to type long.
+                            PromoteNumericWithAlternate(typeof(uint), ref le, ref re, new Type[] { typeof(sbyte), typeof(short), typeof(int) }, typeof(long)) ||
+                            // •	Otherwise, if either operand is of type uint, the other operand is converted to type uint.
+                            PromoteNumeric(typeof(uint), ref le, ref re) ||
+                            // •	Otherwise, both operands are converted to type int.
+                            PromoteNumericInt(ref le, ref re)
+                           ;
+                        }
+                        // Note that the first rule disallows any operations that mix the decimal type with the double and float types. The rule follows from the fact that there are no implicit conversions between the decimal type and the double and float types.
+                        // Also note that it is not possible for an operand to be of type ulong when the other operand is of a signed integral type. The reason is that no integral type exists that can represent the full range of ulong as well as the signed integral types.
+                        break;
+                }
+            }
+            catch (InvalidNumericPromotionException)
+            {
+                throw new Exception(string.Format("Cannot apply operator {0} to operands of type {1} and {2}", expressionType, le.Type, re.Type));
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         readonly Dictionary<Type, int> _typePrecedence = null;
         static readonly TypeConversion Instance = new TypeConversion();

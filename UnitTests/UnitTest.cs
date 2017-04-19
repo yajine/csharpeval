@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ExpressionEvaluator.Parser;
+using ExpressionEvaluator.UnitTests.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestProject1;
-using UnitTestProject1.Domain;
 
-namespace ExpressionEvaluator.Tests
+namespace ExpressionEvaluator.UnitTests
 {
 
     public static class StaticMethodTest
@@ -66,47 +64,48 @@ namespace ExpressionEvaluator.Tests
     public class UnitTest
     {
         [TestMethod]
-        public void UnavailableMethodThrowsException()
+        public void FailOnNonExistentMethodResolution()
         {
             try
             {
-                var str = "var x = helper.availableMethod(someparameter);\r\nvar y = helper.unavailableMethod(someparameter);";
-                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = ExpressionType.StatementList };
-                var helper = new Helper();
-                var someparameter = 1;
-                c.TypeRegistry.RegisterSymbol("helper", helper);
-                c.TypeRegistry.RegisterSymbol("someparameter", someparameter);
+                var test = new MemberResolutionTest();
+                // Non-invocable member cannot be used like a method
+                //test.Foobaz();
+                var expression = "test.Foobaz()";
+                var t = new TypeRegistry();
+                t.RegisterSymbol("test", test);
+                var c = new CompiledExpression(expression) { TypeRegistry = t };
                 var ret = c.Eval();
                 Assert.Fail();
             }
-            catch (CompilerException exception)
+            catch (MemberResolutionException exception)
             {
-                var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
-                var m = regex.Match(exception.Message);
-                Assert.AreEqual("unavailableMethod", m.Groups[1].Value);
-                Assert.AreEqual("UnitTestProject1.Domain.Helper", m.Groups[2].Value);
+                Assert.AreEqual("Foobaz", exception.MemberName);
+                Assert.AreEqual(typeof(MemberResolutionTest), exception.Type);
             }
         }
 
         [TestMethod]
-        public void UnavailablePropertyThrowsException()
+        public void FailOnNonExistentPropertyResolution()
         {
             try
             {
-                var str = "var x = helper.availableProperty;\r\nvar y = helper.unavailableProperty;";
-                var c = new CompiledExpression(str) { TypeRegistry = new TypeRegistry(), ExpressionType = ExpressionType.StatementList };
-                var helper = new Helper() { availableProperty = 1 };
-                var someparameter = 1;
-                c.TypeRegistry.RegisterSymbol("helper", helper);
+                var test = new MemberResolutionTest();
+                // Only assignment, call, increment, decrement and new object expressions can be used as a statement
+                //test.Foobar;
+                // Cannot assign method group to implicitly-typed variable
+                //var x = test.Foobar;
+                var expression = "var x = test.Foobar";
+                var t = new TypeRegistry();
+                t.RegisterSymbol("test", test);
+                var c = new CompiledExpression(expression) { TypeRegistry = t };
                 var ret = c.Eval();
                 Assert.Fail();
             }
-            catch (CompilerException exception)
+            catch (MemberResolutionException exception)
             {
-                var regex = new Regex("Cannot resolve member \"(\\w\\S+)\" on type \"(\\w\\S+)\"");
-                var m = regex.Match(exception.Message);
-                Assert.AreEqual("unavailableProperty", m.Groups[1].Value);
-                Assert.AreEqual("UnitTestProject1.Domain.Helper", m.Groups[2].Value);
+                Assert.AreEqual("Foobar", exception.MemberName);
+                Assert.AreEqual(typeof(MemberResolutionTest), exception.Type);
             }
         }
 

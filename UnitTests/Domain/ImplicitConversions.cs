@@ -1,7 +1,6 @@
-﻿using ExpressionEvaluator;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestProject1.Domain
+namespace ExpressionEvaluator.UnitTests.Domain
 {
     [TestClass]
     public class ImplicitConversions
